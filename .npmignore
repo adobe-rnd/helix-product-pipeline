@@ -1,0 +1,10 @@
+.*
+build
+coverage
+junit
+logs
+node_modules/
+snykmocha.js
+test/*
+test-results.xml
+!test/StaticS3Loader.js
