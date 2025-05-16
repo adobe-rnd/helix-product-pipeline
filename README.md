@@ -16,7 +16,7 @@ This package contains the common code for `helix-product-service` and `helix-pro
 ## Installation
 
 ```bash
-$ npm install @adobe/helix-product-pipeline
+$ npm install @dylandepass/helix-product-pipeline
 ```
 ## Development
 
