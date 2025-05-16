@@ -38,6 +38,9 @@
     "reporter": "mocha-multi-reporters",
     "reporter-options": "configFile=.mocha-multi.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "engines": {
     "node": ">=16.x"
   },
