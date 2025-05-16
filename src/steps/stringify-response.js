@@ -9,17 +9,28 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { toHtml } from 'hast-util-to-html';
+import rehypeFormat from 'rehype-format';
 
-import { PipelineResponse } from '@adobe/helix-html-pipeline';
+/**
+ * Serializes the response document to HTML
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} res
+ */
+export default function stringify(state, req, res) {
+  const { log } = state;
+  if (res.body) {
+    log.debug('stringify: ignoring already defined context.response.body');
+    return;
+  }
+  const doc = res.document;
+  if (!doc) {
+    throw Error('no response document');
+  }
+  rehypeFormat()(doc);
 
-// eslint-disable-next-line no-unused-vars
-export async function productPipe(state, req) {
-  const res = new PipelineResponse('', {
-    headers: {
-      'content-type': 'text/html; charset=utf-8',
-    },
-    status: 200,
+  res.body = toHtml(doc, {
+    upperDoctype: true,
   });
-
-  return res;
 }

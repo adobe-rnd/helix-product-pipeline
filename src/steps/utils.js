@@ -9,5 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-export * from './product-html-pipe.js';
-export * from './product-json-pipe.js';
+
+/**
+ * Returns the original host name from the request to the outer CDN.
+ * @param {object} headers The request headers
+ * @returns {string} The original host
+ */
+export function getOriginalHost(headers) {
+  const xfh = headers.get('x-forwarded-host');
+  if (xfh) {
+    const segs = xfh.split(',');
+    for (const seg of segs) {
+      const host = seg.trim();
+      if (host) {
+        return host;
+      }
+    }
+  }
+  return headers.get('host');
+}
