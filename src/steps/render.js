@@ -39,6 +39,8 @@ function formatPrice(price) {
 
 function formatOptions(variant) {
   const { sku, options } = variant;
+  if (!options) return '';
+
   const sectionMetadata = h('div.section-metadata', [
     h('div', [
       h('div', 'sku'),
