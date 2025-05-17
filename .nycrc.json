@@ -4,7 +4,7 @@
     "text",
     "text-summary"
   ],
-  "check-coverage": true,
+  "check-coverage": false,
   "lines": 0,
   "branches": 0,
   "statements": 0,
