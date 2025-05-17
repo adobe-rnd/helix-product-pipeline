@@ -23,7 +23,7 @@ export default async function fetchContent(state, req, res) {
   const {
     info, owner, repo, config,
   } = state;
-  const bucketId = 'helix-product-bus';
+  const bucketId = 'adobe-commerce-catalog';
   const { route } = config;
   const { storeCode, storeViewCode } = route;
 
@@ -31,15 +31,18 @@ export default async function fetchContent(state, req, res) {
 
   // if route params only contains the urlKey than we
   // need to head first to get the sku
-  if (Object.keys(route.params).length === 1 && route.params.urlKey) {
-    const { urlKey } = route.params;
+
+  // conditioanlly strip .json off urlKey
+  const urlKey = route.params.urlKey?.replace('.json', '');
+  if (Object.keys(route.params).length === 1 && urlKey) {
     const headKey = `${owner}/${repo}/${storeCode}/${storeViewCode}/urlkeys/${urlKey}`;
 
     const headRes = await state.s3Loader.headObject(bucketId, headKey);
 
     if (headRes.status === 200) {
       // Get the sku from the metadata
-      sku = headRes.metadata.sku;
+      sku = headRes.headers.get('sku');
+      // TODO: check for sku
     } else {
       res.status = 404;
       res.error = `HEAD: failed to load ${info.resourcePath} from product-bus: ${headRes.status}`;
