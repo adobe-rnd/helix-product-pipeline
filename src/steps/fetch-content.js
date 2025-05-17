@@ -40,9 +40,7 @@ export default async function fetchContent(state, req, res) {
     const headRes = await state.s3Loader.headObject(bucketId, headKey);
 
     if (headRes.status === 200) {
-      // Get the sku from the metadata
       sku = headRes.headers.get('sku');
-      // TODO: check for sku
     } else {
       res.status = 404;
       res.error = `HEAD: failed to load ${info.resourcePath} from product-bus: ${headRes.status}`;
