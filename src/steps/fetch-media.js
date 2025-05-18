@@ -21,13 +21,11 @@ import { extractLastModified, recordLastModified } from '../utils/last-modified.
  */
 export default async function fetchMedia(state, req, res) {
   const {
-    info, owner, repo, config,
+    info, owner, repo,
   } = state;
   const bucketId = 'adobe-commerce-catalog';
-  const { route } = config;
-  const { storeCode, storeViewCode } = route;
 
-  const key = `${owner}/${repo}/${storeCode}/${storeViewCode}/media/${info.originalFilename}`;
+  const key = `${owner}/${repo}/media/${info.originalFilename}`;
   const ret = await state.s3Loader.getObject(bucketId, key);
 
   if (ret.status === 200) {
