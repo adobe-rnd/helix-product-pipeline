@@ -1,3 +1,11 @@
+## [1.0.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.2...v1.0.3) (2025-05-18)
+
+
+### Bug Fixes
+
+* initial media pipe, use fragment for fromHtml ([988633c](https://github.com/adobe-rnd/helix-product-pipeline/commit/988633cebd9cd249d9ede817e2ea82427dec1cbf))
+* temporarily remove nyc coverage ([aac7eff](https://github.com/adobe-rnd/helix-product-pipeline/commit/aac7effd31ff9960995827c533edab072ad7dee0))
+
 ## [1.0.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.1...v1.0.2) (2025-05-17)
 
 
