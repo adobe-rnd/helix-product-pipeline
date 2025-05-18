@@ -11,3 +11,4 @@
  */
 export * from './product-html-pipe.js';
 export * from './product-json-pipe.js';
+export * from './product-media-pipe.js';
