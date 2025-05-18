@@ -106,15 +106,17 @@ export default async function render(state, req, res) {
 
   const main = select('main', hast);
   main.children = [
-    h('h1', name),
-    formatPrice(price),
-    fromHtml(description, { fragment: true }),
-    ...images.map((img) => createOptimizedPicture(img.url)),
-    ...variants.map((variant) => h('section', [
-      h('h2', variant.name),
-      ...variant.images.map((img) => createOptimizedPicture(img.url)),
-      formatOptions(variant),
-    ])),
+    h('div', [
+      h('h1', name),
+      formatPrice(price),
+      fromHtml(description, { fragment: true }),
+      ...images.map((img) => createOptimizedPicture(img.url)),
+      ...variants.map((variant) => h('section', [
+        h('h2', variant.name),
+        ...variant.images.map((img) => createOptimizedPicture(img.url)),
+        formatOptions(variant),
+      ])),
+    ]),
   ];
 
   res.document = hast;
