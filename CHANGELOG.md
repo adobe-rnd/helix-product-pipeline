@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.4...v1.0.5) (2025-05-18)
+
+
+### Bug Fixes
+
+* wrap main content in div ([271c570](https://github.com/adobe-rnd/helix-product-pipeline/commit/271c57005687ef34310df34f17511059424f25fa))
+
 ## [1.0.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.3...v1.0.4) (2025-05-18)
 
 
