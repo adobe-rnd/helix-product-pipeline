@@ -108,7 +108,7 @@ export default async function render(state, req, res) {
   main.children = [
     h('h1', name),
     formatPrice(price),
-    fromHtml(description),
+    fromHtml(description, { fragment: true }),
     ...images.map((img) => createOptimizedPicture(img.url)),
     ...variants.map((variant) => h('section', [
       h('h2', variant.name),
