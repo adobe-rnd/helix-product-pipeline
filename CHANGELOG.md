@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.3...v1.0.4) (2025-05-18)
+
+
+### Bug Fixes
+
+* remove storeCode and storeViewCode from media fetch ([a82058b](https://github.com/adobe-rnd/helix-product-pipeline/commit/a82058bcba93718e59822d9d408dd6f7c4bbe479))
+
 ## [1.0.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.2...v1.0.3) (2025-05-18)
 
 
