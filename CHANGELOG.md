@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.5...v1.0.6) (2025-05-18)
+
+
+### Bug Fixes
+
+* wrap picture tags in p ([894fdf9](https://github.com/adobe-rnd/helix-product-pipeline/commit/894fdf98ea1012203cf64562e95af4eac723abe3))
+
 ## [1.0.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.4...v1.0.5) (2025-05-18)
 
 
