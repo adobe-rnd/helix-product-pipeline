@@ -1,12 +1,3 @@
 {
-  "reporter": [
-    "lcov",
-    "text",
-    "text-summary"
-  ],
-  "check-coverage": false,
-  "lines": 0,
-  "branches": 0,
-  "statements": 0,
-  "skip-full": true
+  "check-coverage": false
 }
