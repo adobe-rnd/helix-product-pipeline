@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.6...v1.1.0) (2025-05-19)
+
+
+### Features
+
+* add jsonld step ([94a9f11](https://github.com/adobe-rnd/helix-product-pipeline/commit/94a9f117809251093fea7d7b437e431ccae93b25))
+
 ## [1.0.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.5...v1.0.6) (2025-05-18)
 
 
