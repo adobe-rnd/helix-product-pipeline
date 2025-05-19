@@ -19,6 +19,7 @@ import fetchContent from './steps/fetch-content.js';
 import { setLastModified } from './utils/last-modified.js';
 import html from './steps/make-html.js';
 import render from './steps/render.js';
+import renderJsonld from './steps/render-jsonld.js';
 import tohtml from './steps/stringify-response.js';
 
 export async function productHTMLPipe(state, req) {
@@ -63,6 +64,7 @@ export async function productHTMLPipe(state, req) {
     state.timer?.update('render');
     await html(state);
     await render(state, req, res);
+    await renderJsonld(state, req, res);
     await addHeadingIds(state);
     state.timer?.update('serialize');
     await tohtml(state, req, res);

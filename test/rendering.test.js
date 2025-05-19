@@ -119,7 +119,7 @@ describe('Rendering', () => {
 
   describe('Product', () => {
     it('renders product-1 correctly', async () => {
-      await testRender('product-1', 'main', 200);
+      await testRender('product-1', 'html', 200);
     });
   });
 });
