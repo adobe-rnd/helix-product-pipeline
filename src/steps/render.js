@@ -18,11 +18,6 @@ import rehypeParse from 'rehype-parse';
 import { fromHtml } from 'hast-util-from-html';
 import { createOptimizedPicture } from './create-pictures.js';
 
-function sanitizeJsonLd(jsonLd) {
-  const sanitizedJsonLd = jsonLd.replaceAll('<', '&#x3c;').replaceAll('>', '&#x3e;');
-  return JSON.stringify(JSON.parse(sanitizedJsonLd.trim()), null, 2);
-}
-
 /**
  * Format price with sale logic using HAST nodes.
  * @param {Object} price
@@ -75,7 +70,6 @@ export default async function render(state, req, res) {
     images = [],
     price,
     variants = [],
-    jsonld = {},
   } = content.data;
 
   const head = select('head', hast);
@@ -92,7 +86,6 @@ export default async function render(state, req, res) {
     h('meta', { name: 'twitter:description', content: metaDescription }),
     h('meta', { name: 'twitter:image', content: images[0]?.url }),
     h('meta', { name: 'sku', content: sku }),
-    h('script', { type: 'application/ld+json' }, sanitizeJsonLd(JSON.stringify(jsonld))),
   ];
 
   // inject head.html
