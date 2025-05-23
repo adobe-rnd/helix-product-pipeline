@@ -10,6 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
+import { slugger } from './utils.js';
 
 /**
  * Loads the content from either the content-bus or code-bus and stores it in `state.content`
@@ -49,7 +50,8 @@ export default async function fetchContent(state, req, res) {
     sku = route.params.sku.replace('.json', '');
   }
 
-  const key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${sku}.json`;
+  const slug = slugger(sku);
+  const key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
 
   const ret = await state.s3Loader.getObject(bucketId, key);
 

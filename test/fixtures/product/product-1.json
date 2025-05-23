@@ -27,9 +27,10 @@
       "values": ["Midnight Black", "Silver Steel"]
     }
   ],
+  "specifications": "<ul><li><strong>Series:</strong> Ascent X</li><li><strong>Container Capacity:</strong> 48 Oz.</li><li><strong>Programs:</strong> 3</li><li><strong>Touch Screen:</strong> No</li><li><strong>Timer:</strong> Yes</li><li><strong>Pulse:</strong> Yes</li><li><strong>Self-Detect Technology:</strong> Yes</li><li><strong>Dishwasher Safe:</strong> Yes</li><li><strong>Dimensions:</strong> 9.75 x 7.75 x 17 in.</li><li><strong>HP:</strong> 2.2 HP - peak</li><li><strong>Warranty:</strong> 10 Years</li></ul>",
   "custom": {
-    "specifications": "<ul><li><strong>Container Capacity:</strong> 64 Oz.</li><li><strong>Programs:</strong> 4</li><li><strong>Touch Screen:</strong> Yes</li><li><strong>Timer:</strong> Yes</li><li><strong>Pulse Mode:</strong> Yes</li><li><strong>Wireless Connectivity:</strong> Yes</li><li><strong>Dishwasher Safe:</strong> Yes</li><li><strong>Dimensions:</strong> 10 x 8 x 18 in.</li><li><strong>HP:</strong> 2.5 HP - peak</li><li><strong>Warranty:</strong> 5 Years</li></ul>",
     "warranty": "5 Year Standard Warranty",
+    "collection": "BlitzMax Collection",
     "resources": [
       {
         "name": "BlitzMax 5000 Manual",

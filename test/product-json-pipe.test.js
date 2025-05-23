@@ -35,8 +35,8 @@ const DEFAULT_CONFIG = {
   },
 };
 
-const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState({
-  config,
+const DEFAULT_STATE = (opts = {}) => (new PipelineState({
+  config: DEFAULT_CONFIG,
   site: 'site',
   org: 'org',
   ref: 'ref',
@@ -71,5 +71,14 @@ describe('Product JSON Pipe Test', () => {
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
     });
+  });
+
+  it('sends 400 for non json path', async () => {
+    const state = DEFAULT_STATE({
+      path: '/blog/article',
+    });
+    const result = await productJSONPipe(state, new PipelineRequest('https://acme.com/products/'));
+    assert.strictEqual(result.status, 400);
+    assert.strictEqual(result.headers.get('x-error'), 'only json resources supported.');
   });
 });
