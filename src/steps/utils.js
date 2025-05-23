@@ -11,6 +11,20 @@
  */
 
 /**
+ * Slugify a SKU by converting it to lowercase, replacing spaces with hyphens,
+ * @param {string} sku
+ * @returns {string}
+ */
+export function slugger(sku) {
+  if (typeof sku !== 'string') return '';
+  return sku
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/\//g, '')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
  * Returns the original host name from the request to the outer CDN.
  * @param {object} headers The request headers
  * @returns {string} The original host

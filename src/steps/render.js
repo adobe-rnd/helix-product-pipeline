@@ -49,6 +49,14 @@ function formatOptions(variant) {
   return sectionMetadata;
 }
 
+function createBlock(name, content) {
+  return h('div', { className: name }, [
+    h('div', [
+      h('div', fromHtml(content, { fragment: true })),
+    ]),
+  ]);
+}
+
 /**
  * @type PipelineStep
  * @param {PipelineState} state
@@ -67,9 +75,11 @@ export default async function render(state, req, res) {
     sku,
     name,
     description,
+    specifications,
     images = [],
     price,
     variants = [],
+    custom,
   } = content.data;
 
   const head = select('head', hast);
@@ -88,6 +98,13 @@ export default async function render(state, req, res) {
     h('meta', { name: 'sku', content: sku }),
   ];
 
+  // Any string value in custom should be added to the head
+  Object.entries(custom).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      head.children.push(h('meta', { name: key, content: value }));
+    }
+  });
+
   // inject head.html
   const headHtml = state.config?.head?.html;
   if (headHtml) {
@@ -103,6 +120,7 @@ export default async function render(state, req, res) {
       h('h1', name),
       formatPrice(price),
       fromHtml(description, { fragment: true }),
+      specifications ? createBlock('specifications', specifications) : null,
       ...images.map((img) => h('p', createOptimizedPicture(img.url))),
     ]),
     ...variants.map((variant) => h('div', [
