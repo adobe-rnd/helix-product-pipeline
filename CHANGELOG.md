@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.1.0...v1.2.0) (2025-05-23)
+
+
+### Features
+
+* slug sku, specifications and metadata ([b363c1e](https://github.com/adobe-rnd/helix-product-pipeline/commit/b363c1e31146557aa9aae791943927a4a8ed4764))
+
 # [1.1.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.0.6...v1.1.0) (2025-05-19)
 
 
