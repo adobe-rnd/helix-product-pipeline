@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.0...v1.2.1) (2025-05-31)
+
+
+### Bug Fixes
+
+* always render at least one offer ([141b29d](https://github.com/adobe-rnd/helix-product-pipeline/commit/141b29d6c2426cc6ca65f0d4b872bc9a7e00cc18))
+
 # [1.2.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.1.0...v1.2.0) (2025-05-23)
 
 
