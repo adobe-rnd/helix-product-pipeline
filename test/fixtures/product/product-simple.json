@@ -1,0 +1,48 @@
+{
+  "sku": "BlitzMax 5000",
+  "urlKey": "blitzmax-5000",
+  "description": "<h3>Features</h3>\n<p>The BlitzMax 5000 is the ultimate blending powerhouse. Its sleek design and powerful motor make it perfect for creating smoothies, soups, and more. Equipped with advanced blending programs and a 64-ounce container, it is engineered to tackle any blending task effortlessly.</p>\n\n<h4>5-Year Full Warranty</h4>\n<p>Blend with confidence, knowing your BlitzMax 5000 is covered for years to come.</p>\n\n<h4>Blending Programs</h4>\n<p>4 blending programs: Smoothies, Soups, Ice Crushing, and Pulse Mode.</p>\n\n<h4>Self-Cleaning Program</h4>\n<p>Simply add warm water and a drop of dish soap to activate the self-cleaning program.</p>\n\n<h4>64-Ounce BPA-Free Container</h4>\n<p>Designed for family-sized servings and larger batches.</p>\n\n<h4>Digital Timer</h4>\n<p>Precision blending with a built-in timer to achieve the perfect consistency.</p>\n\n<h4>Wireless Connectivity</h4>\n<p>The BlitzMax 5000 automatically adjusts settings based on the container size attached.</p>\n\n<h3>What's Included</h3>\n<ul>\n  <li>BlitzMax 5000 Motor Base</li>\n  <li>64-ounce Container</li>\n  <li>High-Speed Tamper</li>\n  <li>Recipe Guide</li>\n</ul>",
+  "name": "BlitzMax 5000",
+  "title": "Blendify BlitzMax 5000",
+  "metaTitle": "Blendify BlitzMax 5000 Blender",
+  "metaDescription": "The BlitzMax 5000 is the ultimate blending powerhouse from Blendify. It combines high performance with a sleek design, making it ideal for smoothies, soups, and more.",
+  "url": "https://www.blendify.com/us/en_us/shop/blitzmax-5000",
+  "images": [
+    { "url": "https://www.blendify.com/images/blitzmax-5000-1.png" },
+    { "url": "https://www.blendify.com/images/blitzmax-5000-2.png" },
+    { "url": "https://www.blendify.com/images/blitzmax-5000-3.png" }
+  ],
+  "brand": "Blendify",
+  "availability": "InStock",
+  "price": {
+    "currency": "USD",
+    "regular": 399.95,
+    "final": 349.95
+  },
+  "options": [
+    {
+      "id": "color",
+      "label": "Color",
+      "position": 1,
+      "values": ["Midnight Black", "Silver Steel"]
+    }
+  ],
+  "specifications": "<ul><li><strong>Series:</strong> Ascent X</li><li><strong>Container Capacity:</strong> 48 Oz.</li><li><strong>Programs:</strong> 3</li><li><strong>Touch Screen:</strong> No</li><li><strong>Timer:</strong> Yes</li><li><strong>Pulse:</strong> Yes</li><li><strong>Self-Detect Technology:</strong> Yes</li><li><strong>Dishwasher Safe:</strong> Yes</li><li><strong>Dimensions:</strong> 9.75 x 7.75 x 17 in.</li><li><strong>HP:</strong> 2.2 HP - peak</li><li><strong>Warranty:</strong> 10 Years</li></ul>",
+  "custom": {
+    "warranty": "5 Year Standard Warranty",
+    "collection": "BlitzMax Collection",
+    "resources": [
+      {
+        "name": "BlitzMax 5000 Manual",
+        "type": "pdf",
+        "url": "https://www.blendify.com/resources/blitzmax-5000-manual.pdf"
+      },
+      {
+        "name": "Setup Video",
+        "type": "youtube",
+        "url": "https://www.youtube.com/watch?v=123456"
+      }
+    ]
+  },
+  "variants": []
+}
