@@ -19,6 +19,33 @@ function sanitizeJsonLd(jsonLd) {
   return JSON.stringify(JSON.parse(sanitizedJsonLd.trim()), null, 2);
 }
 
+function renderOffer(variant) {
+  const offer = { '@type': 'Offer' };
+
+  if (variant.sku) offer.sku = variant.sku;
+  if (variant.name) offer.name = variant.name;
+
+  if (variant.images && variant.images.length) {
+    const variantImages = [];
+    for (const img of variant.images) {
+      if (img.url) variantImages.push(img.url);
+    }
+    if (variantImages.length) offer.image = variantImages;
+  }
+
+  const { price } = variant;
+  if (price) {
+    if (price.currency) offer.priceCurrency = price.currency;
+    if (price.final) offer.price = price.final;
+  }
+
+  if (variant.availability) offer.availability = `https://schema.org/${variant.availability}`;
+  if (variant.itemCondition) offer.itemCondition = `https://schema.org/${variant.itemCondition}`;
+  if (variant.url) offer.url = variant.url;
+
+  return offer;
+}
+
 function convertToJsonLD(product) {
   const jsonld = {
     '@context': 'https://schema.org',
@@ -50,32 +77,13 @@ function convertToJsonLD(product) {
   if (product.variants && product.variants.length) {
     const offers = [];
     for (const variant of product.variants) {
-      const offer = { '@type': 'Offer' };
-
-      if (variant.sku) offer.sku = variant.sku;
-      if (variant.name) offer.name = variant.name;
-
-      if (variant.images && variant.images.length) {
-        const variantImages = [];
-        for (const img of variant.images) {
-          if (img.url) variantImages.push(img.url);
-        }
-        if (variantImages.length) offer.image = variantImages;
-      }
-
-      const { price } = variant;
-      if (price) {
-        if (price.currency) offer.priceCurrency = price.currency;
-        if (price.final) offer.price = price.final;
-      }
-
-      if (variant.availability) offer.availability = `https://schema.org/${variant.availability}`;
-      if (variant.itemCondition) offer.itemCondition = `https://schema.org/${variant.itemCondition}`;
-      if (variant.url) offer.url = variant.url;
-
-      if (Object.keys(offer).length > 1) offers.push(offer);
+      const offer = renderOffer(variant);
+      offers.push(offer);
     }
     if (offers.length) jsonld.offers = offers;
+  } else {
+    const offer = renderOffer(product);
+    jsonld.offers = [offer];
   }
 
   if (product.custom && typeof product.custom === 'object') {

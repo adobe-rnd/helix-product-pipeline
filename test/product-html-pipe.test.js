@@ -46,7 +46,7 @@ const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState
 }));
 
 describe('Product HTML Pipe Test', () => {
-  it('renders a product html', async () => {
+  it('renders a configurable product html', async () => {
     const s3Loader = new FileS3Loader();
     const state = DEFAULT_STATE(DEFAULT_CONFIG, {
       log: console,
@@ -62,6 +62,31 @@ describe('Product HTML Pipe Test', () => {
     const resp = await productHTMLPipe(
       state,
       new PipelineRequest(new URL('https://acme.com/products/product-1')),
+    );
+    assert.strictEqual(resp.status, 200);
+    assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
+    assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'content-type': 'text/html; charset=utf-8',
+      'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+    });
+  });
+
+  it('renders a simple product html', async () => {
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/product-simple',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/product-simple');
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
     );
     assert.strictEqual(resp.status, 200);
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));

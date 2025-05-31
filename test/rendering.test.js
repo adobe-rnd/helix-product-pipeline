@@ -121,5 +121,9 @@ describe('Rendering', () => {
     it('renders product-1 correctly', async () => {
       await testRender('product-1', 'html', 200);
     });
+
+    it('renders product-simple correctly', async () => {
+      await testRender('product-simple', 'html', 200);
+    });
   });
 });
