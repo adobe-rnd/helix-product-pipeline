@@ -67,7 +67,7 @@ export async function productJSONPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = JSON.stringify(state.content.data);
+    res.body = JSON.stringify(state.content.data, null, 2);
   } catch (e) {
     res.error = e.message;
   }
