@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.1...v1.2.2) (2025-06-02)
+
+
+### Bug Fixes
+
+* format json ([0322d2d](https://github.com/adobe-rnd/helix-product-pipeline/commit/0322d2da7507e1ea65352e8ed81ef1d3d8eb1113))
+
 ## [1.2.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.0...v1.2.1) (2025-05-31)
 
 
