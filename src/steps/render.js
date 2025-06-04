@@ -27,9 +27,9 @@ function formatPrice(price) {
   if (!price) return '';
   const { regular, final } = price;
   if (final < regular) {
-    return h('p', [`$${final.toFixed(2)} `, '(', h('del', `$${regular.toFixed(2)}`), ')']);
+    return h('p', [`$${final} `, '(', h('del', `$${regular}`), ')']);
   }
-  return h('p', `$${final.toFixed(2)}`);
+  return h('p', `$${final}`);
 }
 
 function formatOptions(variant) {
@@ -95,6 +95,7 @@ export default async function render(state, req, res) {
     h('meta', { name: 'twitter:title', content: metaTitle }),
     h('meta', { name: 'twitter:description', content: metaDescription }),
     h('meta', { name: 'twitter:image', content: images[0]?.url }),
+    h('meta', { name: 'robots', content: 'noindex' }),
     h('meta', { name: 'sku', content: sku }),
   ];
 
