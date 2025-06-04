@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.2...v1.2.3) (2025-06-04)
+
+
+### Bug Fixes
+
+* string pricing and noindex ([1e5094a](https://github.com/adobe-rnd/helix-product-pipeline/commit/1e5094a99fd8a6840e39cd7cd189ca81daeb0039))
+
 ## [1.2.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.1...v1.2.2) (2025-06-02)
 
 
