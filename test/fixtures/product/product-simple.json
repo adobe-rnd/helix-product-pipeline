@@ -16,8 +16,8 @@
   "availability": "InStock",
   "price": {
     "currency": "USD",
-    "regular": 399.95,
-    "final": 349.95
+    "regular": "399.95",
+    "final": "349.95"
   },
   "options": [
     {
