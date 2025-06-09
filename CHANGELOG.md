@@ -1,3 +1,12 @@
+## [1.2.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.3...v1.2.4) (2025-06-09)
+
+
+### Bug Fixes
+
+* include videos and uids ([08d1c00](https://github.com/adobe-rnd/helix-product-pipeline/commit/08d1c00d0b95e32a6439515646f488446e54cb5a))
+* trigger release ([6064771](https://github.com/adobe-rnd/helix-product-pipeline/commit/6064771e63967e2b3a3aceedeb72f13d3aa4d161))
+* update workflow ([8e36e8f](https://github.com/adobe-rnd/helix-product-pipeline/commit/8e36e8f023cd82bb2cda3ba16981df232a1d1fce))
+
 ## [1.2.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.2...v1.2.3) (2025-06-04)
 
 
