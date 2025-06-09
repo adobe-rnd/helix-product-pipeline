@@ -44,8 +44,10 @@ function formatOptions(variant) {
     ...options.map((option) => h('div', [
       h('div', option.id),
       h('div', option.value),
+      option.uid ? h('div', option.uid) : null,
     ])),
   ]);
+
   return sectionMetadata;
 }
 
@@ -55,6 +57,17 @@ function createBlock(name, content) {
       h('div', fromHtml(content, { fragment: true })),
     ]),
   ]);
+}
+
+// Render media. Image first than anchor if video
+function renderMedia(media) {
+  if (media.video) {
+    return h('p', [
+      createOptimizedPicture(media.url),
+      h('a', { href: media.video }, 'Video'),
+    ]);
+  }
+  return h('p', createOptimizedPicture(media.url));
 }
 
 /**
@@ -122,7 +135,7 @@ export default async function render(state, req, res) {
       formatPrice(price),
       fromHtml(description, { fragment: true }),
       specifications ? createBlock('specifications', specifications) : null,
-      ...images.map((img) => h('p', createOptimizedPicture(img.url))),
+      ...images.map((img) => renderMedia(img)),
     ]),
     ...variants.map((variant) => h('div', [
       h('h2', variant.name),
