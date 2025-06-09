@@ -1,8 +1,7 @@
 name: Build
 on:
-  push:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize]
 
 env:
   CI_BUILD_NUM: ${{ github.run_id }}
