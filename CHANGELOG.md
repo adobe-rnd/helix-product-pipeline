@@ -1,3 +1,10 @@
+## [1.2.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.4...v1.2.5) (2025-06-12)
+
+
+### Bug Fixes
+
+* make image urls in json ld absolute ([1a09580](https://github.com/adobe-rnd/helix-product-pipeline/commit/1a09580e5a996879ce22b2e571b1ec7985f75f7b))
+
 ## [1.2.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.3...v1.2.4) (2025-06-09)
 
 
