@@ -1,3 +1,10 @@
+## [1.2.7](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.6...v1.2.7) (2025-06-12)
+
+
+### Bug Fixes
+
+* override path ([e39cb8f](https://github.com/adobe-rnd/helix-product-pipeline/commit/e39cb8f5c9943bd22f3a4fd91391b557b73c6e1c))
+
 ## [1.2.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.5...v1.2.6) (2025-06-12)
 
 
