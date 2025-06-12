@@ -94,3 +94,24 @@ export default async function createPictures({ content }) {
     }
   });
 }
+
+export function constructImageUrl(state, urlOrPath) {
+  if (!urlOrPath.startsWith('./') && !urlOrPath.startsWith('/')) {
+    return urlOrPath;
+  }
+
+  const path = urlOrPath.startsWith('/') ? urlOrPath.slice(1).replace(/\/$/, '') : urlOrPath.slice(2).replace(/\/$/, '');
+  const isLive = state.partition === 'live';
+  const isPreview = state.partition === 'preview';
+
+  if (isLive && state.prodHost) {
+    return `https://${state.prodHost.replace(/\/$/, '')}/${path}`;
+  }
+
+  if (isPreview && state.previewHost) {
+    return `https://${state.previewHost.replace(/\/$/, '')}/${path}`;
+  }
+
+  const domain = state.partition === 'live' ? 'aem.live' : 'aem.page';
+  return `https://${state.ref}--${state.site}--${state.org}.${domain}/${path}`;
+}
