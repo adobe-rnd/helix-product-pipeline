@@ -8,10 +8,10 @@
   "metaDescription": "The BlitzMax 5000 is the ultimate blending powerhouse from Blendify. It combines high performance with a sleek design, making it ideal for smoothies, soups, and more.",
   "url": "https://www.blendify.com/us/en_us/shop/blitzmax-5000",
   "images": [
-    { "url": "./images/blitzmax-5000-1.png" },
-    { "url": "./images/blitzmax-5000-2.png" },
-    { "url": "./images/blitzmax-5000-3.png" },
-    { "url": "./images/video-thumbnail.png", "video": "https://www.youtube.com/watch?v=123456" }
+    { "url": "./blitzmax-5000-1.png" },
+    { "url": "./blitzmax-5000-2.png" },
+    { "url": "./blitzmax-5000-3.png" },
+    { "url": "./video-thumbnail.png", "video": "https://www.youtube.com/watch?v=123456" }
   ],
   "brand": "Blendify",
   "availability": "InStock",
@@ -65,8 +65,8 @@
       },
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
-        { "url": "./images/blitzmax-5000-black-1.png" },
-        { "url": "./images/blitzmax-5000-black-2.png" }
+        { "url": "./blitzmax-5000-black-1.png" },
+        { "url": "./blitzmax-5000-black-2.png" }
       ],
       "availability": "InStock",
       "options": [
@@ -88,8 +88,8 @@
       },
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
-        { "url": "./images/blitzmax-5000-silver-1.png" },
-        { "url": "./images/blitzmax-5000-silver-2.png" }
+        { "url": "./blitzmax-5000-silver-1.png" },
+        { "url": "./blitzmax-5000-silver-2.png" }
       ],
       "availability": "InStock",
       "options": [

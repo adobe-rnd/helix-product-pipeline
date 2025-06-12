@@ -30,7 +30,7 @@ const { productHTMLPipe } = await esmock('../src/index.js', {
 const DEFAULT_CONFIG = {
   contentBusId: 'foo-id',
   owner: 'blendify',
-  repo: 'helix-pages',
+  repo: 'website',
   ref: 'main',
   cdn: {
     prod: {
@@ -46,7 +46,7 @@ const DEFAULT_CONFIG = {
         storeViewCode: 'default',
         storeCode: 'main',
       },
-      '/{{sku}}': {
+      '/us/en_us/products/{{sku}}': {
         pageType: 'product',
       },
     },
@@ -92,16 +92,17 @@ describe('Rendering', () => {
   async function testRender(url, domSelector = 'main', expStatus, partition = 'live') {
     if (!(url instanceof URL)) {
       // eslint-disable-next-line no-param-reassign
-      url = new URL(`https://helix-pages.com/${url}`);
+      url = new URL(`https://www.blendify.com/us/en_us/products/${url}`);
     }
-    const expFile = path.resolve(__testdir, 'fixtures', 'product', `${url.pathname.substring(1)}.html`);
+
+    const fileName = url.pathname.split('/').pop();
+    const expFile = path.resolve(__testdir, 'fixtures', 'product', `${fileName}.html`);
     let expHtml = null;
     try {
       expHtml = await readFile(expFile, 'utf-8');
     } catch {
       // ignore
     }
-    // console.log(expHtml);
     if (!expStatus) {
       // eslint-disable-next-line no-param-reassign
       expStatus = expHtml === null ? 404 : 200;

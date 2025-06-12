@@ -19,6 +19,9 @@ describe('constructImageUrl', () => {
     ref: 'main',
     site: 'helix-pages',
     org: 'adobe',
+    info: {
+      pathPrefix: '/',
+    },
     config: {
       partition: 'preview',
     },
@@ -37,7 +40,7 @@ describe('constructImageUrl', () => {
     };
     const url = '/images/test.jpg';
     const result = constructImageUrl(state, url);
-    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.page/images/test.jpg');
+    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.network/images/test.jpg');
   });
 
   it('constructs preview URL with previewHost when available', () => {
@@ -66,7 +69,7 @@ describe('constructImageUrl', () => {
       partition: 'preview',
     };
     const result = constructImageUrl(state, './images/test.jpg');
-    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.page/images/test.jpg');
+    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.network/images/test.jpg');
   });
 
   it('constructs live URL with default domain when no prodHost', () => {
@@ -75,7 +78,7 @@ describe('constructImageUrl', () => {
       partition: 'live',
     };
     const result = constructImageUrl(state, './images/test.jpg');
-    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.live/images/test.jpg');
+    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.network/images/test.jpg');
   });
 
   it('removes trailing slash from path', () => {
@@ -84,14 +87,14 @@ describe('constructImageUrl', () => {
       config: { partition: 'preview' },
     };
     const result = constructImageUrl(state, './images/test.jpg/');
-    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.page/images/test.jpg');
+    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.network/images/test.jpg');
   });
 
   it('removes trailing slash from host', () => {
     const state = {
       ...baseState,
       partition: 'preview',
-      previewHost: 'preview.example.com/',
+      previewHost: 'preview.example.com',
     };
     const result = constructImageUrl(state, './images/test.jpg');
     assert.strictEqual(result, 'https://preview.example.com/images/test.jpg');
@@ -103,6 +106,6 @@ describe('constructImageUrl', () => {
       partition: 'preview',
     };
     const result = constructImageUrl(state, './images/products/featured/test.jpg');
-    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.page/images/products/featured/test.jpg');
+    assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.network/images/products/featured/test.jpg');
   });
 });

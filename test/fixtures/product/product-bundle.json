@@ -8,28 +8,28 @@
   "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
   "images": [
     {
-      "url": "./images/blitzmax-5000-bundle-1.png"
+      "url": "./blitzmax-5000-bundle-1.png"
     },
     {
-      "url": "./images/blitzmax-5000-bundle-2.png"
+      "url": "./blitzmax-5000-bundle-2.png"
     },
     {
-      "url": "./images/blitzmax-5000-bundle-3.png"
+      "url": "./blitzmax-5000-bundle-3.png"
     },
     {
-      "url": "./images/blitzmax-5000-bundle-4.png"
+      "url": "./blitzmax-5000-bundle-4.png"
     },
     {
-      "url": "./images/blitzmax-5000-bundle-5.png"
+      "url": "./blitzmax-5000-bundle-5.png"
     },
     {
-      "url": "./images/blitzmax-5000-bundle-black.png"
+      "url": "./blitzmax-5000-bundle-black.png"
     },
     {
-      "url": "./images/blitzmax-5000-bundle-red.png"
+      "url": "./blitzmax-5000-bundle-red.png"
     },
     {
-      "url": "./images/blitzmax-5000-bundle-white.png"
+      "url": "./blitzmax-5000-bundle-white.png"
     }
   ],
   "brand": "Blendify",
@@ -128,7 +128,7 @@
       "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
       "images": [
         {
-          "url": "./images/blitzmax-5000-bundle-black.png"
+          "url": "./blitzmax-5000-bundle-black.png"
         }
       ],
       "availability": "InStock",
@@ -152,7 +152,7 @@
       "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
       "images": [
         {
-          "url": "./images/blitzmax-5000-bundle-white.png"
+          "url": "./blitzmax-5000-bundle-white.png"
         }
       ],
       "availability": "InStock",
@@ -176,7 +176,7 @@
       "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
       "images": [
         {
-          "url": "./images/blitzmax-5000-bundle-red.png"
+          "url": "./blitzmax-5000-bundle-red.png"
         }
       ],
       "availability": "InStock",
