@@ -13,7 +13,7 @@
 import { PipelineResponse } from '@adobe/helix-html-pipeline';
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import addHeadingIds from './steps/add-heading-ids.js';
-import { validatePathInfo } from './utils/path.js';
+import { getPathInfo, validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
 import { setLastModified } from './utils/last-modified.js';
@@ -25,6 +25,8 @@ import tohtml from './steps/stringify-response.js';
 export async function productHTMLPipe(state, req) {
   const { log } = state;
   state.type = 'html';
+
+  state.info = getPathInfo(state.info.path);
 
   if (!validatePathInfo(state.info)) {
     return new PipelineResponse('', {
