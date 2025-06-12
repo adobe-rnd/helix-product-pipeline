@@ -100,18 +100,22 @@ export function constructImageUrl(state, urlOrPath) {
     return urlOrPath;
   }
 
+  let { pathPrefix } = state.info;
+  if (pathPrefix === '/') {
+    pathPrefix = '';
+  }
+
   const path = urlOrPath.startsWith('/') ? urlOrPath.slice(1).replace(/\/$/, '') : urlOrPath.slice(2).replace(/\/$/, '');
   const isLive = state.partition === 'live';
   const isPreview = state.partition === 'preview';
 
   if (isLive && state.prodHost) {
-    return `https://${state.prodHost.replace(/\/$/, '')}/${path}`;
+    return `https://${state.prodHost}${pathPrefix}/${path}`;
   }
 
   if (isPreview && state.previewHost) {
-    return `https://${state.previewHost.replace(/\/$/, '')}/${path}`;
+    return `https://${state.previewHost}${pathPrefix}/${path}`;
   }
 
-  const domain = state.partition === 'live' ? 'aem.live' : 'aem.page';
-  return `https://${state.ref}--${state.site}--${state.org}.${domain}/${path}`;
+  return `https://${state.ref}--${state.site}--${state.org}.aem.network${pathPrefix}/${path}`;
 }

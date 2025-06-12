@@ -40,6 +40,14 @@ export function getPathInfo(path) {
     unmappedPath: '',
   };
 
+  // create the path prefix.. I
+  const prefix = segs.join('/');
+  if (prefix) {
+    info.pathPrefix = `/${prefix}`;
+  } else {
+    info.pathPrefix = '/';
+  }
+
   let fileName = info.originalFilename;
   segs.push(fileName);
 
