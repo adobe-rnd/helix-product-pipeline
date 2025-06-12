@@ -1,3 +1,10 @@
+## [1.2.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.5...v1.2.6) (2025-06-12)
+
+
+### Bug Fixes
+
+* path to images ([71769bc](https://github.com/adobe-rnd/helix-product-pipeline/commit/71769bc13fd7c325d58f413862a62998ec35ec05))
+
 ## [1.2.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.4...v1.2.5) (2025-06-12)
 
 
