@@ -29,12 +29,12 @@ const { productHTMLPipe } = await esmock('../src/index.js', {
 
 const DEFAULT_CONFIG = {
   contentBusId: 'foo-id',
-  owner: 'adobe',
+  owner: 'blendify',
   repo: 'helix-pages',
   ref: 'main',
   cdn: {
     prod: {
-      host: 'www.adobe.com',
+      host: 'www.blendify.com',
     },
   },
   head: {
@@ -124,6 +124,10 @@ describe('Rendering', () => {
 
     it('renders product-simple correctly', async () => {
       await testRender('product-simple', 'html', 200);
+    });
+
+    it('renders product-bundle correctly', async () => {
+      await testRender('product-bundle', 'html', 200);
     });
   });
 });

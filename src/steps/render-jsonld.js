@@ -13,13 +13,14 @@
 /* eslint-disable max-len */
 import { select } from 'hast-util-select';
 import { h } from 'hastscript';
+import { constructImageUrl } from './create-pictures.js';
 
 function sanitizeJsonLd(jsonLd) {
   const sanitizedJsonLd = jsonLd.replaceAll('<', '&#x3c;').replaceAll('>', '&#x3e;');
   return JSON.stringify(JSON.parse(sanitizedJsonLd.trim()), null, 2);
 }
 
-function renderOffer(variant) {
+function renderOffer(state, variant, simple = false) {
   const offer = { '@type': 'Offer' };
 
   if (variant.sku) offer.sku = variant.sku;
@@ -28,7 +29,7 @@ function renderOffer(variant) {
   if (variant.images && variant.images.length) {
     const variantImages = [];
     for (const img of variant.images) {
-      if (img.url) variantImages.push(img.url);
+      if (img.url) variantImages.push(constructImageUrl(state, img.url));
     }
     if (variantImages.length) offer.image = variantImages;
   }
@@ -43,10 +44,13 @@ function renderOffer(variant) {
   if (variant.itemCondition) offer.itemCondition = `https://schema.org/${variant.itemCondition}`;
   if (variant.url) offer.url = variant.url;
 
+  if (variant.options) offer.options = variant.options;
+  if (variant.custom && !simple) offer.custom = variant.custom;
+
   return offer;
 }
 
-function convertToJsonLD(product) {
+function convertToJsonLD(state, product) {
   const jsonld = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -69,7 +73,7 @@ function convertToJsonLD(product) {
   if (product.images && product.images.length) {
     const images = [];
     for (const img of product.images) {
-      if (img.url) images.push(img.url);
+      if (img.url) images.push(constructImageUrl(state, img.url));
     }
     if (images.length) jsonld.image = images;
   }
@@ -77,12 +81,12 @@ function convertToJsonLD(product) {
   if (product.variants && product.variants.length) {
     const offers = [];
     for (const variant of product.variants) {
-      const offer = renderOffer(variant);
+      const offer = renderOffer(state, variant);
       offers.push(offer);
     }
     if (offers.length) jsonld.offers = offers;
   } else {
-    const offer = renderOffer(product);
+    const offer = renderOffer(state, product, true);
     jsonld.offers = [offer];
   }
 
@@ -105,7 +109,7 @@ export default async function render(state, _, res) {
   const { hast } = content;
 
   // create the jsonld and insert it into the head
-  const jsonld = convertToJsonLD(content.data);
+  const jsonld = convertToJsonLD(state, content.data);
   const head = select('head', hast);
   head.children.push(h('script', { type: 'application/ld+json' }, sanitizeJsonLd(jsonld)));
 

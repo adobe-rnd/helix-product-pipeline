@@ -16,7 +16,7 @@ import { h } from 'hastscript';
 import { unified } from 'unified';
 import rehypeParse from 'rehype-parse';
 import { fromHtml } from 'hast-util-from-html';
-import { createOptimizedPicture } from './create-pictures.js';
+import { constructImageUrl, createOptimizedPicture } from './create-pictures.js';
 
 /**
  * Format price with sale logic using HAST nodes.
@@ -95,6 +95,7 @@ export default async function render(state, req, res) {
     custom,
   } = content.data;
 
+  const ogImage = constructImageUrl(state, images[0]?.url);
   const head = select('head', hast);
   head.children = [
     h('title', metaTitle),
@@ -103,11 +104,11 @@ export default async function render(state, req, res) {
     h('meta', { property: 'og:title', content: metaTitle }),
     h('meta', { property: 'og:description', content: metaDescription }),
     h('meta', { property: 'og:url', content: url }),
-    h('meta', { property: 'og:image', content: images[0]?.url }),
+    h('meta', { property: 'og:image', content: ogImage }),
     h('meta', { name: 'twitter:card', content: 'summary_large_image' }),
     h('meta', { name: 'twitter:title', content: metaTitle }),
     h('meta', { name: 'twitter:description', content: metaDescription }),
-    h('meta', { name: 'twitter:image', content: images[0]?.url }),
+    h('meta', { name: 'twitter:image', content: ogImage }),
     h('meta', { name: 'robots', content: 'noindex' }),
     h('meta', { name: 'sku', content: sku }),
   ];
