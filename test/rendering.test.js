@@ -22,7 +22,7 @@ import { getPathInfo } from '../src/utils/path.js';
 
 const { productHTMLPipe } = await esmock('../src/index.js', {
   '../src/product-html-pipe.js': await esmock('../src/product-html-pipe.js', {
-    '../src/steps/render.js': await esmock('../src/steps/render.js'),
+    '../src/steps/render-body.js': await esmock('../src/steps/render-body.js'),
     // '../src/steps/fetch-404.js': await esmock('../src/steps/fetch-404.js'),
   }),
 });
@@ -119,8 +119,8 @@ describe('Rendering', () => {
   }
 
   describe('Product', () => {
-    it('renders product-1 correctly', async () => {
-      await testRender('product-1', 'html', 200);
+    it('renders product-configurable correctly', async () => {
+      await testRender('product-configurable', 'html', 200);
     });
 
     it('renders product-simple correctly', async () => {
@@ -129,6 +129,14 @@ describe('Rendering', () => {
 
     it('renders product-bundle correctly', async () => {
       await testRender('product-bundle', 'html', 200);
+    });
+
+    it('renders no html description in p tag', async () => {
+      await testRender('no-html-description', 'html', 200);
+    });
+
+    it('renders custom metadata', async () => {
+      await testRender('custom-metadata', 'html', 200);
     });
   });
 });

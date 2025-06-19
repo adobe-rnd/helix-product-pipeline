@@ -52,16 +52,16 @@ describe('Product HTML Pipe Test', () => {
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/product-1',
+      path: '/product-configurable',
       partition: 'live',
       timer: {
         update: () => { },
       },
     });
-    state.info = getPathInfo('/product-1');
+    state.info = getPathInfo('/product-configurable');
     const resp = await productHTMLPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/product-1')),
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable')),
     );
     assert.strictEqual(resp.status, 200);
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));

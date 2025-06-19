@@ -52,13 +52,13 @@ describe('Product JSON Pipe Test', () => {
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/product-1.json',
+      path: '/product-configurable.json',
       partition: 'live',
       timer: {
         update: () => { },
       },
     });
-    state.info = getPathInfo('/product-1.json');
+    state.info = getPathInfo('/product-configurable.json');
     const resp = await productJSONPipe(
       state,
       new PipelineRequest(new URL('https://acme.com/products/')),
