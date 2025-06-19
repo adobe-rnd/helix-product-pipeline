@@ -13,10 +13,9 @@
 /* eslint-disable max-len */
 import { select } from 'hast-util-select';
 import { h } from 'hastscript';
-import { unified } from 'unified';
-import rehypeParse from 'rehype-parse';
 import { fromHtml } from 'hast-util-from-html';
-import { constructImageUrl, createOptimizedPicture } from './create-pictures.js';
+import { createOptimizedPicture } from './create-pictures.js';
+import { maybeHTML } from './utils.js';
 
 /**
  * Format price with sale logic using HAST nodes.
@@ -82,59 +81,22 @@ export default async function render(state, req, res) {
   const { hast } = content;
 
   const {
-    metaTitle,
-    metaDescription,
-    url,
-    sku,
     name,
     description,
     specifications,
     images = [],
     price,
     variants = [],
-    custom,
   } = content.data;
 
-  const ogImage = constructImageUrl(state, images[0]?.url);
-  const head = select('head', hast);
-  head.children = [
-    h('title', metaTitle),
-    h('link', { rel: 'canonical', href: url }),
-    h('meta', { name: 'description', content: metaDescription }),
-    h('meta', { property: 'og:title', content: metaTitle }),
-    h('meta', { property: 'og:description', content: metaDescription }),
-    h('meta', { property: 'og:url', content: url }),
-    h('meta', { property: 'og:image', content: ogImage }),
-    h('meta', { name: 'twitter:card', content: 'summary_large_image' }),
-    h('meta', { name: 'twitter:title', content: metaTitle }),
-    h('meta', { name: 'twitter:description', content: metaDescription }),
-    h('meta', { name: 'twitter:image', content: ogImage }),
-    h('meta', { name: 'robots', content: 'noindex' }),
-    h('meta', { name: 'sku', content: sku }),
-  ];
-
-  // Any string value in custom should be added to the head
-  Object.entries(custom).forEach(([key, value]) => {
-    if (typeof value === 'string') {
-      head.children.push(h('meta', { name: key, content: value }));
-    }
-  });
-
-  // inject head.html
-  const headHtml = state.config?.head?.html;
-  if (headHtml) {
-    const $headHtml = await unified()
-      .use(rehypeParse, { fragment: true })
-      .parse(headHtml);
-    head.children.push(...$headHtml.children);
-  }
+  const descriptionIsHTML = maybeHTML(description);
 
   const main = select('main', hast);
   main.children = [
     h('div', [
       h('h1', name),
       formatPrice(price),
-      fromHtml(description, { fragment: true }),
+      descriptionIsHTML ? fromHtml(description, { fragment: true }) : h('p', description),
       specifications ? createBlock('specifications', specifications) : null,
       ...images.map((img) => renderMedia(img)),
     ]),

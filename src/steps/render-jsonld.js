@@ -15,83 +15,74 @@ import { select } from 'hast-util-select';
 import { h } from 'hastscript';
 import { constructImageUrl } from './create-pictures.js';
 
-function sanitizeJsonLd(jsonLd) {
-  const sanitizedJsonLd = jsonLd.replaceAll('<', '&#x3c;').replaceAll('>', '&#x3e;');
-  return JSON.stringify(JSON.parse(sanitizedJsonLd.trim()), null, 2);
-}
-
 function renderOffer(state, variant, simple = false) {
-  const offer = { '@type': 'Offer' };
+  const {
+    sku,
+    name,
+    images,
+    price,
+    availability,
+    itemCondition,
+    url,
+    options,
+    custom,
+  } = variant;
 
-  if (variant.sku) offer.sku = variant.sku;
-  if (variant.name) offer.name = variant.name;
+  const resolvedImages = Array.isArray(images)
+    ? images.map((img) => img.url && constructImageUrl(state, img.url)).filter(Boolean)
+    : [];
 
-  if (variant.images && variant.images.length) {
-    const variantImages = [];
-    for (const img of variant.images) {
-      if (img.url) variantImages.push(constructImageUrl(state, img.url));
-    }
-    if (variantImages.length) offer.image = variantImages;
-  }
-
-  const { price } = variant;
-  if (price) {
-    if (price.currency) offer.priceCurrency = price.currency;
-    if (price.final) offer.price = price.final;
-  }
-
-  if (variant.availability) offer.availability = `https://schema.org/${variant.availability}`;
-  if (variant.itemCondition) offer.itemCondition = `https://schema.org/${variant.itemCondition}`;
-  if (variant.url) offer.url = variant.url;
-
-  if (variant.options) offer.options = variant.options;
-  if (variant.custom && !simple) offer.custom = variant.custom;
-
-  return offer;
+  return {
+    '@type': 'Offer',
+    ...(sku && { sku }),
+    ...(name && { name }),
+    ...(resolvedImages.length && { image: resolvedImages }),
+    ...(price?.currency && { priceCurrency: price.currency }),
+    ...(price?.final && { price: price.final }),
+    ...(availability && { availability: `https://schema.org/${availability}` }),
+    ...(itemCondition && { itemCondition: `https://schema.org/${itemCondition}` }),
+    ...(url && { url }),
+    ...(options && { options }),
+    ...(!simple && custom && { custom }),
+  };
 }
 
 function convertToJsonLD(state, product) {
+  const {
+    sku,
+    metaTitle,
+    name,
+    metaDescription,
+    description,
+    url,
+    brand,
+    images = [],
+    variants = [],
+    custom,
+  } = product;
+
   const jsonld = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    ...(sku && { sku }),
+    ...(metaTitle || name ? { name: metaTitle || name } : {}),
+    ...(metaDescription || description ? { description: metaDescription || description } : {}),
+    ...(url && { url }),
+    ...(brand && { brand: { '@type': 'Brand', name: brand } }),
   };
 
-  if (product.sku) jsonld.sku = product.sku;
+  const resolvedImages = images
+    .map((img) => img.url && constructImageUrl(state, img.url))
+    .filter(Boolean);
+  if (resolvedImages.length) jsonld.image = resolvedImages;
 
-  const name = product.metaTitle || product.name;
-  if (name) jsonld.name = name;
+  const resolvedOffers = variants.length
+    ? variants.map((v) => renderOffer(state, v))
+    : [renderOffer(state, product, true)];
+  jsonld.offers = resolvedOffers;
 
-  const description = product.metaDescription || product.description;
-  if (description) jsonld.description = description;
-
-  if (product.url) jsonld.url = product.url;
-
-  if (product.brand) {
-    jsonld.brand = { '@type': 'Brand', name: product.brand };
-  }
-
-  if (product.images && product.images.length) {
-    const images = [];
-    for (const img of product.images) {
-      if (img.url) images.push(constructImageUrl(state, img.url));
-    }
-    if (images.length) jsonld.image = images;
-  }
-
-  if (product.variants && product.variants.length) {
-    const offers = [];
-    for (const variant of product.variants) {
-      const offer = renderOffer(state, variant);
-      offers.push(offer);
-    }
-    if (offers.length) jsonld.offers = offers;
-  } else {
-    const offer = renderOffer(state, product, true);
-    jsonld.offers = [offer];
-  }
-
-  if (product.custom && typeof product.custom === 'object') {
-    jsonld.custom = { ...product.custom };
+  if (custom && typeof custom === 'object') {
+    jsonld.custom = { ...custom };
   }
 
   return JSON.stringify(jsonld, null, 2);
@@ -111,7 +102,7 @@ export default async function render(state, _, res) {
   // create the jsonld and insert it into the head
   const jsonld = convertToJsonLD(state, content.data);
   const head = select('head', hast);
-  head.children.push(h('script', { type: 'application/ld+json' }, sanitizeJsonLd(jsonld)));
+  head.children.push(h('script', { type: 'application/ld+json' }, jsonld));
 
   res.document = hast;
 }

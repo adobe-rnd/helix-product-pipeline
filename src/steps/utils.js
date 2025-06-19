@@ -42,3 +42,19 @@ export function getOriginalHost(headers) {
   }
   return headers.get('host');
 }
+
+/**
+ * Guess if a string is HTML by checking if it starts or ends with a tag.
+ * Written to be fast but not perfect in terms of accuracy.
+ * @param {string} str
+ * @returns {boolean}
+ */
+export function maybeHTML(str) {
+  if (typeof str !== 'string' || str.length < 3) return false;
+  if (str.startsWith('<?') || str.startsWith('<!')) return false;
+
+  const startsWithTag = str[0] === '<' && str.indexOf('>') > 1;
+  const endsWithTag = str.lastIndexOf('<') < str.length - 1 && str.endsWith('>');
+
+  return startsWithTag || endsWithTag;
+}
