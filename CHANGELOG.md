@@ -1,3 +1,10 @@
+## [1.2.8](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.7...v1.2.8) (2025-06-19)
+
+
+### Bug Fixes
+
+* remove custom strings from metadata ([7ff2918](https://github.com/adobe-rnd/helix-product-pipeline/commit/7ff2918a8f8f7259abd11e300aec411cf25e93dd))
+
 ## [1.2.7](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.6...v1.2.7) (2025-06-12)
 
 
