@@ -28,7 +28,7 @@ const DEFAULT_CONFIG = {
         storeViewCode: 'default',
         storeCode: 'main',
       },
-      '/{{sku}}': {
+      '/products/{{urlKey}}': {
         pageType: 'product',
       },
     },
@@ -48,20 +48,27 @@ const DEFAULT_STATE = (opts = {}) => (new PipelineState({
 describe('Product JSON Pipe Test', () => {
   it('renders a product json', async () => {
     const s3Loader = new FileS3Loader();
-    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+
+    s3Loader.statusCodeOverrides = {
+      'product-configurable': 200,
+    };
+
+    s3Loader.headers('product-configurable', 'sku', 'product-configurable');
+
+    const state = DEFAULT_STATE({
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/product-configurable.json',
+      path: '/products/product-configurable.json',
       partition: 'live',
       timer: {
         update: () => { },
       },
     });
-    state.info = getPathInfo('/product-configurable.json');
+    state.info = getPathInfo('/products/product-configurable.json');
     const resp = await productJSONPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/')),
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
     );
     assert.strictEqual(resp.status, 200);
 
@@ -80,5 +87,14 @@ describe('Product JSON Pipe Test', () => {
     const result = await productJSONPipe(state, new PipelineRequest('https://acme.com/products/'));
     assert.strictEqual(result.status, 400);
     assert.strictEqual(result.headers.get('x-error'), 'only json resources supported.');
+  });
+
+  it('handles a 404', async () => {
+    const state = DEFAULT_STATE({
+      path: '/products/product-404.json',
+    });
+    const result = await productJSONPipe(state, new PipelineRequest('https://acme.com/products/product-404.json'));
+    assert.strictEqual(result.status, 404);
+    assert.strictEqual(result.headers.get('x-error'), 'not found');
   });
 });

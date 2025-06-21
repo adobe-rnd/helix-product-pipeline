@@ -13,6 +13,10 @@
 /* eslint-env mocha */
 import assert from 'assert';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
+import fetchMock from 'fetch-mock';
+import { readFile } from 'fs/promises';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import { FileS3Loader } from './FileS3Loader.js';
 import { productHTMLPipe } from '../src/index.js';
 import { getPathInfo } from '../src/utils/path.js';
@@ -93,6 +97,41 @@ describe('Product HTML Pipe Test', () => {
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+    });
+  });
+
+  it('handles a 404', async () => {
+    const dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    fetchMockGlobal.get('https://main--helix-pages--adobe.aem.live/404.html', {
+      body: await readFile(path.join(dirname, 'fixtures', 'product', '404.html')),
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Last-Modified': 'Fri, 30 Apr 2025 03:47:18 GMT',
+      },
+    });
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/product-404',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/product-404');
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+    assert.strictEqual(resp.status, 404);
+    assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'content-type': 'text/html; charset=utf-8',
+      'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
+      'x-error': 'failed to load /product-404.json from product-bus: 404',
+      'x-surrogate-key': '5psG3TCc5j8nEP-_ foo-id F1MoBKxvegxs-x7W main--helix-pages--adobe_404 main--helix-pages--adobe_code',
     });
   });
 });
