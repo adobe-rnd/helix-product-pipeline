@@ -45,6 +45,7 @@ export default async function fetchContent(state, req, res) {
     } else {
       res.status = 404;
       res.error = `HEAD: failed to load ${info.resourcePath} from product-bus: ${headRes.status}`;
+      return;
     }
   } else {
     sku = route.params.sku.replace('.json', '');
@@ -64,6 +65,6 @@ export default async function fetchContent(state, req, res) {
   } else {
     // keep 404, but propagate others as 502
     res.status = ret.status === 404 ? 404 : 502;
-    res.error = `failed to load ${info.resourcePath} from ${state.content.sourceBus}-bus: ${ret.status}`;
+    res.error = `failed to load ${info.resourcePath} from product-bus: ${ret.status}`;
   }
 }

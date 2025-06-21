@@ -38,6 +38,6 @@ export default async function fetchMedia(state, req, res) {
   } else {
     // keep 404, but propagate others as 502
     res.status = ret.status === 404 ? 404 : 502;
-    res.error = `failed to load ${info.resourcePath} from ${state.content.sourceBus}-bus: ${ret.status}`;
+    res.error = `failed to load ${info.resourcePath} from product-bus: ${ret.status}`;
   }
 }

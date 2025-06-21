@@ -22,6 +22,7 @@ import renderBody from './steps/render-body.js';
 import renderJsonld from './steps/render-jsonld.js';
 import renderHead from './steps/render-head.js';
 import tohtml from './steps/stringify-response.js';
+import fetch404 from './steps/fetch-404.js';
 
 export async function productHTMLPipe(state, req) {
   const { log } = state;
@@ -50,7 +51,7 @@ export async function productHTMLPipe(state, req) {
     state.timer?.update('content-fetch');
     await fetchContent(state, req, res);
     if (res.status === 404) {
-      // await fetch404(state, req, res);
+      await fetch404(state, req, res);
     }
 
     if (res.error) {
