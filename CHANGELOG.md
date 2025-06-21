@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.8...v1.3.0) (2025-06-21)
+
+
+### Features
+
+* support 404s fetch ([12c7e2f](https://github.com/adobe-rnd/helix-product-pipeline/commit/12c7e2ffa507c8794fd34cd6d34ad8c0a3e3a282))
+
 ## [1.2.8](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.7...v1.2.8) (2025-06-19)
 
 
