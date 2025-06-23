@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.0...v1.3.1) (2025-06-23)
+
+
+### Bug Fixes
+
+* send x-surrogate-key header ([7db959d](https://github.com/adobe-rnd/helix-product-pipeline/commit/7db959d3197f913a99a46430a64b04e08e98ce93))
+
 # [1.3.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.2.8...v1.3.0) (2025-06-21)
 
 
