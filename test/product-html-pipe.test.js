@@ -32,7 +32,7 @@ const DEFAULT_CONFIG = {
         storeViewCode: 'default',
         storeCode: 'main',
       },
-      '/{{sku}}': {
+      '/products/{{sku}}': {
         pageType: 'product',
       },
     },
@@ -56,13 +56,13 @@ describe('Product HTML Pipe Test', () => {
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/product-configurable',
+      path: '/products/product-configurable',
       partition: 'live',
       timer: {
         update: () => { },
       },
     });
-    state.info = getPathInfo('/product-configurable');
+    state.info = getPathInfo('/products/product-configurable');
     const resp = await productHTMLPipe(
       state,
       new PipelineRequest(new URL('https://acme.com/products/product-configurable')),
@@ -72,6 +72,7 @@ describe('Product HTML Pipe Test', () => {
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      'x-surrogate-key': 'mRN24kMQcclw-dMQ foo-id_metadata main--helix-pages--adobe_head foo-id',
     });
   });
 
@@ -81,13 +82,13 @@ describe('Product HTML Pipe Test', () => {
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/product-simple',
+      path: '/products/product-simple',
       partition: 'live',
       timer: {
         update: () => { },
       },
     });
-    state.info = getPathInfo('/product-simple');
+    state.info = getPathInfo('/products/product-simple');
     const resp = await productHTMLPipe(
       state,
       new PipelineRequest(new URL('https://acme.com/products/product-simple')),
@@ -97,6 +98,7 @@ describe('Product HTML Pipe Test', () => {
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      'x-surrogate-key': 'XI4_5DVAssKv-Mlu foo-id_metadata main--helix-pages--adobe_head foo-id',
     });
   });
 
@@ -115,23 +117,23 @@ describe('Product HTML Pipe Test', () => {
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/product-404',
+      path: '/products/product-404',
       partition: 'live',
       timer: {
         update: () => { },
       },
     });
-    state.info = getPathInfo('/product-404');
+    state.info = getPathInfo('/products/product-404');
     const resp = await productHTMLPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+      new PipelineRequest(new URL('https://acme.com/products/product-404.html')),
     );
     assert.strictEqual(resp.status, 404);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
-      'x-error': 'failed to load /product-404.json from product-bus: 404',
-      'x-surrogate-key': '5psG3TCc5j8nEP-_ foo-id F1MoBKxvegxs-x7W main--helix-pages--adobe_404 main--helix-pages--adobe_code',
+      'x-error': 'failed to load /products/product-404.json from product-bus: 404',
+      'x-surrogate-key': 'uOhB41fFzP0Al-SD foo-id P0oVzuYmPy9MmiYp main--helix-pages--adobe_404 main--helix-pages--adobe_code',
     });
   });
 });

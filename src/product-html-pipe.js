@@ -16,6 +16,7 @@ import addHeadingIds from './steps/add-heading-ids.js';
 import { getPathInfo, validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
+import setXSurrogateKeyHeader from './steps/set-x-surrogate-key-header.js';
 import { setLastModified } from './utils/last-modified.js';
 import html from './steps/make-html.js';
 import renderBody from './steps/render-body.js';
@@ -75,6 +76,7 @@ export async function productHTMLPipe(state, req) {
     await tohtml(state, req, res);
 
     setLastModified(state, res);
+    await setXSurrogateKeyHeader(state, req, res);
   } catch (e) {
     res.error = e.message;
   }
