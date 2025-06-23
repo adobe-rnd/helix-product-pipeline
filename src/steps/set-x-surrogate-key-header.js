@@ -19,18 +19,7 @@ import { computeSurrogateKey } from '@adobe/helix-shared-utils';
  */
 export async function computeContentPathKey(state) {
   const { contentBusId, info } = state;
-  let { path } = info;
-  // surrogate key for path
-  // strip [index].plain.html
-  if (path.endsWith('index.plain.html')) {
-    path = path.substring(0, path.length - 'index.plain.html'.length);
-  } else if (path.endsWith('.plain.html')) {
-    path = path.substring(0, path.length - '.plain.html'.length);
-  }
-  // strip .md
-  if (path.endsWith('.md')) {
-    path = path.substring(0, path.length - '.md'.length);
-  }
+  const { path } = info;
   return computeSurrogateKey(`${contentBusId}${path}`);
 }
 
@@ -59,30 +48,14 @@ export default async function setXSurrogateKeyHeader(state, req, res) {
     contentBusId, owner, repo, ref, partition,
   } = state;
 
-  const isCode = state.content.sourceBus === 'code';
-
   // provide either (prefixed) preview or (unprefixed) live content keys
   const contentKeyPrefix = partition === 'preview' ? 'p_' : '';
   const keys = [];
   const hash = await computeContentPathKey(state);
-  if (isCode) {
-    keys.push(await computeCodePathKey(state));
-    keys.push(`${ref}--${repo}--${owner}_code`);
-  } else {
-    keys.push(`${contentKeyPrefix}${hash}`);
-    keys.push(`${contentKeyPrefix}${contentBusId}_metadata`);
-    keys.push(`${ref}--${repo}--${owner}_head`);
-    keys.push(`${contentKeyPrefix}${contentBusId}`);
-  }
-  // for folder-mapped resources, we also need to include the surrogate key of the mapped metadata
-  if (state.mapped) {
-    keys.push(`${contentKeyPrefix}${hash}_metadata`);
-    if (state.info.unmappedPath) {
-      keys.push(`${contentKeyPrefix}${await computeContentPathKey({
-        contentBusId,
-        info: { path: state.info.unmappedPath },
-      })}`);
-    }
-  }
+  keys.push(`${contentKeyPrefix}${hash}`);
+  keys.push(`${contentKeyPrefix}${contentBusId}_metadata`);
+  keys.push(`${ref}--${repo}--${owner}_head`);
+  keys.push(`${contentKeyPrefix}${contentBusId}`);
+
   res.headers.set('x-surrogate-key', keys.join(' '));
 }

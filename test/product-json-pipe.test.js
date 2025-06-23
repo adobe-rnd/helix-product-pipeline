@@ -40,7 +40,7 @@ const DEFAULT_STATE = (opts = {}) => (new PipelineState({
   site: 'site',
   org: 'org',
   ref: 'ref',
-  partition: 'preview',
+  partition: 'live',
   s3Loader: new FileS3Loader(),
   ...opts,
 }));
@@ -77,6 +77,7 @@ describe('Product JSON Pipe Test', () => {
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      'x-surrogate-key': '3nfMHLtnsFZ5Q_2g foo-id',
     });
   });
 
