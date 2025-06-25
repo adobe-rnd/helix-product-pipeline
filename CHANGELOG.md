@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.1...v1.3.2) (2025-06-25)
+
+
+### Bug Fixes
+
+* add CDN cache headers and remove default robots ([98efe51](https://github.com/adobe-rnd/helix-product-pipeline/commit/98efe51cd7c995b7ac5985f0a5197fdd4a98d84a))
+
 ## [1.3.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.0...v1.3.1) (2025-06-23)
 
 
