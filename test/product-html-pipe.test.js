@@ -70,9 +70,41 @@ describe('Product HTML Pipe Test', () => {
     assert.strictEqual(resp.status, 200);
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-      'x-surrogate-key': 'mRN24kMQcclw-dMQ foo-id_metadata main--helix-pages--adobe_head foo-id',
+    });
+  });
+
+  it('renders a configurable product html with CDN cache control headers', async () => {
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable');
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable'), {
+        headers: {
+          'x-byo-cdn-type': 'fastly',
+        },
+      }),
+    );
+    assert.strictEqual(resp.status, 200);
+    assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
+    assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
+      'content-type': 'text/html; charset=utf-8',
+      'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      'surrogate-control': 'max-age=300, stale-while-revalidate=0',
+      'surrogate-key': 'mRN24kMQcclw-dMQ foo-id_metadata main--helix-pages--adobe_head foo-id',
     });
   });
 
@@ -96,9 +128,9 @@ describe('Product HTML Pipe Test', () => {
     assert.strictEqual(resp.status, 200);
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-      'x-surrogate-key': 'XI4_5DVAssKv-Mlu foo-id_metadata main--helix-pages--adobe_head foo-id',
     });
   });
 
@@ -108,6 +140,7 @@ describe('Product HTML Pipe Test', () => {
     fetchMockGlobal.get('https://main--helix-pages--adobe.aem.live/404.html', {
       body: await readFile(path.join(dirname, 'fixtures', 'product', '404.html')),
       headers: {
+        'cache-control': 'max-age=7200, must-revalidate',
         'Content-Type': 'text/html; charset=utf-8',
         'Last-Modified': 'Fri, 30 Apr 2025 03:47:18 GMT',
       },
@@ -130,10 +163,10 @@ describe('Product HTML Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 404);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
       'x-error': 'failed to load /products/product-404.json from product-bus: 404',
-      'x-surrogate-key': 'uOhB41fFzP0Al-SD foo-id P0oVzuYmPy9MmiYp main--helix-pages--adobe_404 main--helix-pages--adobe_code',
     });
   });
 });

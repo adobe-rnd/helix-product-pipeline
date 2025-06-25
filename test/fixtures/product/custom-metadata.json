@@ -23,7 +23,8 @@
   },
   "metadata": {
     "foo": "bar",
-    "baz": "qux"
+    "baz": "qux",
+    "robots": "noindex"
   },
   "options": [
     {

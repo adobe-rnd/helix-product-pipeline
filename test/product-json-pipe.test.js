@@ -75,9 +75,50 @@ describe('Product JSON Pipe Test', () => {
     const body = JSON.parse(resp.body);
     assert.strictEqual(body.name, 'BlitzMax 5000');
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-      'x-surrogate-key': '3nfMHLtnsFZ5Q_2g foo-id',
+    });
+  });
+
+  it('renders a product json with CDN cache control headers', async () => {
+    const s3Loader = new FileS3Loader();
+
+    s3Loader.statusCodeOverrides = {
+      'product-configurable': 200,
+    };
+
+    s3Loader.headers('product-configurable', 'sku', 'product-configurable');
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable.json');
+    const resp = await productJSONPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable.json'), {
+        headers: {
+          'x-byo-cdn-type': 'cloudflare',
+        },
+      }),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const body = JSON.parse(resp.body);
+    assert.strictEqual(body.name, 'BlitzMax 5000');
+    assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
+      'content-type': 'application/json',
+      'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      'cache-tag': '3nfMHLtnsFZ5Q_2g,foo-id,main--site--org/products/product-configurable.json,/products/product-configurable.json',
+      'cdn-cache-control': 'max-age=300, must-revalidate',
     });
   });
 

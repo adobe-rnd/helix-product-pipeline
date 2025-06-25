@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
-import { computeContentPathKey, computeCodePathKey } from './set-x-surrogate-key-header.js';
+import { computeContentPathKey, computeCodePathKey, setCachingHeaders } from './set-cache-headers.js';
 
 /**
  * Loads the 404.html from code-bus and stores it in `res.body`
@@ -52,5 +52,5 @@ export default async function fetch404(state, req, res) {
   keys.push(`${ref}--${repo}--${owner}_404`);
   keys.push(`${ref}--${repo}--${owner}_code`);
 
-  res.headers.set('x-surrogate-key', keys.join(' '));
+  setCachingHeaders(state, req, res, keys);
 }
