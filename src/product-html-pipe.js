@@ -16,7 +16,6 @@ import addHeadingIds from './steps/add-heading-ids.js';
 import { getPathInfo, validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
-import setXSurrogateKeyHeader from './steps/set-x-surrogate-key-header.js';
 import { setLastModified } from './utils/last-modified.js';
 import html from './steps/make-html.js';
 import renderBody from './steps/render-body.js';
@@ -24,6 +23,7 @@ import renderJsonld from './steps/render-jsonld.js';
 import renderHead from './steps/render-head.js';
 import tohtml from './steps/stringify-response.js';
 import fetch404 from './steps/fetch-404.js';
+import computeContentSurrogateKeys, { setCachingHeaders } from './steps/set-cache-headers.js';
 
 export async function productHTMLPipe(state, req) {
   const { log } = state;
@@ -76,7 +76,9 @@ export async function productHTMLPipe(state, req) {
     await tohtml(state, req, res);
 
     setLastModified(state, res);
-    await setXSurrogateKeyHeader(state, req, res);
+
+    const keys = await computeContentSurrogateKeys(state);
+    await setCachingHeaders(state, req, res, keys);
   } catch (e) {
     res.error = e.message;
   }

@@ -12,19 +12,10 @@
 
 import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { validatePathInfo } from './utils/path.js';
-import { computeContentPathKey } from './steps/set-x-surrogate-key-header.js';
 import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
 import { setLastModified } from './utils/last-modified.js';
-
-async function computeSurrogateKeys(state) {
-  const keys = [];
-  const contentKeyPrefix = state.partition === 'preview' ? 'p_' : '';
-  keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
-  keys.push(`${contentKeyPrefix}${state.contentBusId}`);
-
-  return keys;
-}
+import { computeJSONSurrogateKeys, setCachingHeaders } from './steps/set-cache-headers.js';
 
 export async function productJSONPipe(state, req) {
   const { log, info } = state;
@@ -76,8 +67,8 @@ export async function productJSONPipe(state, req) {
     }
 
     // set surrogate keys
-    const keys = await computeSurrogateKeys(state);
-    res.headers.set('x-surrogate-key', keys.join(' '));
+    const keys = await computeJSONSurrogateKeys(state);
+    await setCachingHeaders(state, req, res, keys);
 
     setLastModified(state, res);
 

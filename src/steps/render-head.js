@@ -52,7 +52,6 @@ export default async function render(state) {
     h('meta', { name: 'twitter:title', content: metaTitle }),
     h('meta', { name: 'twitter:description', content: metaDescription }),
     h('meta', { name: 'twitter:image', content: ogImage }),
-    h('meta', { name: 'robots', content: 'noindex' }),
     h('meta', { name: 'sku', content: sku }),
   ];
 
