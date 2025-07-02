@@ -11,67 +11,614 @@
  */
 
 /* eslint-env mocha */
+/* eslint-disable no-unused-vars */
+
 import assert from 'assert';
-import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
-import { FileS3Loader } from './FileS3Loader.js';
-import { productMediaPipe } from '../src/index.js';
-import { getPathInfo } from '../src/utils/path.js';
-
-const DEFAULT_CONFIG = {
-  contentBusId: 'foo-id',
-  owner: 'adobe',
-  repo: 'helix-pages',
-  ref: 'main',
-  public: {
-    patterns: {
-      base: {
-        storeViewCode: 'default',
-        storeCode: 'main',
-      },
-      '/{{sku}}': {
-        pageType: 'product',
-      },
-    },
-  },
-};
-
-const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState({
-  config,
-  site: 'site',
-  org: 'org',
-  ref: 'ref',
-  partition: 'preview',
-  s3Loader: new FileS3Loader(),
-  ...opts,
-}));
+import esmock from 'esmock';
+import {
+  PipelineRequest, PipelineState,
+} from '@adobe/helix-html-pipeline';
 
 describe('Product Media Pipe Test', () => {
-  it('returns a product image', async () => {
-    const s3Loader = new FileS3Loader();
-    s3Loader.headers('media_11fa1411c77cbc54df349acdf818c84519d82750.png', 'content-type', 'image/png');
-    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
-      log: console,
-      s3Loader,
-      ref: 'main',
-      path: '/media_11fa1411c77cbc54df349acdf818c84519d82750.png',
-      partition: 'live',
-      timer: {
-        update: () => { },
+  let productMediaPipe;
+  let validatePathInfoMock;
+  let initConfigMock;
+  let fetchMediaMock;
+  let setLastModifiedMock;
+
+  const DEFAULT_CONFIG = {
+    contentBusId: 'test-bus-id',
+    owner: 'test-owner',
+    repo: 'test-repo',
+    ref: 'main',
+    public: {
+      patterns: {
+        base: {
+          storeViewCode: 'default',
+          storeCode: 'main',
+        },
+      },
+    },
+  };
+
+  beforeEach(async () => {
+    // Create fresh mocks for each test
+    validatePathInfoMock = () => true;
+    initConfigMock = async () => {};
+    fetchMediaMock = async () => {};
+    setLastModifiedMock = () => {};
+
+    // Mock all dependencies with fresh mocks
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: validatePathInfoMock,
+      },
+      '../src/steps/init-config.js': {
+        default: initConfigMock,
+      },
+      '../src/steps/fetch-media.js': {
+        default: fetchMediaMock,
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: setLastModifiedMock,
       },
     });
-    state.info = getPathInfo('/media_11fa1411c77cbc54df349acdf818c84519d82750.png');
-    const resp = await productMediaPipe(
-      state,
-      new PipelineRequest(new URL('https://acme.com/products/')),
-    );
-    assert.strictEqual(resp.status, 200);
+    productMediaPipe = pipe;
+  });
 
-    // Check that it's a png
-    assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
-      'content-type': 'image/png',
-      'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-      'x-amz-meta-x-source-location': 'media_11fa1411c77cbc54df349acdf818c84519d82750.png',
-      'x-source-location': 'media_11fa1411c77cbc54df349acdf818c84519d82750.png',
+  it('sets state type to media', async () => {
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
     });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    await productMediaPipe(state, req);
+
+    assert.strictEqual(state.type, 'media');
+  });
+
+  it('returns 404 for invalid path info', async () => {
+    // Create a new mock for this specific test
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => false,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async () => {},
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert.strictEqual(response.status, 404);
+    assert.strictEqual(response.headers.get('x-error'), 'invalid path');
+  });
+
+  it('returns 404 when fetchMedia returns 404 status', async () => {
+    // Create a new mock for this specific test
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 404;
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert.strictEqual(response.status, 404);
+    assert.strictEqual(response.headers.get('x-error'), 'not found');
+  });
+
+  it('returns response directly when res.error exists but status < 400', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 200;
+          res.error = 'warning message';
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.error, 'warning message');
+  });
+
+  it('throws PipelineStatusError when res.error exists and status >= 400', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 500;
+          res.error = 'server error';
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+    assert.strictEqual(response.error, 'server error');
+  });
+
+  it('calls setLastModified and sets response headers/body on success', async () => {
+    let setLastModifiedCalled = false;
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 200;
+          state.content = {
+            headers: new Map([['content-type', 'image/png']]),
+            data: 'fake image data',
+          };
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: (state, res) => {
+          setLastModifiedCalled = true;
+        },
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert(setLastModifiedCalled, 'setLastModified should be called');
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.headers.get('content-type'), 'image/png');
+    assert.strictEqual(response.body, 'fake image data');
+  });
+
+  it('calls timer.update when timer exists', async () => {
+    let timerUpdateCalled = false;
+    const timer = {
+      update: (label) => {
+        timerUpdateCalled = true;
+        assert.strictEqual(label, 'content-fetch');
+      },
+    };
+
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 200;
+          state.content = {
+            headers: new Map(),
+            data: '',
+          };
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    state.timer = timer;
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    await pipe(state, req);
+
+    assert(timerUpdateCalled, 'timer.update should be called');
+  });
+
+  it('does not call timer.update when timer does not exist', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 200;
+          state.content = {
+            headers: new Map(),
+            data: '',
+          };
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    // No timer property
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    // Should not throw
+    const response = await pipe(state, req);
+    assert.strictEqual(response.status, 200);
+  });
+
+  it('does not call timer.update when timer exists but has no update method', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 200;
+          state.content = {
+            headers: new Map(),
+            data: '',
+          };
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    state.timer = {}; // Timer without update method
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    // Should not throw
+    const response = await pipe(state, req);
+    assert.strictEqual(response.status, 200);
+  });
+
+  it('handles initConfig throwing an error', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {
+          throw new Error('config error');
+        },
+      },
+      '../src/steps/fetch-media.js': {
+        default: async () => {},
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert.strictEqual(response.error, 'config error');
+  });
+
+  it('handles fetchMedia throwing an error', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async () => {
+          throw new Error('fetch error');
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert.strictEqual(response.error, 'fetch error');
+  });
+
+  it('handles setLastModified throwing an error', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 200;
+          state.content = {
+            headers: new Map(),
+            data: '',
+          };
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {
+          throw new Error('last modified error');
+        },
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert.strictEqual(response.error, 'last modified error');
+  });
+
+  it('handles any other exception in try-catch block', async () => {
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async () => {
+          throw new TypeError('type error');
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {},
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    const response = await pipe(state, req);
+
+    assert.strictEqual(response.error, 'type error');
+  });
+
+  it('calls all steps in correct order', async () => {
+    const callOrder = [];
+
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async (state, req, res) => {
+          callOrder.push('initConfig');
+        },
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          callOrder.push('fetchMedia');
+          res.status = 200;
+          state.content = {
+            headers: new Map(),
+            data: '',
+          };
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: (state, res) => {
+          callOrder.push('setLastModified');
+        },
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    await pipe(state, req);
+
+    assert.deepStrictEqual(callOrder, ['initConfig', 'fetchMedia', 'setLastModified']);
+  });
+
+  it('does not call setLastModified when fetchMedia returns 404', async () => {
+    let setLastModifiedCalled = false;
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 404;
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {
+          setLastModifiedCalled = true;
+        },
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    await pipe(state, req);
+
+    assert(!setLastModifiedCalled, 'setLastModified should not be called when status is 404');
+  });
+
+  it('does not call setLastModified when fetchMedia returns error with status < 400', async () => {
+    let setLastModifiedCalled = false;
+    const { productMediaPipe: pipe } = await esmock('../src/product-media-pipe.js', {
+      '../src/utils/path.js': {
+        validatePathInfo: () => true,
+      },
+      '../src/steps/init-config.js': {
+        default: async () => {},
+      },
+      '../src/steps/fetch-media.js': {
+        default: async (state, req, res) => {
+          res.status = 200;
+          res.error = 'warning';
+        },
+      },
+      '../src/utils/last-modified.js': {
+        setLastModified: () => {
+          setLastModifiedCalled = true;
+        },
+      },
+    });
+
+    const state = new PipelineState({
+      config: DEFAULT_CONFIG,
+      partition: 'live',
+      site: 'test-site',
+      org: 'test-org',
+      ref: 'main',
+    });
+    const req = new PipelineRequest(new URL('https://example.com'));
+
+    await pipe(state, req);
+
+    assert(!setLastModifiedCalled, 'setLastModified should not be called when there is an error with status < 400');
   });
 });
