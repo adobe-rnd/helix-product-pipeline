@@ -17,8 +17,10 @@
  */
 export function getPathInfo(path) {
   if (!path) {
-    // eslint-disable-next-line no-param-reassign
-    path = '/';
+    return null;
+  }
+  if (path === '/') {
+    return null;
   }
   if (path.match(/\/\/+/)) {
     return null;
