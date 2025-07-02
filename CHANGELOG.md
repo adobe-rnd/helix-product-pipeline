@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.2...v1.3.3) (2025-07-02)
+
+
+### Bug Fixes
+
+* improve test coverage ([30eb8a1](https://github.com/adobe-rnd/helix-product-pipeline/commit/30eb8a1a49d460359c1a4ce36028f629bdb94abf))
+
 ## [1.3.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.1...v1.3.2) (2025-06-25)
 
 
