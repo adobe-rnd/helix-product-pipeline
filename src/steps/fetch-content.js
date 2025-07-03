@@ -43,7 +43,7 @@ export default async function fetchContent(state, req, res) {
     if (headRes.status === 200) {
       sku = headRes.headers.get('sku');
     } else {
-      res.status = 404;
+      res.status = headRes.status === 404 ? 404 : 502;
       res.error = `HEAD: failed to load ${info.resourcePath} from product-bus: ${headRes.status}`;
       return;
     }
@@ -57,11 +57,16 @@ export default async function fetchContent(state, req, res) {
   const ret = await state.s3Loader.getObject(bucketId, key);
 
   if (ret.status === 200) {
-    res.status = 200;
-    delete res.error;
-    state.content.data = JSON.parse(ret.body);
+    try {
+      res.status = 200;
+      delete res.error;
+      state.content.data = JSON.parse(ret.body);
 
-    recordLastModified(state, res, 'content', extractLastModified(ret.headers));
+      recordLastModified(state, res, 'content', extractLastModified(ret.headers));
+    } catch (e) {
+      res.status = 400;
+      res.error = `failed to parse ${info.resourcePath} from product-bus: ${e.message}`;
+    }
   } else {
     // keep 404, but propagate others as 502
     res.status = ret.status === 404 ? 404 : 502;

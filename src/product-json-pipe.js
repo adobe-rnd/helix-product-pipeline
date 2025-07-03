@@ -11,6 +11,7 @@
  */
 
 import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipeline';
+import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
@@ -52,14 +53,7 @@ export async function productJSONPipe(state, req) {
 
     state.timer?.update('content-fetch');
     await fetchContent(state, req, res);
-    if (res.status === 404) {
-      return new PipelineResponse('', {
-        status: 404,
-        headers: {
-          'x-error': 'not found',
-        },
-      });
-    } else if (res.error) {
+    if (res.error) {
       if (res.status < 400) {
         return res;
       }
@@ -74,7 +68,18 @@ export async function productJSONPipe(state, req) {
 
     res.body = JSON.stringify(state.content.data, null, 2);
   } catch (e) {
-    res.error = e.message;
+    const errorRes = new PipelineResponse('', {
+      status: e instanceof PipelineStatusError ? e.code : 500,
+    });
+    const level = errorRes.status >= 500 ? 'error' : 'info';
+    log[level](`pipeline status: ${errorRes.status} ${e.message}`, e);
+    errorRes.body = '';
+    errorRes.headers.set('x-error', cleanupHeaderValue(e.message));
+    if (errorRes.status === 404) {
+      const keys = await computeJSONSurrogateKeys(state);
+      errorRes.headers.set('x-surrogate-key', keys.join(' '));
+    }
+    return errorRes;
   }
 
   return res;
