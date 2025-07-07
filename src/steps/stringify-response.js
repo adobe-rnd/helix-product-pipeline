@@ -28,6 +28,7 @@ export default function stringify(state, req, res) {
   }
   const doc = res.document;
   if (!doc) {
+    /* c8 ignore next */
     throw new PipelineStatusError(500, 'no response document');
   }
   rehypeFormat()(doc);
