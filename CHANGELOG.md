@@ -1,3 +1,11 @@
+## [1.3.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.3...v1.3.4) (2025-07-07)
+
+
+### Bug Fixes
+
+* ignore mocked error ([5ab1d82](https://github.com/adobe-rnd/helix-product-pipeline/commit/5ab1d8222c56a5e6df6a7b491016285396bf0479))
+* image props support, strip html from fallback description ([f07830f](https://github.com/adobe-rnd/helix-product-pipeline/commit/f07830f78a6e8409014fa53333e370819f105eb1))
+
 ## [1.3.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.2...v1.3.3) (2025-07-02)
 
 
