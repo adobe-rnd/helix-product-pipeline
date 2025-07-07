@@ -9,6 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+import { PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { toHtml } from 'hast-util-to-html';
 import rehypeFormat from 'rehype-format';
 
@@ -26,7 +28,8 @@ export default function stringify(state, req, res) {
   }
   const doc = res.document;
   if (!doc) {
-    throw Error('no response document');
+    /* c8 ignore next */
+    throw new PipelineStatusError(500, 'no response document');
   }
   rehypeFormat()(doc);
 

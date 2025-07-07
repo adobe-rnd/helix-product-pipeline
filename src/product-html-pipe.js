@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { PipelineResponse } from '@adobe/helix-html-pipeline';
+import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import addHeadingIds from './steps/add-heading-ids.js';
 import { getPathInfo, validatePathInfo } from './utils/path.js';
@@ -57,6 +57,7 @@ export async function productHTMLPipe(state, req) {
 
     if (res.error) {
       // if content loading produced an error, we're done.
+      /* c8 ignore next */
       const level = res.status >= 500 ? 'error' : 'info';
       log[level](`pipeline status: ${res.status} ${res.error}`);
       res.headers.set('x-error', cleanupHeaderValue(res.error));
@@ -81,6 +82,16 @@ export async function productHTMLPipe(state, req) {
     await setCachingHeaders(state, req, res, keys);
   } catch (e) {
     res.error = e.message;
+    if (e instanceof PipelineStatusError) {
+      res.status = e.code;
+    } else {
+      res.status = 500;
+    }
+
+    /* c8 ignore next */
+    const level = res.status >= 500 ? 'error' : 'info';
+    log[level](`pipeline status: ${res.status} ${res.error}`, e);
+    res.headers.set('x-error', cleanupHeaderValue(res.error));
   }
 
   return res;

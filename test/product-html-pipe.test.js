@@ -12,7 +12,8 @@
 
 /* eslint-env mocha */
 import assert from 'assert';
-import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
+import esmock from 'esmock';
+import { PipelineRequest, PipelineState, PipelineStatusError } from '@adobe/helix-html-pipeline';
 import fetchMock from 'fetch-mock';
 import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
@@ -50,6 +51,26 @@ const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState
 }));
 
 describe('Product HTML Pipe Test', () => {
+  it('returns 404 for invalid path info', async () => {
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      ref: 'main',
+      path: '/products/product-configurable.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = false;
+
+    const result = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
+    );
+    assert.strictEqual(result.status, 404);
+    assert.strictEqual(result.headers.get('x-error'), 'invalid path');
+  });
+
   it('renders a configurable product html', async () => {
     const s3Loader = new FileS3Loader();
     const state = DEFAULT_STATE(DEFAULT_CONFIG, {
@@ -168,5 +189,75 @@ describe('Product HTML Pipe Test', () => {
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
       'x-error': 'failed to load /products/product-404.json from product-bus: 404',
     });
+  });
+
+  it('handles html generation exceptions during pipeline execution', async () => {
+    // Mock the html step to throw an exception
+    const { productHTMLPipe: mockedHTMLPipe } = await esmock('../src/index.js', {
+      '../src/product-html-pipe.js': await esmock('../src/product-html-pipe.js', {
+        '../src/steps/make-html.js': {
+          default: () => {
+            throw new Error('HTML generation failed');
+          },
+        },
+      }),
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable');
+
+    const resp = await mockedHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable')),
+    );
+
+    // The response should have an error set due to the exception
+    assert.strictEqual(resp.status, 500);
+    assert.strictEqual(resp.headers.get('x-error'), 'HTML generation failed');
+  });
+
+  it('handles PipelineStatusError during pipeline execution', async () => {
+    // Mock the html step to throw an exception
+    const { productHTMLPipe: mockedHTMLPipe } = await esmock('../src/index.js', {
+      '../src/product-html-pipe.js': await esmock('../src/product-html-pipe.js', {
+        '../src/steps/stringify-response.js': {
+          default: () => {
+            throw new PipelineStatusError(500, 'no response document');
+          },
+        },
+      }),
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable');
+
+    const resp = await mockedHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable')),
+    );
+
+    // The response should have an error set due to the exception
+    assert.strictEqual(resp.status, 500);
+    assert.strictEqual(resp.headers.get('x-error'), 'no response document');
   });
 });

@@ -135,8 +135,20 @@ describe('Rendering', () => {
       await testRender('no-html-description', 'html', 200);
     });
 
+    it('strips html description when no meta description is present', async () => {
+      await testRender('no-metadescription-with-html-description', 'html', 200);
+    });
+
     it('renders custom metadata', async () => {
       await testRender('custom-metadata', 'html', 200);
+    });
+
+    it('renders no images', async () => {
+      await testRender('no-images', 'html', 200);
+    });
+
+    it('renders image props correctly', async () => {
+      await testRender('image-props', 'html', 200);
     });
   });
 });

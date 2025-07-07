@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+/* eslint-disable no-continue */
+
 /**
  * Slugify a SKU by converting it to lowercase, replacing spaces with hyphens,
  * @param {string} sku
@@ -57,4 +59,48 @@ export function maybeHTML(str) {
   const endsWithTag = str.lastIndexOf('<') < str.length - 1 && str.endsWith('>');
 
   return startsWithTag || endsWithTag;
+}
+
+/**
+ * Strip HTML tags from a string.
+ * @param {string} html
+ * @returns {string}
+ */
+export function stripHTML(html) {
+  if (!html) return '';
+
+  let text = '';
+  let insideTag = false;
+
+  // eslint-disable-next-line no-plusplus
+  for (let i = 0; i < html.length; i++) {
+    const char = html[i];
+
+    if (char === '<') {
+      insideTag = true;
+      continue;
+    }
+
+    if (char === '>') {
+      insideTag = false;
+      text += ' '; // insert space after closing tag
+      continue;
+    }
+
+    if (!insideTag) {
+      text += char;
+    }
+  }
+
+  // Decode common HTML entities (basic replacements only)
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
+
+  // Collapse whitespace and trim
+  return text.replace(/\s+/g, ' ').trim();
 }

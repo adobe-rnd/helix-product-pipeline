@@ -11,7 +11,6 @@
  */
 import mime from 'mime';
 import { h } from 'hastscript';
-import { visitParents } from 'unist-util-visit-parents';
 
 const BREAK_POINTS = [
   { media: '(min-width: 600px)', width: '2000' },
@@ -65,37 +64,11 @@ export function createOptimizedPicture(src, alt = '', title = undefined) {
   return h('picture', sources);
 }
 
-function isMediaImage(node) {
-  return node.tagName === 'img' && node.properties?.src.startsWith('./media_');
-}
-
-/**
- * Converts imgs to pictures
- * @type PipelineStep
- * @param context The current context of processing pipeline
- */
-export default async function createPictures({ content }) {
-  const { hast } = content;
-
-  visitParents(hast, isMediaImage, (img, parents) => {
-    const { src, alt, title } = img.properties;
-    const picture = createOptimizedPicture(src, alt, title);
-
-    // check if parent has style and unwrap if needed
-    const parent = parents[parents.length - 1];
-    const parentTag = parent.tagName;
-    if (parentTag === 'em' || parentTag === 'strong') {
-      const grand = parents[parents.length - 2];
-      const idx = grand.children.indexOf(parent);
-      grand.children[idx] = picture;
-    } else {
-      const idx = parent.children.indexOf(img);
-      parent.children[idx] = picture;
-    }
-  });
-}
-
 export function constructImageUrl(state, urlOrPath) {
+  if (!urlOrPath) {
+    return '';
+  }
+
   if (!urlOrPath.startsWith('./') && !urlOrPath.startsWith('/')) {
     return urlOrPath;
   }
