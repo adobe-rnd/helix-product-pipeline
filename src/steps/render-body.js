@@ -60,13 +60,14 @@ function createBlock(name, content) {
 
 // Render media. Image first than anchor if video
 function renderMedia(media) {
+  const { url, alt, title } = media;
   if (media.video) {
     return h('p', [
-      createOptimizedPicture(media.url),
+      createOptimizedPicture(url, alt, title),
       h('a', { href: media.video }, 'Video'),
     ]);
   }
-  return h('p', createOptimizedPicture(media.url));
+  return h('p', createOptimizedPicture(url, alt, title));
 }
 
 /**
@@ -98,11 +99,11 @@ export default async function render(state, req, res) {
       formatPrice(price),
       descriptionIsHTML ? fromHtml(description, { fragment: true }) : h('p', description),
       specifications ? createBlock('specifications', specifications) : null,
-      ...images.map((img) => renderMedia(img)),
+      ...(images?.length > 0 ? images.map((img) => renderMedia(img)) : []),
     ]),
     ...variants.map((variant) => h('div', [
       h('h2', variant.name),
-      ...variant.images.map((img) => h('p', createOptimizedPicture(img.url))),
+      ...(variant.images?.length > 0 ? variant.images.map((img) => h('p', createOptimizedPicture(img.url, img.alt, img.title))) : []),
       formatOptions(variant),
     ])),
   ];

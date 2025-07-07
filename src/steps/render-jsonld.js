@@ -14,6 +14,7 @@
 import { select } from 'hast-util-select';
 import { h } from 'hastscript';
 import { constructImageUrl } from './create-pictures.js';
+import { stripHTML } from './utils.js';
 
 function renderOffer(state, variant, simple = false) {
   const {
@@ -66,7 +67,7 @@ function convertToJsonLD(state, product) {
     '@type': 'Product',
     ...(sku && { sku }),
     ...(metaTitle || name ? { name: metaTitle || name } : {}),
-    ...(metaDescription || description ? { description: metaDescription || description } : {}),
+    ...(metaDescription || description ? { description: metaDescription || stripHTML(description).trim() } : {}),
     ...(url && { url }),
     ...(brand && { brand: { '@type': 'Brand', name: brand } }),
   };
