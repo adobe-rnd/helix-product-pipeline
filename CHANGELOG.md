@@ -1,3 +1,10 @@
+## [1.3.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.4...v1.3.5) (2025-07-08)
+
+
+### Bug Fixes
+
+* add product surrogate keys, more tests ([2706596](https://github.com/adobe-rnd/helix-product-pipeline/commit/2706596520a500bfec5c08c7cb6d19a5fd72055a))
+
 ## [1.3.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.3...v1.3.4) (2025-07-07)
 
 
