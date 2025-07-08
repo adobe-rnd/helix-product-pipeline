@@ -29,6 +29,9 @@ describe('Path Utils Test', () => {
 
       const result3 = getPathInfo('');
       assert.deepStrictEqual(result3, null);
+
+      const result4 = getPathInfo('/');
+      assert.deepStrictEqual(result4, null);
     });
 
     it('should return null for path with consecutive slashes', () => {
@@ -45,6 +48,12 @@ describe('Path Utils Test', () => {
       assert.strictEqual(getPathInfo('/../file'), null);
       assert.strictEqual(getPathInfo('/./file'), null);
       assert.strictEqual(getPathInfo('/path/../../file'), null);
+    });
+
+    it('should return null when path has no segments after splitting', () => {
+      // This should trigger the segs.length < 1 condition
+      const result = getPathInfo('//');
+      assert.strictEqual(result, null);
     });
 
     it('should handle single file path correctly', () => {

@@ -118,7 +118,7 @@ describe('Product JSON Pipe Test', () => {
       'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-      'cache-tag': '3nfMHLtnsFZ5Q_2g,foo-id,main--site--org/products/product-configurable.json,/products/product-configurable.json',
+      'cache-tag': '3nfMHLtnsFZ5Q_2g,foo-id,suPA3Y4fFEh6WDiu,7sxd2IeIQiT3EMns,main--site--org/products/product-configurable.json,/products/product-configurable.json',
       'cdn-cache-control': 'max-age=300, must-revalidate',
     });
   });
@@ -136,7 +136,7 @@ describe('Product JSON Pipe Test', () => {
     const state = DEFAULT_STATE({
       path: '/products/product-404.json',
     });
-    const result = await productJSONPipe(state, new PipelineRequest('https://acme.com/products/product-404.json'));
+    const result = await productJSONPipe(state, new PipelineRequest(new URL('https://acme.com/products/product-404.json')));
     assert.strictEqual(result.status, 404);
     assert.strictEqual(result.headers.get('x-error'), 'HEAD: failed to load /products/product-404.json from product-bus: 404');
   });
@@ -513,8 +513,10 @@ describe('Product JSON Pipe Test', () => {
       new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
     );
     assert.strictEqual(result.status, 404);
-    assert.strictEqual(result.headers.get('x-error'), 'HEAD: failed to load /products/product-configurable.json from product-bus: 404');
-    assert.strictEqual(result.headers.get('x-surrogate-key'), '3nfMHLtnsFZ5Q_2g foo-id');
+    assert.deepStrictEqual(Object.fromEntries(result.headers.entries()), {
+      'x-error': 'HEAD: failed to load /products/product-configurable.json from product-bus: 404',
+      'x-surrogate-key': '3nfMHLtnsFZ5Q_2g foo-id V4LVIkS4l74Jfj39 main--helix-pages--adobe_404 main--helix-pages--adobe_code CJq-tNxysVbDY-pE',
+    });
   });
 
   it('handles generic error with 500 status', async () => {

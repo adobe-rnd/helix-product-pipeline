@@ -150,5 +150,9 @@ describe('Rendering', () => {
     it('renders image props correctly', async () => {
       await testRender('image-props', 'html', 200);
     });
+
+    it('renders no meta title', async () => {
+      await testRender('no-meta-title', 'html', 200);
+    });
   });
 });

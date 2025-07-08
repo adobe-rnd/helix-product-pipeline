@@ -125,7 +125,7 @@ describe('Product HTML Pipe Test', () => {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
-      'surrogate-key': 'mRN24kMQcclw-dMQ foo-id_metadata main--helix-pages--adobe_head foo-id',
+      'surrogate-key': 'mRN24kMQcclw-dMQ foo-id_metadata main--helix-pages--adobe_head foo-id suPA3Y4fFEh6WDiu 7sxd2IeIQiT3EMns',
     });
   });
 
@@ -144,12 +144,18 @@ describe('Product HTML Pipe Test', () => {
     state.info = getPathInfo('/products/product-simple');
     const resp = await productHTMLPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
+      new PipelineRequest(new URL('https://acme.com/products/product-simple'), {
+        headers: {
+          'x-byo-cdn-type': 'cloudflare',
+        },
+      }),
     );
     assert.strictEqual(resp.status, 200);
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
+      'cache-tag': 'XI4_5DVAssKv-Mlu,foo-id_metadata,main--helix-pages--adobe_head,foo-id,suPA3Y4fFEh6WDiu,7sxd2IeIQiT3EMns,main--site--org/products/product-simple,/products/product-simple',
+      'cdn-cache-control': 'max-age=300, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
     });
@@ -180,13 +186,19 @@ describe('Product HTML Pipe Test', () => {
     state.info = getPathInfo('/products/product-404');
     const resp = await productHTMLPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/product-404.html')),
+      new PipelineRequest(new URL('https://acme.com/products/product-404.html'), {
+        headers: {
+          'x-byo-cdn-type': 'cloudflare',
+        },
+      }),
     );
     assert.strictEqual(resp.status, 404);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
+      'cache-tag': 'uOhB41fFzP0Al-SD,foo-id,P0oVzuYmPy9MmiYp,main--helix-pages--adobe_404,main--helix-pages--adobe_code,FJczSd9soZ525Rmz,main--site--org/products/product-404.html,/products/product-404.html',
+      'cdn-cache-control': 'max-age=300, must-revalidate',
       'x-error': 'failed to load /products/product-404.json from product-bus: 404',
     });
   });
