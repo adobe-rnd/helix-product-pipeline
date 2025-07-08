@@ -42,6 +42,23 @@ export async function computeCodePathKey(state) {
   return computeSurrogateKey(`${ref}--${repo}--${owner}${path}`);
 }
 
+export async function computeProductKeys(state) {
+  const keys = [];
+  const { content, config } = state;
+  const { sku, urlKey } = content.data || config.route.params;
+  const { storeCode, storeViewCode } = config.route.params;
+
+  if (sku) {
+    keys.push(await computeSurrogateKey(`/${storeCode}/${storeViewCode}/${sku}`));
+  }
+
+  if (urlKey) {
+    keys.push(await computeSurrogateKey(`/${storeCode}/${storeViewCode}/${urlKey}`));
+  }
+
+  return keys;
+}
+
 /**
  * @type PipelineStep
  * @param {PipelineState} state
@@ -61,6 +78,8 @@ export default async function computeContentSurrogateKeys(state) {
   keys.push(`${ref}--${repo}--${owner}_head`);
   keys.push(`${contentKeyPrefix}${contentBusId}`);
 
+  keys.push(...(await computeProductKeys(state)));
+
   return keys;
 }
 
@@ -74,6 +93,27 @@ export async function computeJSONSurrogateKeys(state) {
   const contentKeyPrefix = state.partition === 'preview' ? 'p_' : '';
   keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
   keys.push(`${contentKeyPrefix}${state.contentBusId}`);
+
+  keys.push(...(await computeProductKeys(state)));
+
+  return keys;
+}
+
+export async function compute404Keys(state) {
+  const {
+    contentBusId, owner, repo, ref, partition,
+  } = state;
+  const contentKeyPrefix = partition === 'preview' ? 'p_' : '';
+  const keys = [];
+  keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
+  keys.push(`${contentKeyPrefix}${contentBusId}`);
+
+  // code keys
+  keys.push(await computeCodePathKey(state));
+  keys.push(`${ref}--${repo}--${owner}_404`);
+  keys.push(`${ref}--${repo}--${owner}_code`);
+
+  keys.push(...(await computeProductKeys(state)));
 
   return keys;
 }

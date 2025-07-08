@@ -66,7 +66,7 @@ function convertToJsonLD(state, product) {
     '@context': 'https://schema.org',
     '@type': 'Product',
     ...(sku && { sku }),
-    ...(metaTitle || name ? { name: metaTitle || name } : {}),
+    ...(name || metaTitle ? { name: name || metaTitle } : {}),
     ...(metaDescription || description ? { description: metaDescription || stripHTML(description).trim() } : {}),
     ...(url && { url }),
     ...(brand && { brand: { '@type': 'Brand', name: brand } }),

@@ -30,6 +30,7 @@ export default async function render(state) {
 
   const {
     metaTitle,
+    name,
     metaDescription,
     url,
     sku,
@@ -41,15 +42,15 @@ export default async function render(state) {
   const ogImage = constructImageUrl(state, images[0]?.url);
   const head = select('head', hast);
   head.children = [
-    h('title', metaTitle),
+    h('title', metaTitle || name),
     h('link', { rel: 'canonical', href: url }),
     h('meta', { name: 'description', content: metaDescription }),
-    h('meta', { property: 'og:title', content: metaTitle }),
+    h('meta', { property: 'og:title', content: metaTitle || name }),
     h('meta', { property: 'og:description', content: metaDescription }),
     h('meta', { property: 'og:url', content: url }),
     h('meta', { property: 'og:image', content: ogImage }),
     h('meta', { name: 'twitter:card', content: 'summary_large_image' }),
-    h('meta', { name: 'twitter:title', content: metaTitle }),
+    h('meta', { name: 'twitter:title', content: metaTitle || name }),
     h('meta', { name: 'twitter:description', content: metaDescription }),
     h('meta', { name: 'twitter:image', content: ogImage }),
     h('meta', { name: 'sku', content: sku }),

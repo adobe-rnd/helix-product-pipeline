@@ -10,7 +10,10 @@
  * governing permissions and limitations under the License.
  */
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
-import { computeContentPathKey, computeCodePathKey, setCachingHeaders } from './set-cache-headers.js';
+import {
+  setCachingHeaders,
+  compute404Keys,
+} from './set-cache-headers.js';
 
 /**
  * Loads the 404.html from code-bus and stores it in `res.body`
@@ -22,7 +25,7 @@ import { computeContentPathKey, computeCodePathKey, setCachingHeaders } from './
  */
 export default async function fetch404(state, req, res) {
   const {
-    owner, repo, ref, contentBusId, partition,
+    owner, repo, ref,
   } = state;
   const ret = await fetch(`https://${ref}--${repo}--${owner}.aem.live/404.html`);
   if (ret.status === 200) {
@@ -40,17 +43,7 @@ export default async function fetch404(state, req, res) {
 
   // set 404 keys in any case
   // always provide code and content keys since a resource could be added later to either bus
-  const keys = [];
-  // content keys
-  // provide either (prefixed) preview or (unprefixed) live content keys
-  const contentKeyPrefix = partition === 'preview' ? 'p_' : '';
-  keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
-  keys.push(`${contentKeyPrefix}${contentBusId}`);
-
-  // code keys
-  keys.push(await computeCodePathKey(state));
-  keys.push(`${ref}--${repo}--${owner}_404`);
-  keys.push(`${ref}--${repo}--${owner}_code`);
+  const keys = await compute404Keys(state);
 
   setCachingHeaders(state, req, res, keys);
 }

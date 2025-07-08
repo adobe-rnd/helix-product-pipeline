@@ -27,9 +27,6 @@ export function getPathInfo(path) {
   }
   const segs = path.split('/');
   segs.shift(); // remove _emptyness_ before first slash
-  if (segs.length < 1) {
-    return null;
-  }
   if (segs.indexOf('..') >= 0 || segs.indexOf('.') >= 0) {
     return null;
   }
