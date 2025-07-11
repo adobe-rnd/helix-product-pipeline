@@ -16,11 +16,7 @@
   ],
   "brand": "Blendify",
   "availability": "InStock",
-  "price": {
-    "currency": "USD",
-    "regular": "399.95",
-    "final": "349.95"
-  },
+  "price": null,
   "options": [
     {
       "id": "color",
@@ -59,11 +55,7 @@
     {
       "sku": "5000-BLK",
       "name": "BlitzMax 5000 - Midnight Black",
-      "price": {
-        "currency": "USD",
-        "regular": "399.95",
-        "final": "349.95"
-      },
+      "price": null,
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
         { "url": "./blitzmax-5000-black-1.png" },
@@ -89,11 +81,7 @@
     {
       "sku": "5000-SIL",
       "name": "BlitzMax 5000 - Silver Steel",
-      "price": {
-        "currency": "USD",
-        "regular": "399.95",
-        "final": "399.95"
-      },
+      "price": null,
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
         { "url": "./blitzmax-5000-silver-1.png" },

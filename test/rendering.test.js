@@ -154,5 +154,21 @@ describe('Rendering', () => {
     it('renders no meta title', async () => {
       await testRender('no-meta-title', 'html', 200);
     });
+
+    it('renders no price', async () => {
+      await testRender('no-price', 'html', 200);
+    });
+
+    it('renders no variants', async () => {
+      await testRender('variants-no-options', 'html', 200);
+    });
+
+    it('renders no specifications', async () => {
+      await testRender('no-specifications', 'html', 200);
+    });
+
+    it('renders no option uid', async () => {
+      await testRender('no-option-uid', 'html', 200);
+    });
   });
 });

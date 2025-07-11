@@ -21,23 +21,6 @@
     "regular": "399.95",
     "final": "349.95"
   },
-  "options": [
-    {
-      "id": "color",
-      "label": "Color",
-      "position": 1,
-      "values": [
-        {
-          "value": "Midnight Black",
-          "uid": "Y29uZmlndXJhYmxlLzkzLzQz"
-        },
-        {
-          "value": "Silver Steel",
-          "uid": "Y29uZmlndXJhYmxlLzkzLzUy"
-        }
-      ]
-    }
-  ],
   "specifications": "<ul><li><strong>Series:</strong> Ascent X</li><li><strong>Container Capacity:</strong> 48 Oz.</li><li><strong>Programs:</strong> 3</li><li><strong>Touch Screen:</strong> No</li><li><strong>Timer:</strong> Yes</li><li><strong>Pulse:</strong> Yes</li><li><strong>Self-Detect Technology:</strong> Yes</li><li><strong>Dishwasher Safe:</strong> Yes</li><li><strong>Dimensions:</strong> 9.75 x 7.75 x 17 in.</li><li><strong>HP:</strong> 2.2 HP - peak</li><li><strong>Warranty:</strong> 10 Years</li></ul>",
   "custom": {
     "warranty": "5 Year Standard Warranty",
@@ -70,13 +53,6 @@
         { "url": "./blitzmax-5000-black-2.png" }
       ],
       "availability": "InStock",
-      "options": [
-        {
-          "id": "color",
-          "uid": "Y29uZmlndXJhYmxlLzkzLzQz",
-          "value": "Midnight Black"
-        }
-      ],
       "itemCondition": "NewCondition",
       "custom": {
         "warranty": "5 Year Standard Warranty",
@@ -100,13 +76,6 @@
         { "url": "./blitzmax-5000-silver-2.png" }
       ],
       "availability": "InStock",
-      "options": [
-        {
-          "id": "color",
-          "uid": "Y29uZmlndXJhYmxlLzkzLzUy",
-          "value": "Silver Steel"
-        }
-      ],
       "itemCondition": "NewCondition",
       "custom": {
         "warranty": "5 Year Standard Warranty",
