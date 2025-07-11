@@ -6,7 +6,7 @@
   ],
   "check-coverage": true,
   "lines": 97,
-  "branches": 92,
+  "branches": 94,
   "statements": 97,
   "functions": 97,
   "skip-full": true
