@@ -103,6 +103,7 @@ export default async function render(state, req, res) {
     ]),
     ...variants.map((variant) => h('div', [
       h('h2', variant.name),
+      formatPrice(variant.price),
       ...(variant.images?.length > 0 ? variant.images.map((img) => h('p', createOptimizedPicture(img.url, img.alt, img.title))) : []),
       formatOptions(variant),
     ])),
