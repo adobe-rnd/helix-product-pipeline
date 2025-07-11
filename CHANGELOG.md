@@ -1,3 +1,18 @@
+# [1.4.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.5...v1.4.0) (2025-07-11)
+
+
+### Bug Fixes
+
+* coverage ([16a9506](https://github.com/adobe-rnd/helix-product-pipeline/commit/16a9506925b15d0e009534be75e3fc7a2b609458))
+* increase minimum coverage ([a182d03](https://github.com/adobe-rnd/helix-product-pipeline/commit/a182d036e085e2bf4f1bba254f9133dae28d2280))
+* update tests, add more coverage ([6de67b4](https://github.com/adobe-rnd/helix-product-pipeline/commit/6de67b4532e34af1ed744de8cb613fd658cb1644))
+* version ([a98e50c](https://github.com/adobe-rnd/helix-product-pipeline/commit/a98e50c8446d160a115be0016d414adc12ea6dfa))
+
+
+### Features
+
+* render variant pricing ([b21166a](https://github.com/adobe-rnd/helix-product-pipeline/commit/b21166a685eea7572515d4882dcb31798a1f5051))
+
 ## [1.3.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.4...v1.3.5) (2025-07-08)
 
 
