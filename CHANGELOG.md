@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.4.0...v1.4.1) (2025-07-15)
+
+
+### Bug Fixes
+
+* price specification support, test coverage ([a110c3d](https://github.com/adobe-rnd/helix-product-pipeline/commit/a110c3d9fdf248534fa64b922299ff2c5289fb9c))
+
 # [1.4.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.3.5...v1.4.0) (2025-07-11)
 
 
