@@ -163,12 +163,20 @@ describe('Rendering', () => {
       await testRender('variants-no-options', 'html', 200);
     });
 
-    it('renders no specifications', async () => {
-      await testRender('no-specifications', 'html', 200);
+    it('renders no specifications, no name', async () => {
+      await testRender('no-specifications-no-name', 'html', 200);
     });
 
     it('renders no option uid', async () => {
       await testRender('no-option-uid', 'html', 200);
+    });
+
+    it('renders no name, no meta title', async () => {
+      await testRender('no-name-no-metatitle', 'html', 200);
+    });
+
+    it('renders no meta description, no description', async () => {
+      await testRender('no-metadescription-no-description', 'html', 200);
     });
   });
 });

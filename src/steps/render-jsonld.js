@@ -33,6 +33,20 @@ function renderOffer(state, variant, simple = false) {
     ? images.map((img) => img.url && constructImageUrl(state, img.url)).filter(Boolean)
     : [];
 
+  // Create priceSpecification object if price data is available
+  const regularPrice = price?.regular ? parseFloat(price.regular) : null;
+  const finalPrice = price?.final ? parseFloat(price.final) : null;
+
+  // Create priceSpecification object if price data is available
+  const priceSpecification = price?.currency
+    && regularPrice && finalPrice
+    && finalPrice < regularPrice ? {
+      '@type': 'UnitPriceSpecification',
+      priceType: 'https://schema.org/ListPrice',
+      price: regularPrice,
+      priceCurrency: price.currency,
+    } : null;
+
   return {
     '@type': 'Offer',
     ...(sku && { sku }),
@@ -44,6 +58,7 @@ function renderOffer(state, variant, simple = false) {
     ...(itemCondition && { itemCondition: `https://schema.org/${itemCondition}` }),
     ...(url && { url }),
     ...(options && { options }),
+    ...(priceSpecification && { priceSpecification }),
     ...(!simple && custom && { custom }),
   };
 }

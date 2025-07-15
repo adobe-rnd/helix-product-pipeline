@@ -21,9 +21,12 @@ export function slugger(sku) {
   if (typeof sku !== 'string') return '';
   return sku
     .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/\//g, '')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[_//]/g, '-') // Replace underscores and forward slashes with hyphens
+    .replace(/[^a-z0-9\s-]/g, '') // Remove all characters except a-z, 0-9, spaces, and hyphens
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Collapse multiple hyphens into single hyphen
+    .replace(/^-+/, '') // Remove leading hyphens
+    .replace(/-+$/, ''); // Remove trailing hyphens
 }
 
 /**
@@ -55,8 +58,9 @@ export function maybeHTML(str) {
   if (typeof str !== 'string' || str.length < 3) return false;
   if (str.startsWith('<?') || str.startsWith('<!')) return false;
 
-  const startsWithTag = str[0] === '<' && str.indexOf('>') > 1;
-  const endsWithTag = str.lastIndexOf('<') < str.length - 1 && str.endsWith('>');
+  const trimmed = str.trim();
+  const startsWithTag = trimmed[0] === '<' && trimmed.indexOf('>') > 1;
+  const endsWithTag = trimmed.lastIndexOf('<') < trimmed.length - 1 && trimmed.endsWith('>');
 
   return startsWithTag || endsWithTag;
 }
