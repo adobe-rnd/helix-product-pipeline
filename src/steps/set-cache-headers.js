@@ -66,11 +66,12 @@ export async function computeProductKeys(state) {
  */
 export default async function computeContentSurrogateKeys(state) {
   const {
-    contentBusId, owner, repo, ref, partition,
+    contentBusId, owner, repo, ref,
   } = state;
 
-  // provide either (prefixed) preview or (unprefixed) live content keys
-  const contentKeyPrefix = partition === 'preview' ? 'p_' : '';
+  // We don't use partitions and everything is considered live
+  // so contentKeyPrefix is not needed (no p_)
+  const contentKeyPrefix = '';
   const keys = [];
   const hash = await computeContentPathKey(state);
   keys.push(`${contentKeyPrefix}${hash}`);
@@ -90,7 +91,9 @@ export default async function computeContentSurrogateKeys(state) {
  */
 export async function computeJSONSurrogateKeys(state) {
   const keys = [];
-  const contentKeyPrefix = state.partition === 'preview' ? 'p_' : '';
+  // We don't use partitions and everything is considered live
+  // so contentKeyPrefix is not needed (no p_)
+  const contentKeyPrefix = '';
   keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
   keys.push(`${contentKeyPrefix}${state.contentBusId}`);
 
@@ -101,9 +104,12 @@ export async function computeJSONSurrogateKeys(state) {
 
 export async function compute404Keys(state) {
   const {
-    contentBusId, owner, repo, ref, partition,
+    contentBusId, owner, repo, ref,
   } = state;
-  const contentKeyPrefix = partition === 'preview' ? 'p_' : '';
+
+  // We don't use partitions and everything is considered live
+  // so contentKeyPrefix is not needed (no p_)
+  const contentKeyPrefix = '';
   const keys = [];
   keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
   keys.push(`${contentKeyPrefix}${contentBusId}`);

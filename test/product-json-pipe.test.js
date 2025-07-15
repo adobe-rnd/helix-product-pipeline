@@ -323,37 +323,6 @@ describe('Product JSON Pipe Test', () => {
     assert(cloudfrontResp.headers.get('cache-control').includes('s-maxage'), 'Should have s-maxage for CloudFront');
   });
 
-  it('handles preview partition correctly', async () => {
-    const s3Loader = new FileS3Loader();
-    s3Loader.statusCodeOverrides = {
-      'product-configurable': 200,
-    };
-    s3Loader.headers('product-configurable', 'sku', 'product-configurable');
-
-    const state = DEFAULT_STATE({
-      log: console,
-      s3Loader,
-      ref: 'main',
-      path: '/products/product-configurable.json',
-      partition: 'preview', // Preview partition
-      timer: {
-        update: () => { },
-      },
-    });
-    state.info = getPathInfo('/products/product-configurable.json');
-    const resp = await productJSONPipe(
-      state,
-      new PipelineRequest(new URL('https://acme.com/products/product-configurable.json'), {
-        headers: {
-          'x-byo-cdn-type': 'cloudflare',
-        },
-      }),
-    );
-    assert.strictEqual(resp.status, 200);
-    // Should have preview prefix in cache tags
-    assert(resp.headers.get('cache-tag').includes('p_'), 'Should have preview prefix in cache tags');
-  });
-
   it('handles push invalidation enabled', async () => {
     const s3Loader = new FileS3Loader();
     s3Loader.statusCodeOverrides = {

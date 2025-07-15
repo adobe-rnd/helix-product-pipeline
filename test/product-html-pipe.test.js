@@ -272,4 +272,39 @@ describe('Product HTML Pipe Test', () => {
     assert.strictEqual(resp.status, 500);
     assert.strictEqual(resp.headers.get('x-error'), 'no response document');
   });
+
+  it('reports a 502 during content fetch failure', async () => {
+    // Mock the html step to throw an exception
+    const { productHTMLPipe: mockedHTMLPipe } = await esmock('../src/index.js', {
+      '../src/product-html-pipe.js': await esmock('../src/product-html-pipe.js', {
+        '../src/steps/stringify-response.js': {
+          default: () => {
+            throw new PipelineStatusError(500, 'no response document');
+          },
+        },
+      }),
+    });
+
+    const s3Loader = new FileS3Loader();
+    s3Loader.status('product-configurable.json', 500);
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable');
+
+    const resp = await mockedHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable')),
+    );
+
+    // The response should have an error set due to the exception
+    assert.strictEqual(resp.status, 502);
+  });
 });

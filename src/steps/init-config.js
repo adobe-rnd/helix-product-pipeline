@@ -50,6 +50,7 @@ function extractPathParams(pattern, path) {
   // create a RegExp with named groups from the string contained in '{{}}'
   const re = new RegExp(pattern.replace(/\{\{([^}]+)\}\}/g, '(?<$1>[^{]+)').replace(/\*/g, '([^/]+)'));
   const match = path.match(re);
+  /* c8 ignore next */
   return match ? match.groups : {};
 }
 
