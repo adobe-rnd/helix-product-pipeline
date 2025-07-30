@@ -35,7 +35,7 @@ export default async function fetchContent(state, req, res) {
 
   // conditioanlly strip .json off urlKey
   const urlKey = route.params.urlKey?.replace('.json', '');
-  if (Object.keys(route.params).length === 1 && urlKey) {
+  if (Object.keys(route.params).length === 1 && urlKey && urlKey !== 'index') {
     const headKey = `${owner}/${repo}/${storeCode}/${storeViewCode}/urlkeys/${urlKey}`;
 
     const headRes = await state.s3Loader.headObject(bucketId, headKey);
@@ -47,12 +47,20 @@ export default async function fetchContent(state, req, res) {
       res.error = `HEAD: failed to load ${info.resourcePath} from product-bus: ${headRes.status}`;
       return;
     }
-  } else {
+  } else if (urlKey !== 'index') {
     sku = route.params.sku.replace('.json', '');
   }
 
-  const slug = slugger(sku);
-  const key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
+  /** @type {string} */
+  let key;
+
+  if (urlKey !== 'index') {
+    const slug = slugger(sku);
+    key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
+  } else {
+    const id = req.params?.id ?? 'default';
+    key = `${owner}/${repo}/${storeCode}/${storeViewCode}/index/${id}.json`;
+  }
 
   const ret = await state.s3Loader.getObject(bucketId, key);
 
@@ -70,6 +78,6 @@ export default async function fetchContent(state, req, res) {
   } else {
     // keep 404, but propagate others as 502
     res.status = ret.status === 404 ? 404 : 502;
-    res.error = `failed to load ${info.resourcePath} from product-bus: ${ret.status}`;
+    res.error = `failed to load ${urlKey === 'index' ? key : info.resourcePath} from product-bus: ${ret.status}`;
   }
 }
