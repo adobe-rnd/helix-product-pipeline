@@ -118,6 +118,7 @@ export async function productIndexPipe(state, req) {
     res.body = JSON.stringify(toSpreadsheet(state.content.data), null, 2);
   } catch (e) {
     const errorRes = new PipelineResponse('', {
+      /* c8 ignore next 3 */
       status: e instanceof PipelineStatusError ? e.code : 500,
     });
     const level = errorRes.status >= 500 ? 'error' : 'info';

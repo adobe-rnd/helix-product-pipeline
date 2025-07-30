@@ -57,9 +57,8 @@ export default async function fetchContent(state, req, res) {
   if (urlKey !== 'index') {
     const slug = slugger(sku);
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
-    /* c8 ignore next 4 */
   } else {
-    const id = route.params.id ?? 'default';
+    const id = req.params?.id ?? 'default';
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/index/${id}.json`;
   }
 
@@ -79,6 +78,6 @@ export default async function fetchContent(state, req, res) {
   } else {
     // keep 404, but propagate others as 502
     res.status = ret.status === 404 ? 404 : 502;
-    res.error = `failed to load ${info.resourcePath} from product-bus: ${ret.status}`;
+    res.error = `failed to load ${urlKey === 'index' ? key : info.resourcePath} from product-bus: ${ret.status}`;
   }
 }
