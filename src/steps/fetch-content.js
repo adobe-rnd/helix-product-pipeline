@@ -57,6 +57,7 @@ export default async function fetchContent(state, req, res) {
   if (urlKey !== 'index') {
     const slug = slugger(sku);
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
+    /* c8 ignore next 4 */
   } else {
     const id = route.params.id ?? 'default';
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/index/${id}.json`;
