@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.4.1...v1.5.0) (2025-07-31)
+
+
+### Features
+
+* add index pipe ([f4c0d0b](https://github.com/adobe-rnd/helix-product-pipeline/commit/f4c0d0b40e9b3c92a5b46c0a8f8cb9ccb32d88df))
+
 ## [1.4.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.4.0...v1.4.1) (2025-07-15)
 
 
