@@ -49,6 +49,9 @@ export function toSpreadsheet(index) {
       const variants = Object.entries(product.variants);
 
       if (variants.length) {
+        columns.add('parentSku');
+        columns.add('variantSkus');
+
         const variantSkus = [];
         variants.forEach(([variantSku, variant]) => {
           Object.keys(variant).forEach((key) => {
