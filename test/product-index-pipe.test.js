@@ -15,7 +15,7 @@ import assert from 'assert';
 import esmock from 'esmock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { FileS3Loader } from './FileS3Loader.js';
-import { productIndexPipe } from '../src/index.js';
+import { productIndexPipe, toSpreadsheet } from '../src/index.js';
 import { getPathInfo } from '../src/utils/path.js';
 
 const DEFAULT_CONFIG = {
@@ -83,6 +83,8 @@ describe('Product Index Pipe Test', () => {
         'description',
         'series',
         'colors',
+        'parentSku',
+        'variantSkus',
       ],
       data: [
         {
@@ -94,6 +96,7 @@ describe('Product Index Pipe Test', () => {
           description: '',
           series: 'Ascent X Series',
           colors: 'Brushed Stainless Metal Finish,Black',
+          variantSkus: '073495-04-VB,074104-04-VB',
         },
         {
           parentSku: 'vbndax5ks',
@@ -118,6 +121,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
           description: '',
           series: 'Ascent X Series',
+          variantSkus: '075710-100',
         },
         {
           parentSku: 'x2-kitchen-system',
@@ -135,6 +139,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
           description: '',
           series: 'Ascent X Series',
+          variantSkus: '073495-04,074104-04',
         },
         {
           parentSku: 'ascent-x5',
@@ -159,6 +164,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_2c49c87d765cc2cf6445df14f9051f5cfea7fb3c.png',
           description: '',
           series: 'Ascent X Series',
+          variantSkus: '073493,074097',
         },
         {
           parentSku: 'ascent-x3',
@@ -183,6 +189,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_f7d6a3efad20803d329c07665bc0b8c07e08671a.png',
           description: '',
           series: 'Ascent X Series',
+          variantSkus: '073492-04,074094-04,074095-04,074096-04',
         },
         {
           parentSku: 'ascent-x2',
@@ -220,6 +227,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black,White,Red',
           image: './media_7d951fc054b4643b15d0d15b69ee94c773a60916.jpg',
           description: '',
+          variantSkus: '001372-1093-VB,001371-1092-VB,001392-1138-VB',
         },
         {
           parentSku: 'vbnd5200lb',
@@ -250,6 +258,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black,Red,White,Slate',
           image: './media_a379c4ba76e36ca8dfd5d20e50f67a03cc4cd7b4.jpg',
           description: '',
+          variantSkus: '071395,073294,073295,073296',
         },
         {
           parentSku: 'propel750',
@@ -287,6 +296,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black,Red,White,Slate',
           image: './media_dd371dba39ab4d82cc275a300747506f9af083cc.jpg',
           description: '',
+          variantSkus: '071394,073291,073292,073293',
         },
         {
           parentSku: 'propel510',
@@ -333,6 +343,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_91e13e23df6a86dc165b258726dc061fb3a30427.png',
           description: '',
           series: 'Explorian Series',
+          variantSkus: '065971-VB,066071-VB,065755-VB',
         },
         {
           parentSku: 'vbnde310',
@@ -362,6 +373,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black,Red,White',
           image: './media_1d6e626b671d68ca698e975223bd5d46ff0200d5.png',
           description: '4-Piece Deluxe Immersion Blender Bundle ',
+          variantSkus: '071239,073791,073792',
         },
         {
           parentSku: '5-speed-immersion-blender-4-piece-deluxe-bundle',
@@ -393,6 +405,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_a23f38b19963cb654697ab73b10ce843c5d92b67.jpg',
           description: '',
           series: 'Propel Series',
+          variantSkus: '071395-VB,073294-VB,073295-VB,073296-VB',
         },
         {
           parentSku: 'vbndp750',
@@ -431,6 +444,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_e462565d4fe5c0b436207995a7512a8550f360fd.jpg',
           description: '',
           series: 'Immersion',
+          variantSkus: '067991,074051',
         },
         {
           parentSku: '5-speed-immersion-blender',
@@ -455,6 +469,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_8bddd55210bdb666146ce6fa5a414d78f746c9a7.png',
           description: '',
           series: 'Ascent X Series',
+          variantSkus: '073494-04,074100-04,074101-04,074102-04',
         },
         {
           parentSku: 'ascent-x4',
@@ -493,6 +508,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_6892d8aa6dee6d15d6fca585526990a6aecf864f.jpg',
           description: '',
           series: 'Explorian Series',
+          variantSkus: '065971,066071,065755',
         },
         {
           parentSku: 'e310',
@@ -523,6 +539,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_e462565d4fe5c0b436207995a7512a8550f360fd.png',
           description: '',
           series: 'Immersion',
+          variantSkus: '071238',
         },
         {
           parentSku: '5-speed-immersion-blender-3-piece-bundle',
@@ -540,6 +557,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_13f34abcff863c53e25028911749e9a9d1d6f1c4.jpg',
           description: '',
           series: 'Ascent Series',
+          variantSkus: '061006,062047,062049,062326',
         },
         {
           parentSku: 'a2300',
@@ -577,6 +595,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black,Red',
           image: './media_f78714bc941f32219cd63190db257670439af20a.jpg',
           description: '',
+          variantSkus: '065542,065543',
         },
         {
           parentSku: 'certified-reconditioned-explorian-series',
@@ -600,6 +619,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black',
           image: './media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg',
           description: '',
+          variantSkus: '001811',
         },
         {
           parentSku: 'certified-reconditioned-standard',
@@ -617,6 +637,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_62fbd51d66bbc590122c5350d81563babd81caff.png',
           description: '',
           series: 'Explorian Series',
+          variantSkus: '072611,072612',
         },
         {
           parentSku: 'certified-reconditioned-explorian-with-programs',
@@ -640,6 +661,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black,Red,White,Slate',
           image: './media_b0c62316e4e7d579b54ffcf58e0e047a1e14d922.jpg',
           description: '',
+          variantSkus: '065942,065943,065945,065944',
         },
         {
           parentSku: 'certified-reconditioned-a2500',
@@ -678,6 +700,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_d67c6773e0c25870633ce63971b4b87449151ff9.jpg',
           description: '',
           series: 'Ascent Series',
+          variantSkus: '065946,066911,065948,065949',
         },
         {
           parentSku: 'certified-reconditioned-a3500',
@@ -715,6 +738,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black',
           image: './media_3c2bd80cbeededcb3bb3f4cd57c82ce7a8c3c353.png',
           description: '',
+          variantSkus: '074592',
         },
         {
           parentSku: 'certified-reconditioned-propel-750',
@@ -732,6 +756,7 @@ describe('Product Index Pipe Test', () => {
           image: './media_708933f81662a2efc1b3891a450414e6a2adb34a.png',
           description: '',
           series: 'Ascent X Series',
+          variantSkus: '075708-100',
         },
         {
           parentSku: 'x4-kitchen-system',
@@ -748,6 +773,7 @@ describe('Product Index Pipe Test', () => {
           colors: 'Black,Red',
           image: './media_ae1e6523742b57432897737fa7f2b1a6abeafd9e.jpg',
           description: '',
+          variantSkus: '058544,058545',
         },
         {
           parentSku: 'certified-reconditioned-5300',
@@ -865,5 +891,158 @@ describe('Product Index Pipe Test', () => {
     assert.strictEqual(result.error, 'Some non-critical error');
     // Should not have gone through the full pipeline (no JSON body, no cache headers)
     assert.strictEqual(result.body, '');
+  });
+
+  describe('toSpreadsheet', () => {
+    it('returns a spreadsheet', () => {
+      const spreadsheet = toSpreadsheet({
+        vbndax5ks: {
+          urlKey: 'ascent-x5-smartprep-kitchen-system',
+          title: 'Ascent® X5 SmartPrep™ Kitchen System',
+          price: '949.95',
+          image: './media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg',
+          description: '',
+          series: 'Ascent X Series',
+          variants: {
+            '073495-04-VB': {
+              title: 'Ascent X5-Brushed Stainless Metal Finish',
+              price: '949.95',
+              image: './media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg',
+            },
+            '074104-04-VB': {
+              title: 'Ascent X5-Graphite Metal Finish',
+              price: '949.95',
+              image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+            },
+          },
+          colors: 'Brushed Stainless Metal Finish,Black',
+        },
+        'x2-kitchen-system': {
+          urlKey: 'ascent-x2-smartprep-kitchen-system',
+          title: 'Ascent® X2 SmartPrep Kitchen System',
+          price: '749.95',
+          colors: 'Shadow Black',
+          image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+          description: '',
+          series: 'Ascent X Series',
+          variants: {
+            '075710-100': {
+              title: 'Ascent® X2 SmartPrep Kitchen System-Shadow Black',
+              price: '749.95',
+              image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+            },
+          },
+        },
+        'ascent-x5': {
+          urlKey: 'ascent-x5',
+          title: 'Ascent® X5',
+          price: '749.95',
+          colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
+          image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
+          description: '',
+          series: 'Ascent X Series',
+          variants: {
+            '073495-04': {
+              title: 'Ascent X5-Brushed Stainless Metal Finish',
+              price: '749.95',
+              image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
+            },
+            '074104-04': {
+              title: 'Ascent® X5-Graphite Metal Finish',
+              price: '749.95',
+              image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+            },
+          },
+        },
+      });
+      assert.deepStrictEqual(spreadsheet, {
+        ':type': 'sheet',
+        columns: [
+          'sku',
+          'urlKey',
+          'title',
+          'price',
+          'image',
+          'description',
+          'series',
+          'colors',
+          'parentSku',
+          'variantSkus',
+        ],
+        data: [
+          {
+            sku: 'vbndax5ks',
+            urlKey: 'ascent-x5-smartprep-kitchen-system',
+            title: 'Ascent® X5 SmartPrep™ Kitchen System',
+            price: '949.95',
+            image: './media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg',
+            description: '',
+            series: 'Ascent X Series',
+            variants: undefined,
+            colors: 'Brushed Stainless Metal Finish,Black',
+            variantSkus: '073495-04-VB,074104-04-VB',
+          },
+          {
+            parentSku: 'vbndax5ks',
+            sku: '073495-04-VB',
+            title: 'Ascent X5-Brushed Stainless Metal Finish',
+            price: '949.95',
+            image: './media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg',
+          },
+          {
+            parentSku: 'vbndax5ks',
+            sku: '074104-04-VB',
+            title: 'Ascent X5-Graphite Metal Finish',
+            price: '949.95',
+            image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+          },
+          {
+            sku: 'x2-kitchen-system',
+            urlKey: 'ascent-x2-smartprep-kitchen-system',
+            title: 'Ascent® X2 SmartPrep Kitchen System',
+            price: '749.95',
+            colors: 'Shadow Black',
+            image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+            description: '',
+            series: 'Ascent X Series',
+            variants: undefined,
+            variantSkus: '075710-100',
+          },
+          {
+            parentSku: 'x2-kitchen-system',
+            sku: '075710-100',
+            title: 'Ascent® X2 SmartPrep Kitchen System-Shadow Black',
+            price: '749.95',
+            image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+          },
+          {
+            sku: 'ascent-x5',
+            urlKey: 'ascent-x5',
+            title: 'Ascent® X5',
+            price: '749.95',
+            colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
+            image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
+            description: '',
+            series: 'Ascent X Series',
+            variants: undefined,
+            variantSkus: '073495-04,074104-04',
+          },
+          {
+            parentSku: 'ascent-x5',
+            sku: '073495-04',
+            title: 'Ascent X5-Brushed Stainless Metal Finish',
+            price: '749.95',
+            image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
+          },
+          {
+            parentSku: 'ascent-x5',
+            sku: '074104-04',
+            title: 'Ascent® X5-Graphite Metal Finish',
+            price: '749.95',
+            image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+          },
+        ],
+      });
+    });
   });
 });

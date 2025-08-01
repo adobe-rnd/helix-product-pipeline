@@ -27,7 +27,7 @@ import { compute404Keys } from './steps/set-cache-headers.js';
 *   data: Record<string, string>[]
 * }}
 */
-function toSpreadsheet(index) {
+export function toSpreadsheet(index) {
   const columns = new Set(['sku']);
 
   const products = Object.entries(index).reduce((acc, [sku, product]) => {
@@ -38,25 +38,38 @@ function toSpreadsheet(index) {
       }
     });
     // return the row, include sku as property
-    acc.push({
+    const records = [{
       sku,
       ...product,
       variants: undefined,
-    });
+    }];
 
     // add a row for each variant, if any
     if (typeof product.variants === 'object' && product.variants !== null) {
-      Object.entries(product.variants).forEach(([variantSku, variant]) => {
-        Object.keys(variant).forEach((key) => {
-          columns.add(key);
+      const variants = Object.entries(product.variants);
+
+      if (variants.length) {
+        columns.add('parentSku');
+        columns.add('variantSkus');
+
+        const variantSkus = [];
+        variants.forEach(([variantSku, variant]) => {
+          Object.keys(variant).forEach((key) => {
+            columns.add(key);
+          });
+          variantSkus.push(variantSku);
+          records.push({
+            parentSku: sku,
+            sku: variantSku,
+            ...variant,
+          });
         });
-        acc.push({
-          parentSku: sku,
-          sku: variantSku,
-          ...variant,
-        });
-      });
+
+        records[0].variantSkus = variantSkus.join(',');
+      }
     }
+
+    acc.push(...records);
     return acc;
   }, []);
 
