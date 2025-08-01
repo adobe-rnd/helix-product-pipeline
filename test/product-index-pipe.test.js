@@ -15,7 +15,7 @@ import assert from 'assert';
 import esmock from 'esmock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { FileS3Loader } from './FileS3Loader.js';
-import { productIndexPipe } from '../src/index.js';
+import { productIndexPipe, toSpreadsheet } from '../src/index.js';
 import { getPathInfo } from '../src/utils/path.js';
 
 const DEFAULT_CONFIG = {
@@ -865,5 +865,156 @@ describe('Product Index Pipe Test', () => {
     assert.strictEqual(result.error, 'Some non-critical error');
     // Should not have gone through the full pipeline (no JSON body, no cache headers)
     assert.strictEqual(result.body, '');
+  });
+
+  describe('toSpreadsheet', () => {
+    it('returns a spreadsheet', () => {
+      const spreadsheet = toSpreadsheet({
+        vbndax5ks: {
+          urlKey: 'ascent-x5-smartprep-kitchen-system',
+          title: 'Ascent® X5 SmartPrep™ Kitchen System',
+          price: '949.95',
+          image: './media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg',
+          description: '',
+          series: 'Ascent X Series',
+          variants: {
+            '073495-04-VB': {
+              title: 'Ascent X5-Brushed Stainless Metal Finish',
+              price: '949.95',
+              image: './media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg',
+            },
+            '074104-04-VB': {
+              title: 'Ascent X5-Graphite Metal Finish',
+              price: '949.95',
+              image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+            },
+          },
+          colors: 'Brushed Stainless Metal Finish,Black',
+        },
+        'x2-kitchen-system': {
+          urlKey: 'ascent-x2-smartprep-kitchen-system',
+          title: 'Ascent® X2 SmartPrep Kitchen System',
+          price: '749.95',
+          colors: 'Shadow Black',
+          image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+          description: '',
+          series: 'Ascent X Series',
+          variants: {
+            '075710-100': {
+              title: 'Ascent® X2 SmartPrep Kitchen System-Shadow Black',
+              price: '749.95',
+              image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+            },
+          },
+        },
+        'ascent-x5': {
+          urlKey: 'ascent-x5',
+          title: 'Ascent® X5',
+          price: '749.95',
+          colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
+          image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
+          description: '',
+          series: 'Ascent X Series',
+          variants: {
+            '073495-04': {
+              title: 'Ascent X5-Brushed Stainless Metal Finish',
+              price: '749.95',
+              image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
+            },
+            '074104-04': {
+              title: 'Ascent® X5-Graphite Metal Finish',
+              price: '749.95',
+              image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+            },
+          },
+        },
+      });
+      assert.deepStrictEqual(spreadsheet, {
+        ':type': 'sheet',
+        columns: [
+          'sku',
+          'urlKey',
+          'title',
+          'price',
+          'image',
+          'description',
+          'series',
+          'colors',
+        ],
+        data: [
+          {
+            sku: 'vbndax5ks',
+            urlKey: 'ascent-x5-smartprep-kitchen-system',
+            title: 'Ascent® X5 SmartPrep™ Kitchen System',
+            price: '949.95',
+            image: './media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg',
+            description: '',
+            series: 'Ascent X Series',
+            variants: undefined,
+            colors: 'Brushed Stainless Metal Finish,Black',
+            variantSkus: '073495-04-VB,074104-04-VB',
+          },
+          {
+            parentSku: 'vbndax5ks',
+            sku: '073495-04-VB',
+            title: 'Ascent X5-Brushed Stainless Metal Finish',
+            price: '949.95',
+            image: './media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg',
+          },
+          {
+            parentSku: 'vbndax5ks',
+            sku: '074104-04-VB',
+            title: 'Ascent X5-Graphite Metal Finish',
+            price: '949.95',
+            image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+          },
+          {
+            sku: 'x2-kitchen-system',
+            urlKey: 'ascent-x2-smartprep-kitchen-system',
+            title: 'Ascent® X2 SmartPrep Kitchen System',
+            price: '749.95',
+            colors: 'Shadow Black',
+            image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+            description: '',
+            series: 'Ascent X Series',
+            variants: undefined,
+            variantSkus: '075710-100',
+          },
+          {
+            parentSku: 'x2-kitchen-system',
+            sku: '075710-100',
+            title: 'Ascent® X2 SmartPrep Kitchen System-Shadow Black',
+            price: '749.95',
+            image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+          },
+          {
+            sku: 'ascent-x5',
+            urlKey: 'ascent-x5',
+            title: 'Ascent® X5',
+            price: '749.95',
+            colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
+            image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
+            description: '',
+            series: 'Ascent X Series',
+            variants: undefined,
+            variantSkus: '073495-04,074104-04',
+          },
+          {
+            parentSku: 'ascent-x5',
+            sku: '073495-04',
+            title: 'Ascent X5-Brushed Stainless Metal Finish',
+            price: '749.95',
+            image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
+          },
+          {
+            parentSku: 'ascent-x5',
+            sku: '074104-04',
+            title: 'Ascent® X5-Graphite Metal Finish',
+            price: '749.95',
+            image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+          },
+        ],
+      });
+    });
   });
 });
