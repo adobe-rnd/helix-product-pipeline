@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.5.0...v1.5.1) (2025-08-01)
+
+
+### Bug Fixes
+
+* tweak toSpreadsheet logic ([b33770c](https://github.com/adobe-rnd/helix-product-pipeline/commit/b33770cc6b8c37d5004c7b7b751fe4583179bdb8))
+
 # [1.5.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.4.1...v1.5.0) (2025-07-31)
 
 
