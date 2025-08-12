@@ -12,6 +12,8 @@
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 import { slugger } from './utils.js';
 
+const INDEXER_URL_KEYS = ['index', 'merchant-center-feed'];
+
 /**
  * Loads the content from either the content-bus or code-bus and stores it in `state.content`
  * @type PipelineStep
@@ -33,9 +35,11 @@ export default async function fetchContent(state, req, res) {
   // if route params only contains the urlKey than we
   // need to head first to get the sku
 
-  // conditioanlly strip .json off urlKey
-  const urlKey = route.params.urlKey?.replace('.json', '');
-  if (Object.keys(route.params).length === 1 && urlKey && urlKey !== 'index') {
+  // conditioanlly strip .json and .xml off urlKey
+  let urlKey = route.params.urlKey?.replace(/\.json$/, '');
+  urlKey = urlKey?.replace(/\.xml$/, '');
+
+  if (Object.keys(route.params).length === 1 && urlKey && !INDEXER_URL_KEYS.includes(urlKey)) {
     const headKey = `${owner}/${repo}/${storeCode}/${storeViewCode}/urlkeys/${urlKey}`;
 
     const headRes = await state.s3Loader.headObject(bucketId, headKey);
@@ -47,19 +51,20 @@ export default async function fetchContent(state, req, res) {
       res.error = `HEAD: failed to load ${info.resourcePath} from product-bus: ${headRes.status}`;
       return;
     }
-  } else if (urlKey !== 'index') {
+  } else if (!INDEXER_URL_KEYS.includes(urlKey)) {
     sku = route.params.sku.replace('.json', '');
   }
 
   /** @type {string} */
   let key;
-
-  if (urlKey !== 'index') {
+  if (!INDEXER_URL_KEYS.includes(urlKey)) {
     const slug = slugger(sku);
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
-  } else {
+  } else if (urlKey === 'index') {
     const id = req.params?.id ?? 'default';
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/index/${id}.json`;
+  } else if (urlKey === 'merchant-center-feed') {
+    key = `${owner}/${repo}/${storeCode}/${storeViewCode}/merchant-feed/default.json`;
   }
 
   const ret = await state.s3Loader.getObject(bucketId, key);

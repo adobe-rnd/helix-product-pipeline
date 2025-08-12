@@ -54,6 +54,7 @@ export class FileS3Loader {
   }
 
   async getObject(bucketId, key) {
+    console.log('getObject', bucketId, key);
     const dir = this.dirs[bucketId];
     if (!dir) {
       throw Error(`unknown bucketId: ${bucketId}`);

@@ -15,7 +15,8 @@ import assert from 'assert';
 import esmock from 'esmock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { FileS3Loader } from './FileS3Loader.js';
-import { productIndexPipe, toSpreadsheet } from '../src/index.js';
+import { productIndexPipe } from '../src/index.js';
+import { toSpreadsheet } from '../src/product-index-pipe.js';
 import { getPathInfo } from '../src/utils/path.js';
 
 const DEFAULT_CONFIG = {
