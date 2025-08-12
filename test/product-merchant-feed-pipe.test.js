@@ -14,6 +14,7 @@
 import assert from 'assert';
 import esmock from 'esmock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
+import { readFile } from 'fs/promises';
 import { FileS3Loader } from './FileS3Loader.js';
 import { productMerchantFeedPipe } from '../src/index.js';
 import { toFeedXML } from '../src/product-merchant-feed-pipe.js';
@@ -73,340 +74,57 @@ describe('Product Merchant Feed Pipe Test', () => {
     assert.strictEqual(resp.status, 200);
 
     const { body } = resp;
-    assert.deepStrictEqual(body, `<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
-<channel>
-  <title></title>
-  <link></link>
-  <description>
-  
-  </description>
-  <item>
-    <g:id>vbndax5ks</g:id>
-    <g:title>Ascent® X5 SmartPrep™ Kitchen System</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>949.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>x2-kitchen-system</g:id>
-    <g:title>Ascent® X2 SmartPrep Kitchen System</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>749.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>ascent-x5</g:id>
-    <g:title>Ascent® X5</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>749.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>ascent-x3</g:id>
-    <g:title>Ascent® X3</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>649.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>ascent-x2</g:id>
-    <g:title>Ascent® X2</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>549.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>vbnd5200lb</g:id>
-    <g:title>5200 Legacy Bundle</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>649.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>propel750</g:id>
-    <g:title>Propel 750</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>629.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>propel510</g:id>
-    <g:title>Propel 510</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>499.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>vbndibcb</g:id>
-    <g:title>5-Speed Immersion Blender Complete Bundle</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>269.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>vbnde310</g:id>
-    <g:title>E310 + Personal Cup Adapter</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>499.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>5-speed-immersion-blender-4-piece-deluxe-bundle</g:id>
-    <g:title>5-Speed Immersion Blender 4-Piece Deluxe Bundle</g:title>
-    <g:description>
-    4-Piece Deluxe Immersion Blender Bundle 
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>259.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>vbndp750</g:id>
-    <g:title>Propel 750 Classic Bundle</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>699.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>5-speed-immersion-blender</g:id>
-    <g:title>5-Speed Immersion Blender</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>169.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>ascent-x4</g:id>
-    <g:title>Ascent® X4</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>699.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>e310</g:id>
-    <g:title>E310</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>379.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>5-speed-immersion-blender-3-piece-bundle</g:id>
-    <g:title>5-Speed Immersion Blender 3-Piece Bundle</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>189.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>a2300</g:id>
-    <g:title>A2300</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>399.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>certified-reconditioned-explorian-series</g:id>
-    <g:title>Certified Reconditioned Explorian™ Series</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>269.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>certified-reconditioned-standard</g:id>
-    <g:title>Certified Reconditioned Standard</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>349.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>certified-reconditioned-explorian-with-programs</g:id>
-    <g:title>Certified Reconditioned Explorian with Programs</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>279.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>certified-reconditioned-a2500</g:id>
-    <g:title>Certified Reconditioned A2500</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>349.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>certified-reconditioned-a3500</g:id>
-    <g:title>Certified Reconditioned A3500</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>449.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>certified-reconditioned-propel-750</g:id>
-    <g:title>Certified Reconditioned Propel 750</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>399.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>x4-kitchen-system</g:id>
-    <g:title>Ascent® X4 Gourmet SmartPrep Kitchen System</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>899.95</g:price>
-    <g:brand></g:brand>
-  </item>
-  <item>
-    <g:id>certified-reconditioned-5300</g:id>
-    <g:title>Certified Reconditioned 5300</g:title>
-    <g:description>
-    
-    </g:description>
-    <g:link></g:link>
-    <g:image_link></g:image_link>
-    <g:condition></g:condition>
-    <g:availability></g:availability>
-    <g:price>269.95</g:price>
-    <g:brand></g:brand>
-  </item>
-</channel>
-</rss>`);
+    const merchantXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
+
+    assert.deepStrictEqual(body, merchantXMLExpected);
+    assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      // 'cache-control': 'max-age=7200, must-revalidate',
+      'content-type': 'application/xml',
+      'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+    });
+  });
+
+  it('renders a merchant feed xml (with sku based path)', async () => {
+    const s3Loader = new FileS3Loader();
+
+    s3Loader.statusCodeOverrides = {
+      index: 200,
+    };
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/merchant-center-feed.xml',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+      config: {
+        ...DEFAULT_CONFIG,
+        public: {
+          patterns: {
+            base: {
+              storeViewCode: 'default',
+              storeCode: 'main',
+            },
+            '/products/{{sku}}': {
+              pageType: 'product',
+            },
+          },
+        },
+      },
+    });
+    state.info = getPathInfo('/products/merchant-center-feed.xml');
+    const resp = await productMerchantFeedPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/merchant-center-feed.xml')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const { body } = resp;
+    const merchantXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
+    assert.deepStrictEqual(body, merchantXMLExpected);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       // 'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/xml',
@@ -531,6 +249,16 @@ describe('Product Merchant Feed Pipe Test', () => {
         },
         new PipelineRequest('https://www.harborfreight.com/products/merchant-center-feed.xml'),
         {
+          // product without title and price
+          1111: {
+            id: '1111',
+            description: 'This is a description',
+            link: 'https://www.harborfreight.com/1111.html',
+            image_link: './media_1111.jpg',
+            condition: 'new',
+            availability: 'in_stock',
+            brand: 'Foo',
+          },
           1436: {
             id: '1436',
             title: '28 ft. 10 in. x 39 ft. 4 in. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
@@ -571,7 +299,7 @@ describe('Product Merchant Feed Pipe Test', () => {
                 title: '28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
                 description: 'This 28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.',
                 link: 'https://www.harborfreight.com/29-ft-4-inch-x-59-inch-reflective-heavy-duty-silver-tarpaulin-1438.html',
-                image_link: './media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
+                image_link: '/media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
                 condition: 'new',
                 availability: 'in_stock',
                 price: '159.99 USD',
@@ -659,7 +387,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:country>US</g:country>            
     <g:service>Standard</g:service>      
     <g:price>2.49 USD</g:price>                            </g:shipping>
-  </item>
+  </item>  
   <item>
     <g:id>1106</g:id>
     <g:title>4 Oz. Flexible Spout Oil Can</g:title>
@@ -672,7 +400,20 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:availability>in_stock</g:availability>
     <g:price>5.99 USD</g:price>
     <g:brand></g:brand>US:CA:Overnight:16.00 USD:1:1:2:3
-  </item>
+  </item>  
+  <item>
+    <g:id>1111</g:id>
+    <g:title></g:title>
+    <g:description>
+    This is a description
+    </g:description>
+    <g:link>https://www.harborfreight.com/1111.html</g:link>
+    <g:image_link>https://www.harborfreight.com/products/media_1111.jpg</g:image_link>
+    <g:condition>new</g:condition>
+    <g:availability>in_stock</g:availability>
+    <g:price></g:price>
+    <g:brand>Foo</g:brand>
+  </item>  
   <item>
     <g:id>1132</g:id>
     <g:title>36 in. Steel Pipe Wrench</g:title>
@@ -685,7 +426,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:availability>in_stock</g:availability>
     <g:price>22.99 USD</g:price>
     <g:brand>PITTSBURGH</g:brand>
-  </item>
+  </item>  
   <item>
     <g:id>1142</g:id>
     <g:title>8 in. White Cable Ties, 100-Pack</g:title>
@@ -698,7 +439,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:availability>in_stock</g:availability>
     <g:price>2.49 USD</g:price>
     <g:brand>STOREHOUSE</g:brand>
-  </item>
+  </item>  
   <item>
     <g:id>1436</g:id>
     <g:title>28 ft. 10 in. x 39 ft. 4 in. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp</g:title>
@@ -711,7 +452,43 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:availability>in_stock</g:availability>
     <g:price>119.99 USD</g:price>
     <g:brand>HFT</g:brand>
-  </item>
+  </item>  
+  <item>
+    <g:id>1437</g:id>
+    <g:title>29 ft. 4 in. x 49 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp</g:title>
+    <g:description>
+    This 29 ft. 4 in. x 49 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.
+    </g:description>
+    <g:link>https://www.harborfreight.com/29-ft-4-inch-x-49-ft-reflective-heavy-duty-silver-tarpaulin-1437.html</g:link>
+    <g:image_link>https://www.harborfreight.com/products/media_b526c80c86439f4afb9308d8963f073b872edef7.jpg</g:image_link>
+    <g:condition>new</g:condition>
+    <g:availability>in_stock</g:availability>
+    <g:price>139.99 USD</g:price>
+    <g:brand>HFT</g:brand>
+    <g:item_group_id>1436</g:item_group_id>    <g:shipping>      
+    <g:country>US</g:country>      
+    <g:region>CA</g:region>      
+    <g:service>Fedex</g:service>      
+    <g:price>8.99 USD</g:price>      
+    <g:min_handling_time>1</g:min_handling_time>      
+    <g:max_handling_time>3</g:max_handling_time>      
+    <g:min_transit_time>1</g:min_transit_time>      
+    <g:max_transit_time>5</g:max_transit_time>    </g:shipping>
+  </item>  
+  <item>
+    <g:id>1438</g:id>
+    <g:title>28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp</g:title>
+    <g:description>
+    This 28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.
+    </g:description>
+    <g:link>https://www.harborfreight.com/29-ft-4-inch-x-59-inch-reflective-heavy-duty-silver-tarpaulin-1438.html</g:link>
+    <g:image_link>https://www.harborfreight.com/products/media_b526c80c86439f4afb9308d8963f073b872edef7.jpg</g:image_link>
+    <g:condition>new</g:condition>
+    <g:availability>in_stock</g:availability>
+    <g:price>159.99 USD</g:price>
+    <g:brand>HFT</g:brand>
+    <g:item_group_id>1436</g:item_group_id>
+  </item>  
 </channel>
 </rss>`);
     });

@@ -52,7 +52,7 @@ export default async function fetchContent(state, req, res) {
       return;
     }
   } else if (!INDEXER_URL_KEYS.includes(urlKey)) {
-    sku = route.params.sku.replace('.json', '');
+    sku = route.params.sku?.replace(/\.json$/, '').replace(/\.xml$/, '');
   }
 
   /** @type {string} */

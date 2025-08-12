@@ -78,24 +78,14 @@ const shipping = (entry) => {
 };
 
 /**
- * @param {State} state
+ * @param {PipelineState} state
  * @param {PipelineRequest} req
- * @param {StoredMerchantFeed} merchantFeed
+ * @param {StoredMerchantFeed[string]} entry
  * @returns {string}
  */
-export function toFeedXML(state, req, merchantFeed) {
-  const { title, description, link } = state.config?.merchantFeedConfig ?? {};
-  return `\
-<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
-<channel>
-  <title>${title ?? ''}</title>
-  <link>${link ?? ''}</link>
-  <description>
-  ${description ?? ''}
-  </description>\
-${Object.entries(merchantFeed).map(([sku, entry]) => `
+const feedEntry = (state, req, entry) => `
   <item>
-    <g:id>${sku}</g:id>
+    <g:id>${entry.id}</g:id>
     <g:title>${entry.title ?? ''}</g:title>
     <g:description>
     ${entry.description ?? ''}
@@ -120,7 +110,26 @@ ${optionalEntry('g:identifier_exists', entry.identifier_exists)}\
 ${optionalEntry('g:item_group_id', entry.item_group_id)}\
 ${optionalEntry('g:is_bundle', entry.is_bundle)}\
 ${shipping(entry)}
-  </item>`).join('')}
+  </item>\
+  ${entry.variants ? Object.entries(entry.variants).map(([_, variant]) => feedEntry(state, req, variant)).join('') : ''}`;
+
+/**
+ * @param {State} state
+ * @param {PipelineRequest} req
+ * @param {StoredMerchantFeed} merchantFeed
+ * @returns {string}
+ */
+export function toFeedXML(state, req, merchantFeed) {
+  const { title, description, link } = state.config?.merchantFeedConfig ?? {};
+  return `\
+<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+<channel>
+  <title>${title ?? ''}</title>
+  <link>${link ?? ''}</link>
+  <description>
+  ${description ?? ''}
+  </description>\
+${Object.entries(merchantFeed).map(([_, entry]) => feedEntry(state, req, entry)).join('')}
 </channel>
 </rss>`;
 }
