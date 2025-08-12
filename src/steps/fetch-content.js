@@ -54,7 +54,7 @@ export default async function fetchContent(state, req, res) {
   /** @type {string} */
   let key;
 
-  if (urlKey !== 'index') {
+  if (urlKey !== 'index' && sku !== 'index') {
     const slug = slugger(sku);
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
   } else {
