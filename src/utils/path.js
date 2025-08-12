@@ -51,7 +51,11 @@ export function getPathInfo(path) {
   segs.push(fileName);
 
   if (!fileName.endsWith('.json')) {
-    fileName = `${fileName}.json`;
+    if (fileName.endsWith('.xml')) {
+      info.extension = '.xml';
+    } else {
+      fileName = `${fileName}.json`;
+    }
   }
 
   info.path = `/${segs.join('/')}`;
