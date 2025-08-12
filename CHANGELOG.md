@@ -1,3 +1,15 @@
+# [1.6.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.5.2...v1.6.0) (2025-08-12)
+
+
+### Bug Fixes
+
+* tweaks and sync ([a3af706](https://github.com/adobe-rnd/helix-product-pipeline/commit/a3af7069ccd7d7d08ecbf25998b75db576b72e03))
+
+
+### Features
+
+* add merchant feed ([3730391](https://github.com/adobe-rnd/helix-product-pipeline/commit/3730391dc01c8cfced9c5f2dfdbd7bb60d7d4103))
+
 ## [1.5.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.5.1...v1.5.2) (2025-08-12)
 
 
