@@ -383,10 +383,12 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:condition>new</g:condition>
     <g:availability>in_stock</g:availability>
     <g:price>2.49 USD</g:price>
-    <g:brand></g:brand>    <g:shipping>      
+    <g:brand></g:brand>
+    <g:shipping>      
     <g:country>US</g:country>            
     <g:service>Standard</g:service>      
-    <g:price>2.49 USD</g:price>                            </g:shipping>
+    <g:price>2.49 USD</g:price>                        
+    </g:shipping>
   </item>  
   <item>
     <g:id>1106</g:id>
@@ -465,7 +467,8 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:availability>in_stock</g:availability>
     <g:price>139.99 USD</g:price>
     <g:brand>HFT</g:brand>
-    <g:item_group_id>1436</g:item_group_id>    <g:shipping>      
+    <g:item_group_id>1436</g:item_group_id>
+    <g:shipping>      
     <g:country>US</g:country>      
     <g:region>CA</g:region>      
     <g:service>Fedex</g:service>      
@@ -473,7 +476,8 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:min_handling_time>1</g:min_handling_time>      
     <g:max_handling_time>3</g:max_handling_time>      
     <g:min_transit_time>1</g:min_transit_time>      
-    <g:max_transit_time>5</g:max_transit_time>    </g:shipping>
+    <g:max_transit_time>5</g:max_transit_time>
+    </g:shipping>
   </item>  
   <item>
     <g:id>1438</g:id>
@@ -488,6 +492,69 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:price>159.99 USD</g:price>
     <g:brand>HFT</g:brand>
     <g:item_group_id>1436</g:item_group_id>
+  </item>  
+</channel>
+</rss>`);
+    });
+
+    it('handles prod hosts without protocol', () => {
+      const xml = toFeedXML(
+        {
+          prodHost: 'www.harborfreight.com',
+          config: {
+            merchantFeedConfig: {
+              title: 'Test Title',
+              description: 'Test Description',
+              link: 'https://test.com',
+            },
+          },
+        },
+        new PipelineRequest('https://www.harborfreight.com/products/merchant-center-feed.xml'),
+        {
+          1072: {
+            id: '1072',
+            title: '7 in. Bench Brush',
+            description: 'The "beaver tail" bench brush has a natural lacquered hardwood handle with a hang-up hole for storage. The extra-long synthetic bristles effectively trap dust and clear larger debris such as wood chips or metal shavings.',
+            link: 'https://www.harborfreight.com/7-inch-bench-brush-1072.html',
+            image_link: './media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg',
+            condition: 'new',
+            availability: 'in_stock',
+            price: '2.49 USD',
+            adult: 'no',
+            shipping: [
+              {
+                country: 'US',
+                service: 'Standard',
+                price: '2.49 USD',
+              },
+            ],
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+<channel>
+  <title>Test Title</title>
+  <link>https://test.com</link>
+  <description>
+  Test Description
+  </description>
+  <item>
+    <g:id>1072</g:id>
+    <g:title>7 in. Bench Brush</g:title>
+    <g:description>
+    The "beaver tail" bench brush has a natural lacquered hardwood handle with a hang-up hole for storage. The extra-long synthetic bristles effectively trap dust and clear larger debris such as wood chips or metal shavings.
+    </g:description>
+    <g:link>https://www.harborfreight.com/7-inch-bench-brush-1072.html</g:link>
+    <g:image_link>https://www.harborfreight.com/products/media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg</g:image_link>
+    <g:condition>new</g:condition>
+    <g:availability>in_stock</g:availability>
+    <g:price>2.49 USD</g:price>
+    <g:brand></g:brand>
+    <g:shipping>      
+    <g:country>US</g:country>            
+    <g:service>Standard</g:service>      
+    <g:price>2.49 USD</g:price>                        
+    </g:shipping>
   </item>  
 </channel>
 </rss>`);

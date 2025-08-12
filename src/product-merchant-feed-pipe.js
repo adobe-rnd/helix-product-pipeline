@@ -45,7 +45,10 @@ const relToAbsLink = (state, req, relLink) => {
   }
   const { prodHost } = state;
   const path = req.url.pathname.replace(/\/merchant-center-feed\.xml$/, '');
-  const url = new URL(path + (relLink.startsWith('.') ? relLink.substring(1) : relLink), prodHost);
+  const url = new URL(
+    path + (relLink.startsWith('.') ? relLink.substring(1) : relLink),
+    /^https?:\/\//.test(prodHost) ? prodHost : `https://${prodHost}`,
+  );
   return url.toString();
 };
 
@@ -59,7 +62,7 @@ const shipping = (entry) => {
       Array.isArray(entry.shipping)
         ? entry.shipping
         : [entry.shipping]
-    ).map((s) => `\
+    ).map((s) => `
     <g:shipping>\
       ${optionalEntry('g:country', s.country)}\
       ${optionalEntry('g:region', s.region)}\
@@ -68,7 +71,7 @@ const shipping = (entry) => {
       ${optionalEntry('g:min_handling_time', s.min_handling_time)}\
       ${optionalEntry('g:max_handling_time', s.max_handling_time)}\
       ${optionalEntry('g:min_transit_time', s.min_transit_time)}\
-      ${optionalEntry('g:max_transit_time', s.max_transit_time)}\
+      ${optionalEntry('g:max_transit_time', s.max_transit_time)}
     </g:shipping>`).join('\n');
   }
   if (entry.shipping && typeof entry.shipping === 'string') {
