@@ -17,6 +17,7 @@ import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
 import { setLastModified } from './utils/last-modified.js';
 import { compute404Keys } from './steps/set-cache-headers.js';
+import { stripHTML } from './steps/utils.js';
 
 /**
  * @param {string} key
@@ -91,7 +92,7 @@ const feedEntry = (state, req, entry) => `
     <g:id>${entry.id}</g:id>
     <g:title>${entry.title ?? ''}</g:title>
     <g:description>
-    ${entry.description ?? ''}
+    ${stripHTML(entry.description ?? '')}
     </g:description>
     <g:link>${entry.link ?? ''}</g:link>
     <g:image_link>${relToAbsLink(state, req, entry.image_link)}</g:image_link>
