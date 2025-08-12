@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.5.1...v1.5.2) (2025-08-12)
+
+
+### Bug Fixes
+
+* resolve index if sku is `index` ([cffa4e1](https://github.com/adobe-rnd/helix-product-pipeline/commit/cffa4e139801b311a0d436073aa962777973bc89))
+
 ## [1.5.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.5.0...v1.5.1) (2025-08-01)
 
 
