@@ -520,6 +520,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     it('returns a merchant feed xml', () => {
       const xml = toFeedXML(
         {
+          prodHost: 'https://www.harborfreight.com',
           config: {
             merchantFeedConfig: {
               title: 'Test Title',
@@ -528,6 +529,7 @@ describe('Product Merchant Feed Pipe Test', () => {
             },
           },
         },
+        new PipelineRequest('https://www.harborfreight.com/products/merchant-center-feed.xml'),
         {
           1436: {
             id: '1436',
@@ -635,7 +637,6 @@ describe('Product Merchant Feed Pipe Test', () => {
           },
         },
       );
-      console.log(xml);
       assert.deepStrictEqual(xml, `<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
 <channel>
   <title>Test Title</title>
@@ -650,7 +651,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     The "beaver tail" bench brush has a natural lacquered hardwood handle with a hang-up hole for storage. The extra-long synthetic bristles effectively trap dust and clear larger debris such as wood chips or metal shavings.
     </g:description>
     <g:link>https://www.harborfreight.com/7-inch-bench-brush-1072.html</g:link>
-    <g:image_link>./media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg</g:image_link>
+    <g:image_link>https://www.harborfreight.com/products/media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg</g:image_link>
     <g:condition>new</g:condition>
     <g:availability>in_stock</g:availability>
     <g:price>2.49 USD</g:price>
@@ -666,7 +667,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     This easy-to-use oil can has a seamless steel body for durability. The oil can incorporates a flexible braided PVC spout to reach hard-to-access areas. Built to handle frequent use in any busy shop.
     </g:description>
     <g:link>https://www.harborfreight.com/4-oz-flexible-spout-oil-can-1106.html</g:link>
-    <g:image_link>./media_28c3ba6019250f2825570c2da1142b4985279290.jpg</g:image_link>
+    <g:image_link>https://www.harborfreight.com/products/media_28c3ba6019250f2825570c2da1142b4985279290.jpg</g:image_link>
     <g:condition>new</g:condition>
     <g:availability>in_stock</g:availability>
     <g:price>5.99 USD</g:price>
@@ -679,7 +680,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     This steel pipe wrench stands up to heavy jobsite use. The heat-treated jaws grip tight and resist wear.
     </g:description>
     <g:link>https://www.harborfreight.com/36-inch-steel-pipe-wrench-1132.html</g:link>
-    <g:image_link>./media_6aac6a6332c1608f9fa40bb43875dfb3ca80179c.jpg</g:image_link>
+    <g:image_link>https://www.harborfreight.com/products/media_6aac6a6332c1608f9fa40bb43875dfb3ca80179c.jpg</g:image_link>
     <g:condition>new</g:condition>
     <g:availability>in_stock</g:availability>
     <g:price>22.99 USD</g:price>
@@ -692,7 +693,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     Organize wires, cables, and ropes and eliminate tangles or tripping hazards with these cable ties. The cable ties are made of tough nylon and certified to current fire standards.
     </g:description>
     <g:link>https://www.harborfreight.com/pack-of-100-7-7-8-eighth-inch-x-3-16-inch-ties-1142.html</g:link>
-    <g:image_link>./media_1e2b7d649bcdd7bb69756a080111b74df57f0ef9.jpg</g:image_link>
+    <g:image_link>https://www.harborfreight.com/products/media_1e2b7d649bcdd7bb69756a080111b74df57f0ef9.jpg</g:image_link>
     <g:condition>new</g:condition>
     <g:availability>in_stock</g:availability>
     <g:price>2.49 USD</g:price>
@@ -705,7 +706,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     This 28 ft. 10 in. x 39 ft. 4 in. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.
     </g:description>
     <g:link>https://www.harborfreight.com/28-ft-10-inch-x-39-ft-4-inch-reflective-heavy-duty-silver-tarpaulin-1436.html</g:link>
-    <g:image_link>./media_b526c80c86439f4afb9308d8963f073b872edef7.jpg</g:image_link>
+    <g:image_link>https://www.harborfreight.com/products/media_b526c80c86439f4afb9308d8963f073b872edef7.jpg</g:image_link>
     <g:condition>new</g:condition>
     <g:availability>in_stock</g:availability>
     <g:price>119.99 USD</g:price>

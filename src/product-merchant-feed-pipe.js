@@ -32,6 +32,24 @@ const optionalEntry = (key, value) => {
 };
 
 /**
+ * Turns relative link into absolute,
+ * including the current path prefix (up to "/merchant-center-feed.xml")
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {string} relLink ex. "./media_b526c80c86439f4afb9308d8963f073b872edef7.jpg"
+ * @returns {string}
+ */
+const relToAbsLink = (state, req, relLink) => {
+  if (!relLink) {
+    return '';
+  }
+  const { prodHost } = state;
+  const path = req.url.pathname.replace(/\/merchant-center-feed\.xml$/, '');
+  const url = new URL(path + (relLink.startsWith('.') ? relLink.substring(1) : relLink), prodHost);
+  return url.toString();
+};
+
+/**
  * @param {{ shipping?: string | object | object[] }} entry
  * @returns {string}
  */
@@ -61,10 +79,11 @@ const shipping = (entry) => {
 
 /**
  * @param {State} state
+ * @param {PipelineRequest} req
  * @param {StoredMerchantFeed} merchantFeed
  * @returns {string}
  */
-export function toFeedXML(state, merchantFeed) {
+export function toFeedXML(state, req, merchantFeed) {
   const { title, description, link } = state.config?.merchantFeedConfig ?? {};
   return `\
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
@@ -82,7 +101,7 @@ ${Object.entries(merchantFeed).map(([sku, entry]) => `
     ${entry.description ?? ''}
     </g:description>
     <g:link>${entry.link ?? ''}</g:link>
-    <g:image_link>${entry.image_link ?? ''}</g:image_link>
+    <g:image_link>${relToAbsLink(state, req, entry.image_link)}</g:image_link>
     <g:condition>${entry.condition ?? ''}</g:condition>
     <g:availability>${entry.availability ?? ''}</g:availability>
     <g:price>${entry.price ?? ''}</g:price>
@@ -154,7 +173,7 @@ export async function productMerchantFeedPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = toFeedXML(state, state.content.data);
+    res.body = toFeedXML(state, req, state.content.data);
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 3 */

@@ -57,13 +57,13 @@ export default async function fetchContent(state, req, res) {
 
   /** @type {string} */
   let key;
-  if (!INDEXER_URL_KEYS.includes(urlKey)) {
+  if ((!sku && !INDEXER_URL_KEYS.includes(urlKey)) || (sku && !INDEXER_URL_KEYS.includes(sku))) {
     const slug = slugger(sku);
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
-  } else if (urlKey === 'index') {
+  } else if (urlKey === 'index' || sku === 'index') {
     const id = req.params?.id ?? 'default';
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/index/${id}.json`;
-  } else if (urlKey === 'merchant-center-feed') {
+  } else if (urlKey === 'merchant-center-feed' || sku === 'merchant-center-feed') {
     key = `${owner}/${repo}/${storeCode}/${storeViewCode}/merchant-feed/default.json`;
   }
 
