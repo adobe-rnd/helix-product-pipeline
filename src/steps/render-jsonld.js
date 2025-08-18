@@ -27,6 +27,7 @@ function renderOffer(state, variant, simple = false) {
     url,
     options,
     custom,
+    gtin,
   } = variant;
 
   const resolvedImages = Array.isArray(images)
@@ -56,6 +57,7 @@ function renderOffer(state, variant, simple = false) {
     ...(price?.final && { price: price.final }),
     ...(availability && { availability: `https://schema.org/${availability}` }),
     ...(itemCondition && { itemCondition: `https://schema.org/${itemCondition}` }),
+    ...(gtin && { gtin }),
     ...(url && { url }),
     ...(options && { options }),
     ...(priceSpecification && { priceSpecification }),
@@ -75,6 +77,7 @@ function convertToJsonLD(state, product) {
     images = [],
     variants = [],
     custom,
+    gtin,
   } = product;
 
   const jsonld = {
@@ -83,6 +86,7 @@ function convertToJsonLD(state, product) {
     ...(sku && { sku }),
     ...(name || metaTitle ? { name: name || metaTitle } : {}),
     ...(metaDescription || description ? { description: metaDescription || stripHTML(description).trim() } : {}),
+    ...(gtin && { gtin }),
     ...(url && { url }),
     ...(brand && { brand: { '@type': 'Brand', name: brand } }),
   };
