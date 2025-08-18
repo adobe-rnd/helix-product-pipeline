@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.1...v1.6.2) (2025-08-18)
+
+
+### Bug Fixes
+
+* gtin support in jsonld ([f574db5](https://github.com/adobe-rnd/helix-product-pipeline/commit/f574db583c6fbb73bca5807881e3c2d826c5477e))
+
 ## [1.6.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.0...v1.6.1) (2025-08-12)
 
 
