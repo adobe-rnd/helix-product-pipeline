@@ -6,6 +6,7 @@
   "type": "bundle",
   "metaTitle": "BlitzMax 5000 Bundle",
   "metaDescription": "The BlitzMax 5000 Bundle combines our most popular blender with essential accessories. Includes Personal Cup Adapter, spatula, and tamper holder.",
+  "gtin": "1234567890123",
   "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
   "images": [
     {
@@ -126,6 +127,7 @@
         "regular": "499.95",
         "final": "449.95"
       },
+      "gtin": "1234567890333",
       "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
       "images": [
         {
@@ -151,6 +153,7 @@
         "final": "449.95"
       },
       "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
+      "gtin": "1234567890444",
       "images": [
         {
           "url": "./blitzmax-5000-bundle-white.png"
@@ -174,6 +177,7 @@
         "regular": "499.95",
         "final": "449.95"
       },
+      "gtin": "1234567890555",
       "url": "https://www.blendify.com/us/en_us/products/blitzmax-5000-bundle",
       "images": [
         {

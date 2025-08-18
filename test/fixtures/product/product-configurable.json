@@ -16,6 +16,7 @@
   ],
   "brand": "Blendify",
   "availability": "InStock",
+  "gtin": "1234567890123",
   "price": {
     "currency": "USD",
     "regular": "399.95",
@@ -64,6 +65,7 @@
         "regular": "399.95",
         "final": "349.95"
       },
+      "gtin": "1234567890333",
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
         { "url": "./blitzmax-5000-black-1.png" },
@@ -94,6 +96,7 @@
         "regular": "399.95",
         "final": "399.95"
       },
+      "gtin": "1234567890444",
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
         { "url": "./blitzmax-5000-silver-1.png" },
