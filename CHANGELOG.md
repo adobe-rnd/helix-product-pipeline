@@ -1,3 +1,10 @@
+## [1.6.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.2...v1.6.3) (2025-08-19)
+
+
+### Bug Fixes
+
+* symantic release ([8a93948](https://github.com/adobe-rnd/helix-product-pipeline/commit/8a939480e2c7bb94fb29ec8da4182498925948f4))
+
 ## [1.6.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.1...v1.6.2) (2025-08-18)
 
 
