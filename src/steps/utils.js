@@ -108,3 +108,20 @@ export function stripHTML(html) {
   // Collapse whitespace and trim
   return text.replace(/\s+/g, ' ').trim();
 }
+
+/**
+ * Extracts a description from a string, trimmed to max words.
+ * Adds " ..." if truncated.
+ * @param {string} text
+ * @param {number} maxWords
+ * @returns {string}
+ */
+export function limitWords(text, maxWords = 25) {
+  if (!text) return '';
+
+  const words = text.trim().split(/\s+/);
+  if (words.length <= maxWords) {
+    return words.join(' ');
+  }
+  return `${words.slice(0, maxWords).join(' ')}...`;
+}

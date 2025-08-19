@@ -17,6 +17,7 @@ import {
   stripHTML,
   maybeHTML,
   slugger,
+  limitWords,
 } from '../../src/steps/utils.js';
 
 describe('Get Original Host', () => {
@@ -328,5 +329,75 @@ describe('Slugger', () => {
     assert.strictEqual(slugger('---Product---Name---'), 'product-name');
     assert.strictEqual(slugger('///Product///Name///'), 'product-name');
     assert.strictEqual(slugger('   /   Product   /   Name   /   '), 'product-name');
+  });
+});
+
+describe('Limit Words', () => {
+  it('returns empty string for null/undefined input', () => {
+    assert.strictEqual(limitWords(null), '');
+    assert.strictEqual(limitWords(undefined), '');
+    assert.strictEqual(limitWords(''), '');
+  });
+
+  it('returns text unchanged when word count is within limit', () => {
+    assert.strictEqual(limitWords('Hello world'), 'Hello world');
+    assert.strictEqual(limitWords('This is a short text'), 'This is a short text');
+    assert.strictEqual(limitWords('One two three four five'), 'One two three four five');
+  });
+
+  it('truncates text when word count exceeds default limit of 25', () => {
+    const longText = 'This is a very very very long text that contains more than twenty five words and should be truncated at the appropriate point with an ellipsis';
+    const expected = 'This is a very very very long text that contains more than twenty five words and should be truncated at the appropriate point with an...';
+    assert.strictEqual(limitWords(longText), expected);
+  });
+
+  it('respects custom maxWords parameter', () => {
+    const text = 'One two three four five six seven eight nine ten';
+
+    assert.strictEqual(limitWords(text, 3), 'One two three...');
+    assert.strictEqual(limitWords(text, 5), 'One two three four five...');
+    assert.strictEqual(limitWords(text, 7), 'One two three four five six seven...');
+    assert.strictEqual(limitWords(text, 10), 'One two three four five six seven eight nine ten');
+  });
+
+  it('handles text with multiple consecutive spaces', () => {
+    const text = 'Hello    world   with   multiple    spaces';
+    assert.strictEqual(limitWords(text, 3), 'Hello world with...');
+    assert.strictEqual(limitWords(text, 2), 'Hello world...');
+  });
+
+  it('handles text with tabs and newlines', () => {
+    const text = 'Hello\tworld\nwith\tmultiple\nwhitespace\tcharacters';
+    assert.strictEqual(limitWords(text, 3), 'Hello world with...');
+    assert.strictEqual(limitWords(text, 4), 'Hello world with multiple...');
+  });
+
+  it('trims leading and trailing whitespace', () => {
+    const text = '   Hello world   ';
+    assert.strictEqual(limitWords(text, 2), 'Hello world');
+    assert.strictEqual(limitWords(text, 1), 'Hello...');
+  });
+
+  it('handles single word text', () => {
+    assert.strictEqual(limitWords('Hello'), 'Hello');
+    assert.strictEqual(limitWords('   Hello   '), 'Hello');
+  });
+
+  it('handles edge case of exactly maxWords', () => {
+    const text = 'One two three four five';
+    assert.strictEqual(limitWords(text, 5), 'One two three four five');
+    assert.strictEqual(limitWords(text, 4), 'One two three four...');
+  });
+
+  it('handles very long words', () => {
+    const text = 'Supercalifragilisticexpialidocious Pneumonoultramicroscopicsilicovolcanoconiosis';
+    assert.strictEqual(limitWords(text, 1), 'Supercalifragilisticexpialidocious...');
+    assert.strictEqual(limitWords(text, 2), 'Supercalifragilisticexpialidocious Pneumonoultramicroscopicsilicovolcanoconiosis');
+  });
+
+  it('handles text with punctuation', () => {
+    const text = 'Hello, world! How are you today? I hope you\'re doing well.';
+    assert.strictEqual(limitWords(text, 4), 'Hello, world! How are...');
+    assert.strictEqual(limitWords(text, 6), 'Hello, world! How are you today?...');
   });
 });
