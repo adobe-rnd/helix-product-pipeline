@@ -13,23 +13,6 @@
 /* eslint-disable no-continue */
 
 /**
- * Slugify a SKU by converting it to lowercase, replacing spaces with hyphens,
- * @param {string} sku
- * @returns {string}
- */
-export function slugger(sku) {
-  if (typeof sku !== 'string') return '';
-  return sku
-    .toLowerCase()
-    .replace(/[_//]/g, '-') // Replace underscores and forward slashes with hyphens
-    .replace(/[^a-z0-9\s-]/g, '') // Remove all characters except a-z, 0-9, spaces, and hyphens
-    .replace(/\s+/g, '-') // Replace spaces with hyphens
-    .replace(/-+/g, '-') // Collapse multiple hyphens into single hyphen
-    .replace(/^-+/, '') // Remove leading hyphens
-    .replace(/-+$/, ''); // Remove trailing hyphens
-}
-
-/**
  * Returns the original host name from the request to the outer CDN.
  * @param {object} headers The request headers
  * @returns {string} The original host
