@@ -9,8 +9,8 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { slugger } from '@dylandepass/helix-product-shared';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
-import { slugger } from './utils.js';
 
 const INDEXER_URL_KEYS = ['index', 'merchant-center-feed'];
 
