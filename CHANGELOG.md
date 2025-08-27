@@ -1,3 +1,10 @@
+## [1.6.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.3...v1.6.4) (2025-08-27)
+
+
+### Bug Fixes
+
+* use shared lib ([70ad185](https://github.com/adobe-rnd/helix-product-pipeline/commit/70ad185f0a21518d3364d42bc031794666556258))
+
 ## [1.6.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.2...v1.6.3) (2025-08-19)
 
 
