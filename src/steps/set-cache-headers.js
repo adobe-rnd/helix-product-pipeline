@@ -12,122 +12,19 @@
 
 /* eslint-disable camelcase */
 
-import { computeSurrogateKey } from '@adobe/helix-shared-utils';
+import { computeProductKeys, compute404Key } from '@dylandepass/helix-product-shared';
 
 export const isMediaRequest = (url) => /\/media_[0-9a-f]{40,}[/a-zA-Z0-9_-]*\.[0-9a-z]+$/.test(url.pathname);
 const BYO_CDN_TYPES = ['akamai', 'cloudflare', 'fastly', 'cloudfront'];
 
 /**
- * Returns the surrogate key for a content-bus resource
- * based on the contentBusId and the resource path
- * @param state
- * @returns {Promise<string>}
+ * Sets the cache headers for a product
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @param {string[]} cacheKeys
+ * @returns {void}
  */
-export async function computeContentPathKey(state) {
-  const { contentBusId, info } = state;
-  const { path } = info;
-  return computeSurrogateKey(`${contentBusId}${path}`);
-}
-
-/**
- * Returns the surrogate key for a code-bus resource
- * based on the repositry and the resource path
- * @param state
- * @returns {Promise<string>}
- */
-export async function computeCodePathKey(state) {
-  const {
-    owner, repo, ref, info: { path },
-  } = state;
-  return computeSurrogateKey(`${ref}--${repo}--${owner}${path}`);
-}
-
-export async function computeProductKeys(state) {
-  const keys = [];
-  const { content, config } = state;
-  const { sku, urlKey } = content.data || config.route.params;
-  const { storeCode, storeViewCode } = config.route.params;
-
-  if (sku) {
-    keys.push(await computeSurrogateKey(`/${storeCode}/${storeViewCode}/${sku}`));
-  }
-
-  if (urlKey) {
-    keys.push(await computeSurrogateKey(`/${storeCode}/${storeViewCode}/${urlKey}`));
-  }
-
-  return keys;
-}
-
-/**
- * @type PipelineStep
- * @param {PipelineState} state
- * @returns {Promise<string[]>}
- */
-export default async function computeContentSurrogateKeys(state) {
-  const {
-    contentBusId, owner, repo, ref,
-  } = state;
-
-  // We don't use partitions and everything is considered live
-  // so contentKeyPrefix is not needed (no p_)
-  const contentKeyPrefix = '';
-  const keys = [];
-  const hash = await computeContentPathKey(state);
-  keys.push(`${contentKeyPrefix}${hash}`);
-  keys.push(`${contentKeyPrefix}${contentBusId}_metadata`);
-  keys.push(`${ref}--${repo}--${owner}_head`);
-  keys.push(`${contentKeyPrefix}${contentBusId}`);
-
-  keys.push(...(await computeProductKeys(state)));
-
-  return keys;
-}
-
-/**
- * @type PipelineStep
- * @param {PipelineState} state
- * @returns {Promise<string[]>}
- */
-export async function computeJSONSurrogateKeys(state) {
-  const keys = [];
-  // We don't use partitions and everything is considered live
-  // so contentKeyPrefix is not needed (no p_)
-  const contentKeyPrefix = '';
-  keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
-  keys.push(`${contentKeyPrefix}${state.contentBusId}`);
-
-  keys.push(...(await computeProductKeys(state)));
-
-  return keys;
-}
-
-export async function compute404Keys(state) {
-  const {
-    contentBusId, owner, repo, ref,
-  } = state;
-
-  // We don't use partitions and everything is considered live
-  // so contentKeyPrefix is not needed (no p_)
-  const contentKeyPrefix = '';
-  const keys = [];
-  keys.push(`${contentKeyPrefix}${await computeContentPathKey(state)}`);
-  keys.push(`${contentKeyPrefix}${contentBusId}`);
-
-  // code keys
-  keys.push(await computeCodePathKey(state));
-  keys.push(`${ref}--${repo}--${owner}_404`);
-  keys.push(`${ref}--${repo}--${owner}_code`);
-
-  keys.push(...(await computeProductKeys(state)));
-
-  return keys;
-}
-
-export function setCachingHeaders(state, req, resp, cacheKeys) {
-  const {
-    ref, site, org,
-  } = state;
+export function setCachingHeaders(req, resp, cacheKeys) {
   const url = new URL(req.url);
 
   // determine BYO CDN type
@@ -195,7 +92,6 @@ export function setCachingHeaders(state, req, resp, cacheKeys) {
 
   // BYO CDN cache tags
   // apply cache tags: transform Fastly Surrogate-Key to Cloudflare Cache-Tag
-  const rsoKey = `${ref}--${site}--${org}`;
   if (cacheKeys.length) {
     switch (byo_cdn_type) {
       case 'fastly':
@@ -205,7 +101,7 @@ export function setCachingHeaders(state, req, resp, cacheKeys) {
         resp.headers.set('edge-cache-tag', cacheKeys.join(' '));
         break;
       case 'cloudflare':
-        resp.headers.set('cache-tag', `${cacheKeys.join(',')},${rsoKey}${url.pathname},${url.pathname}`);
+        resp.headers.set('cache-tag', `${cacheKeys.join(',')}`);
         break;
       case 'cloudfront':
         // cloudfront doesn't support cache tags/keys ...
@@ -214,4 +110,56 @@ export function setCachingHeaders(state, req, resp, cacheKeys) {
         break;
     }
   }
+}
+
+/**
+ * Sets the cache headers for a product 404 page
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @returns {Promise<void>}
+ */
+export async function setProduct404CacheHeaders(state, req, resp) {
+  const {
+    content, config, org, site,
+  } = state;
+  const { sku, urlKey } = content.data || config.route.params;
+  const { storeCode, storeViewCode } = config.route.params;
+
+  const keys = await computeProductKeys(org, site, storeCode, storeViewCode, sku, urlKey);
+  keys.push(await compute404Key(org, site));
+
+  setCachingHeaders(req, resp, keys);
+}
+
+/**
+ * Sets the cache headers for a 404 page
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @returns {Promise<void>}
+ */
+export async function set404CacheHeaders(state, req, resp) {
+  const { org, site } = state;
+
+  const keys = [await compute404Key(org, site)];
+  setCachingHeaders(req, resp, keys);
+}
+
+/**
+ * Sets the cache headers for a product
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @returns {Promise<void>}
+ */
+export async function setProductCacheHeaders(state, req, resp) {
+  const {
+    content, config, org, site,
+  } = state;
+  const { sku, urlKey } = content.data || config.route.params;
+  const { storeCode, storeViewCode } = config.route.params;
+
+  const keys = await computeProductKeys(org, site, storeCode, storeViewCode, sku, urlKey);
+  setCachingHeaders(req, resp, keys);
 }

@@ -10,10 +10,7 @@
  * governing permissions and limitations under the License.
  */
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
-import {
-  setCachingHeaders,
-  compute404Keys,
-} from './set-cache-headers.js';
+import { setProduct404CacheHeaders } from './set-cache-headers.js';
 
 /**
  * Loads the 404.html from code-bus and stores it in `res.body`
@@ -41,9 +38,5 @@ export default async function fetch404(state, req, res) {
     res.headers.set('content-type', 'text/html; charset=utf-8');
   }
 
-  // set 404 keys in any case
-  // always provide code and content keys since a resource could be added later to either bus
-  const keys = await compute404Keys(state);
-
-  setCachingHeaders(state, req, res, keys);
+  await setProduct404CacheHeaders(state, req, res);
 }

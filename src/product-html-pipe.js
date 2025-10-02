@@ -23,7 +23,7 @@ import renderJsonld from './steps/render-jsonld.js';
 import renderHead from './steps/render-head.js';
 import tohtml from './steps/stringify-response.js';
 import fetch404 from './steps/fetch-404.js';
-import computeContentSurrogateKeys, { setCachingHeaders } from './steps/set-cache-headers.js';
+import { setProductCacheHeaders } from './steps/set-cache-headers.js';
 
 export async function productHTMLPipe(state, req) {
   const { log } = state;
@@ -78,8 +78,7 @@ export async function productHTMLPipe(state, req) {
 
     setLastModified(state, res);
 
-    const keys = await computeContentSurrogateKeys(state);
-    await setCachingHeaders(state, req, res, keys);
+    await setProductCacheHeaders(state, req, res);
   } catch (e) {
     res.error = e.message;
     if (e instanceof PipelineStatusError) {

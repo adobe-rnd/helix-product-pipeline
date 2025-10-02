@@ -16,7 +16,7 @@ import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
 import { setLastModified } from './utils/last-modified.js';
-import { compute404Keys } from './steps/set-cache-headers.js';
+import { set404CacheHeaders } from './steps/set-cache-headers.js';
 
 /**
  * @param {string} key
@@ -196,8 +196,7 @@ export async function productMerchantFeedPipe(state, req) {
     errorRes.body = '';
     errorRes.headers.set('x-error', cleanupHeaderValue(e.message));
     if (errorRes.status === 404) {
-      const keys = await compute404Keys(state);
-      errorRes.headers.set('x-surrogate-key', keys.join(' '));
+      await set404CacheHeaders(state, req, errorRes);
     }
     return errorRes;
   }
