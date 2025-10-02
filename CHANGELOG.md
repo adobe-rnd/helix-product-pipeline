@@ -1,3 +1,10 @@
+## [1.6.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.4...v1.6.5) (2025-10-02)
+
+
+### Bug Fixes
+
+* update cache tag keys ([f70ea34](https://github.com/adobe-rnd/helix-product-pipeline/commit/f70ea344c91603f886ed4a42a0bb6c6ceb356885))
+
 ## [1.6.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.3...v1.6.4) (2025-08-27)
 
 
