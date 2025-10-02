@@ -125,7 +125,7 @@ describe('Product HTML Pipe Test', () => {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
-      'surrogate-key': 'mRN24kMQcclw-dMQ foo-id_metadata main--helix-pages--adobe_head foo-id suPA3Y4fFEh6WDiu 7sxd2IeIQiT3EMns',
+      'surrogate-key': 'VS5-46Z_DsIjIydC juOVlP_wU3xIZXph aa9iB4ZoKa28Ulqx gZ8sZQGPdZ1uFask main--site--org',
     });
   });
 
@@ -154,7 +154,7 @@ describe('Product HTML Pipe Test', () => {
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
-      'cache-tag': 'XI4_5DVAssKv-Mlu,foo-id_metadata,main--helix-pages--adobe_head,foo-id,suPA3Y4fFEh6WDiu,7sxd2IeIQiT3EMns,main--site--org/products/product-simple,/products/product-simple',
+      'cache-tag': 'VS5-46Z_DsIjIydC,juOVlP_wU3xIZXph,aa9iB4ZoKa28Ulqx,gZ8sZQGPdZ1uFask,main--site--org',
       'cdn-cache-control': 'max-age=300, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
@@ -197,7 +197,7 @@ describe('Product HTML Pipe Test', () => {
       'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
-      'cache-tag': 'uOhB41fFzP0Al-SD,foo-id,P0oVzuYmPy9MmiYp,main--helix-pages--adobe_404,main--helix-pages--adobe_code,FJczSd9soZ525Rmz,main--site--org/products/product-404.html,/products/product-404.html',
+      'cache-tag': 'VS5-46Z_DsIjIydC,juOVlP_wU3xIZXph,U4c6bN3DRwO8mnxl,3x-TYEuoLJlR0JRs,main--site--org,main--site--org_404',
       'cdn-cache-control': 'max-age=300, must-revalidate',
       'x-error': 'failed to load /products/product-404.json from product-bus: 404',
     });

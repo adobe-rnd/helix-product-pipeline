@@ -16,7 +16,7 @@ import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchContent from './steps/fetch-content.js';
 import { setLastModified } from './utils/last-modified.js';
-import { compute404Keys, computeJSONSurrogateKeys, setCachingHeaders } from './steps/set-cache-headers.js';
+import { set404CacheHeaders, setProductCacheHeaders } from './steps/set-cache-headers.js';
 
 export async function productJSONPipe(state, req) {
   const { log, info } = state;
@@ -61,8 +61,7 @@ export async function productJSONPipe(state, req) {
     }
 
     // set surrogate keys
-    const keys = await computeJSONSurrogateKeys(state);
-    await setCachingHeaders(state, req, res, keys);
+    await setProductCacheHeaders(state, req, res);
 
     setLastModified(state, res);
 
@@ -76,8 +75,7 @@ export async function productJSONPipe(state, req) {
     errorRes.body = '';
     errorRes.headers.set('x-error', cleanupHeaderValue(e.message));
     if (errorRes.status === 404) {
-      const keys = await compute404Keys(state);
-      errorRes.headers.set('x-surrogate-key', keys.join(' '));
+      await set404CacheHeaders(state, req, errorRes);
     }
     return errorRes;
   }

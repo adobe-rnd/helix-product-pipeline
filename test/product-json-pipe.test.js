@@ -118,7 +118,7 @@ describe('Product JSON Pipe Test', () => {
       'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-      'cache-tag': '3nfMHLtnsFZ5Q_2g,foo-id,suPA3Y4fFEh6WDiu,7sxd2IeIQiT3EMns,main--site--org/products/product-configurable.json,/products/product-configurable.json',
+      'cache-tag': 'VS5-46Z_DsIjIydC,juOVlP_wU3xIZXph,aa9iB4ZoKa28Ulqx,gZ8sZQGPdZ1uFask,main--site--org',
       'cdn-cache-control': 'max-age=300, must-revalidate',
     });
   });
@@ -479,12 +479,21 @@ describe('Product JSON Pipe Test', () => {
 
     const result = await productJSONPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
+      new PipelineRequest(
+        new URL('https://acme.com/products/product-configurable.json'),
+        {
+          headers: {
+            'x-byo-cdn-type': 'cloudflare',
+          },
+        },
+      ),
     );
     assert.strictEqual(result.status, 404);
     assert.deepStrictEqual(Object.fromEntries(result.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
       'x-error': 'HEAD: failed to load /products/product-configurable.json from product-bus: 404',
-      'x-surrogate-key': '3nfMHLtnsFZ5Q_2g foo-id V4LVIkS4l74Jfj39 main--helix-pages--adobe_404 main--helix-pages--adobe_code CJq-tNxysVbDY-pE',
+      'cache-tag': 'main--site--org_404',
+      'cdn-cache-control': 'max-age=300, must-revalidate',
     });
   });
 
