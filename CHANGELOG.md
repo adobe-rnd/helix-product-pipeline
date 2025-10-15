@@ -1,3 +1,11 @@
+## [1.6.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.5...v1.6.6) (2025-10-15)
+
+
+### Bug Fixes
+
+* remove console statement ([f2bf29a](https://github.com/adobe-rnd/helix-product-pipeline/commit/f2bf29ad79721d2eae4e02db22f03ba421da6e0a))
+* support absolute image urls ([d3ef454](https://github.com/adobe-rnd/helix-product-pipeline/commit/d3ef454ec749039fd32e6c78fd6b2ddc11da8eb8))
+
 ## [1.6.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.4...v1.6.5) (2025-10-02)
 
 
