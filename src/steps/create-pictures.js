@@ -17,6 +17,17 @@ const BREAK_POINTS = [
   { width: '750' },
 ];
 
+function createImgElement(src, alt, title, width, height) {
+  return h('img', {
+    loading: 'lazy',
+    alt,
+    'data-title': title === alt ? undefined : title,
+    src,
+    width,
+    height,
+  });
+}
+
 export function createOptimizedPicture(src, alt = '', title = undefined) {
   const url = new URL(src, 'https://localhost/');
   const { pathname, hash = '' } = url;
@@ -27,6 +38,17 @@ export function createOptimizedPicture(src, alt = '', title = undefined) {
   if (props.has('height')) {
     height = props.get('height');
   }
+
+  // Extract filename and check if it starts with 'media_'
+  const filename = pathname.substring(pathname.lastIndexOf('/') + 1);
+  const isMediaBusFile = filename.startsWith('media_');
+
+  // If not a media file, return a simple picture with just an img tag (no optimization)
+  if (!isMediaBusFile) {
+    const img = createImgElement(src, alt, title, width, height);
+    return h('picture', [img]);
+  }
+
   const ext = pathname.substring(pathname.lastIndexOf('.') + 1);
   const type = mime.getType(pathname);
 
@@ -51,14 +73,7 @@ export function createOptimizedPicture(src, alt = '', title = undefined) {
         media: v.media,
       });
     }
-    return h('img', {
-      loading: 'lazy',
-      alt,
-      'data-title': title === alt ? undefined : title,
-      src: srcset,
-      width,
-      height,
-    });
+    return createImgElement(srcset, alt, title, width, height);
   });
 
   return h('picture', sources);

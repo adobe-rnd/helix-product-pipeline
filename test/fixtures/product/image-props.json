@@ -10,19 +10,19 @@
   "url": "https://www.blendify.com/us/en_us/shop/blitzmax-5000",
   "images": [
     { 
-      "url": "./blitzmax-5000-1.png#height=200",
+      "url": "./media_a1b2c3d4e5f6789012345678901234567890abcd.png#height=200",
       "alt": "BlitzMax 5000",
       "title": "BlitzMax 5000 is Amazing"
     },
     { 
-      "url": "./blitzmax-5000-2.png#height=200",
+      "url": "./media_b2c3d4e5f6789012345678901234567890abcdef.png#height=200",
       "alt": "BlitzMax 5000 Top View"
     },
     { 
-      "url": "./blitzmax-5000-3.png#height=200",
+      "url": "./media_c3d4e5f6789012345678901234567890abcdef01.png#height=200",
       "alt": "BlitzMax 5000 Bottom View"
     },
-    { "url": "./video-thumbnail.png", "video": "https://www.youtube.com/watch?v=123456" }
+    { "url": "./media_d4e5f6789012345678901234567890abcdef012.png", "video": "https://www.youtube.com/watch?v=123456" }
   ],
   "brand": "Blendify",
   "availability": "InStock",
@@ -77,11 +77,11 @@
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
         { 
-          "url": "./blitzmax-5000-black-1.png#height=200",
+          "url": "./media_a1b2c3d4e5f6789012345678901234567890abcd.png#height=200",
           "alt": "BlitzMax 5000 - Midnight Black"
         },
         { 
-          "url": "./blitzmax-5000-black-2.png#height=200",
+          "url": "./media_b2c3d4e5f6789012345678901234567890abcdef.png#height=200",
           "alt": "BlitzMax 5000 - Midnight Black"
         }
       ],
@@ -106,12 +106,12 @@
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
         { 
-          "url": "./blitzmax-5000-silver-1.png#height=200",
+          "url": "./media_b2c3d4e5f6789012345678901234567890abcdef.png#height=200",
           "alt": "BlitzMax 5000 - Silver Steel",
           "title": "BlitzMax 5000 - Silver Steel is Amazing"
         },
         { 
-          "url": "./blitzmax-5000-silver-2.png#height=200",
+          "url": "./media_c3d4e5f6789012345678901234567890abcdef01.png#height=200",
           "alt": "BlitzMax 5000 - Silver Steel",
           "title": "BlitzMax 5000 - Silver Steel"
         }

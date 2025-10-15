@@ -112,6 +112,7 @@ describe('Rendering', () => {
     // console.log(actHtml);
     if (expStatus === 200) {
       const $actMain = new JSDOM(actHtml).window.document.querySelector(domSelector);
+      console.log($actMain.outerHTML);
       const $expMain = new JSDOM(expHtml).window.document.querySelector(domSelector);
       await assertHTMLEquals($actMain.outerHTML, $expMain.outerHTML);
     }
@@ -177,6 +178,10 @@ describe('Rendering', () => {
 
     it('renders no meta description, no description', async () => {
       await testRender('no-metadescription-no-description', 'html', 200);
+    });
+
+    it('renders non-mediabus images as absolute urls with query params', async () => {
+      await testRender('non-mediabus-images', 'html', 200);
     });
   });
 });
