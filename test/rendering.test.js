@@ -112,7 +112,6 @@ describe('Rendering', () => {
     // console.log(actHtml);
     if (expStatus === 200) {
       const $actMain = new JSDOM(actHtml).window.document.querySelector(domSelector);
-      console.log($actMain.outerHTML);
       const $expMain = new JSDOM(expHtml).window.document.querySelector(domSelector);
       await assertHTMLEquals($actMain.outerHTML, $expMain.outerHTML);
     }
