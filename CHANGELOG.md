@@ -1,3 +1,10 @@
+## [1.6.7](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.6...v1.6.7) (2025-10-21)
+
+
+### Bug Fixes
+
+* include unslugged skus ([167eff6](https://github.com/adobe-rnd/helix-product-pipeline/commit/167eff61e3971442c7a847e43f4b584578d20918))
+
 ## [1.6.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.5...v1.6.6) (2025-10-15)
 
 
