@@ -30,7 +30,8 @@ import { set404CacheHeaders } from './steps/set-cache-headers.js';
 export function toSpreadsheet(index) {
   const columns = new Set(['sku']);
 
-  const products = Object.entries(index).reduce((acc, [sku, product]) => {
+  const products = Object.entries(index).reduce((acc, [sluggedSku, product]) => {
+    const sku = product.sku ?? sluggedSku;
     // add each property to columns if not already present
     Object.keys(product).forEach((key) => {
       if (key !== 'variants') {
@@ -53,7 +54,8 @@ export function toSpreadsheet(index) {
         columns.add('variantSkus');
 
         const variantSkus = [];
-        variants.forEach(([variantSku, variant]) => {
+        variants.forEach(([vSluggedSku, variant]) => {
+          const variantSku = variant.sku ?? vSluggedSku;
           Object.keys(variant).forEach((key) => {
             columns.add(key);
           });
