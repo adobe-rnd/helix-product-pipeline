@@ -35,7 +35,7 @@ export default async function fetchEdgeContent(state, res) {
       // Track last-modified for caching
       const lastModified = extractLastModified(contentRes.headers);
       if (lastModified) {
-        recordLastModified(state, res, 'enriched-content', lastModified);
+        recordLastModified(state, res, 'authored-content', lastModified);
       }
     } else {
       log.debug(`Edge content returned ${contentRes.status} for ${contentUrl}`);
