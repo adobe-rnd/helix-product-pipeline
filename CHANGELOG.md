@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.7.1...v1.7.2) (2025-10-22)
+
+
+### Bug Fixes
+
+* cache control for media requests ([992c218](https://github.com/adobe-rnd/helix-product-pipeline/commit/992c2182d0dd65bc38eb0278e8f11a44294ee858))
+
 ## [1.7.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.7.0...v1.7.1) (2025-10-22)
 
 
