@@ -14,6 +14,7 @@
 import { select } from 'hast-util-select';
 import { h } from 'hastscript';
 import { fromHtml } from 'hast-util-from-html';
+import { slug } from 'github-slugger';
 import { createOptimizedPicture } from './create-pictures.js';
 import { maybeHTML } from './utils.js';
 
@@ -29,25 +30,6 @@ function formatPrice(price) {
     return h('p', [`$${final} `, '(', h('del', `$${regular}`), ')']);
   }
   return h('p', `$${final}`);
-}
-
-function formatOptions(variant) {
-  const { sku, options } = variant;
-  if (!options) return '';
-
-  const sectionMetadata = h('div.section-metadata', [
-    h('div', [
-      h('div', 'sku'),
-      h('div', sku),
-    ]),
-    ...options.map((option) => h('div', [
-      h('div', option.id),
-      h('div', option.value),
-      option.uid ? h('div', option.uid) : null,
-    ])),
-  ]);
-
-  return sectionMetadata;
 }
 
 // Render media. Image first than anchor if video
@@ -68,9 +50,25 @@ function renderProductContent(edge, description) {
     return fromHtml(edge, { fragment: true });
   }
 
+  if (!description) {
+    return '';
+  }
+
   const descriptionIsHTML = maybeHTML(description);
   const descriptionNode = descriptionIsHTML ? fromHtml(description, { fragment: true }) : h('p', description);
   return h('div', descriptionNode);
+}
+
+function variantDataAttrs(variant) {
+  const { sku, options } = variant;
+  const attrs = {};
+  if (sku) attrs['data-sku'] = String(sku);
+  for (const opt of (options || [])) {
+    const base = `data-${slug(opt.id)}`;
+    if (opt.value != null) attrs[base] = String(opt.value);
+    if (opt.uid != null) attrs['data-uid'] = String(opt.uid);
+  }
+  return attrs;
 }
 
 /**
@@ -101,14 +99,19 @@ export default async function render(state, req, res) {
       formatPrice(price),
       ...(images?.length > 0 ? images.map((img) => renderMedia(img)) : []),
     ]),
-    productContent,
-    ...variants.map((variant) => h('div', { className: 'variant' }, [
+  ];
+
+  if (productContent) {
+    main.children.push(productContent);
+  }
+
+  if (variants.length > 0) {
+    main.children.push(...variants.map((variant) => h('div', { className: 'section', ...variantDataAttrs(variant) }, [
       h('h2', variant.name),
       formatPrice(variant.price),
       ...(variant.images?.length > 0 ? variant.images.map((img) => h('p', createOptimizedPicture(img.url, img.alt, img.title))) : []),
-      formatOptions(variant),
-    ])),
-  ];
+    ])));
+  }
 
   res.document = hast;
 }
