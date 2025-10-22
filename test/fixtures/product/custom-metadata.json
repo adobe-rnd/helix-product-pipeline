@@ -25,7 +25,7 @@
     "foo": "bar",
     "baz": "qux",
     "robots": "noindex",
-    "pipeline": "beta"
+    "pipeline": "next"
   },
   "options": [
     {

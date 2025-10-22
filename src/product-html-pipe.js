@@ -73,7 +73,7 @@ export async function productHTMLPipe(state, req) {
     await html(state);
     await renderHead(state);
 
-    if (state.content?.data?.metadata?.pipeline === 'beta') {
+    if (state.content?.data?.metadata?.pipeline === 'next') {
       await fetchEdgeContent(state, res);
       await renderBodyV2(state, req, res);
     } else {

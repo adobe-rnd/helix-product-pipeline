@@ -25,7 +25,7 @@
     { "url": "./media_d4e5f6789012345678901234567890abcdef012.png", "video": "https://www.youtube.com/watch?v=123456" }
   ],
   "metadata": {
-    "pipeline": "beta"
+    "pipeline": "next"
   },
   "brand": "Blendify",
   "availability": "InStock",
