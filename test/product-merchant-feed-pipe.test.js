@@ -203,7 +203,7 @@ describe('Product Merchant Feed Pipe Test', () => {
   it('returns early when res.error is set but res.status is less than 400', async () => {
     // Mock fetchContent to set res.error and res.status < 400
     const { productMerchantFeedPipe: pipe } = await esmock('../src/product-merchant-feed-pipe.js', {
-      '../src/steps/fetch-content.js': {
+      '../src/steps/fetch-productbus.js': {
         default: async (state, req, res) => {
           res.error = 'Some non-critical error';
           res.status = 200; // Status less than 400
