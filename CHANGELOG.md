@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.7.0...v1.7.1) (2025-10-22)
+
+
+### Bug Fixes
+
+* render options as data attributes ([3911d12](https://github.com/adobe-rnd/helix-product-pipeline/commit/3911d12fdf97bd22f156e1c9595c56a9ecd8ac2c))
+
 # [1.7.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.7...v1.7.0) (2025-10-22)
 
 
