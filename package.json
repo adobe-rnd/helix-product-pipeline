@@ -47,7 +47,7 @@
   "dependencies": {
     "@adobe/helix-html-pipeline": "6.25.2",
     "@adobe/helix-shared-utils": "3.0.2",
-    "@dylandepass/helix-product-shared": "1.2.1",
+    "@dylandepass/helix-product-shared": "1.2.2",
     "github-slugger": "2.0.0",
     "hast-util-from-html": "^2.0.3",
     "hast-util-select": "6.0.4",

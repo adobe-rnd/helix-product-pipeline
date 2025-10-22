@@ -15,6 +15,7 @@ import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchMedia from './steps/fetch-media.js';
 import { setLastModified } from './utils/last-modified.js';
+import { setMediaCacheHeaders } from './steps/set-cache-headers.js';
 
 export async function productMediaPipe(state, req) {
   state.type = 'media';
@@ -50,6 +51,8 @@ export async function productMediaPipe(state, req) {
     }
 
     setLastModified(state, res);
+
+    await setMediaCacheHeaders(state, req, res);
 
     res.headers = state.content.headers;
     res.body = state.content.data;

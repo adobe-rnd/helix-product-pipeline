@@ -12,7 +12,7 @@
 
 /* eslint-disable camelcase */
 
-import { computeProductKeys, compute404Key } from '@dylandepass/helix-product-shared';
+import { computeProductKeys, compute404Key, computeMediaKeys } from '@dylandepass/helix-product-shared';
 
 export const isMediaRequest = (url) => /\/media_[0-9a-f]{40,}[/a-zA-Z0-9_-]*\.[0-9a-z]+$/.test(url.pathname);
 const BYO_CDN_TYPES = ['akamai', 'cloudflare', 'fastly', 'cloudfront'];
@@ -63,6 +63,7 @@ export function setCachingHeaders(req, resp, cacheKeys) {
     }
     resp.headers.set('cache-control', `max-age=${browserTTL}, must-revalidate`);
   }
+
   // CDN ttl
   let cdnTTL;
   if ([400, 401].includes(resp.status)) {
@@ -142,7 +143,7 @@ export async function setProduct404CacheHeaders(state, req, resp) {
 export async function set404CacheHeaders(state, req, resp) {
   const { org, site } = state;
 
-  const keys = [await compute404Key(org, site)];
+  const keys = [compute404Key(org, site)];
   setCachingHeaders(req, resp, keys);
 }
 
@@ -161,5 +162,20 @@ export async function setProductCacheHeaders(state, req, resp) {
   const { storeCode, storeViewCode } = config.route.params;
 
   const keys = await computeProductKeys(org, site, storeCode, storeViewCode, sku, urlKey);
+  setCachingHeaders(req, resp, keys);
+}
+
+/**
+ * Sets the cache headers for a product
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @returns {Promise<void>}
+ */
+export async function setMediaCacheHeaders(state, req, resp) {
+  const { org, site } = state;
+  const url = new URL(req.url);
+  const keys = await computeMediaKeys(org, site, url.pathname);
+
   setCachingHeaders(req, resp, keys);
 }
