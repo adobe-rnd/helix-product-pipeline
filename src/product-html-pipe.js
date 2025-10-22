@@ -15,10 +15,12 @@ import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import addHeadingIds from './steps/add-heading-ids.js';
 import { getPathInfo, validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
-import fetchContent from './steps/fetch-content.js';
+import fetchProductBusContent from './steps/fetch-productbus.js';
+import fetchEdgeContent from './steps/fetch-edge-product.js';
 import { setLastModified } from './utils/last-modified.js';
 import html from './steps/make-html.js';
 import renderBody from './steps/render-body.js';
+import renderBodyV2 from './steps/render-body-v2.js';
 import renderJsonld from './steps/render-jsonld.js';
 import renderHead from './steps/render-head.js';
 import tohtml from './steps/stringify-response.js';
@@ -50,7 +52,7 @@ export async function productHTMLPipe(state, req) {
     await initConfig(state, req, res);
 
     state.timer?.update('content-fetch');
-    await fetchContent(state, req, res);
+    await fetchProductBusContent(state, req, res);
     if (res.status === 404) {
       await fetch404(state, req, res);
     }
@@ -70,7 +72,13 @@ export async function productHTMLPipe(state, req) {
     state.timer?.update('render');
     await html(state);
     await renderHead(state);
-    await renderBody(state, req, res);
+
+    if (state.content?.data?.metadata?.pipeline === 'beta') {
+      await fetchEdgeContent(state, res);
+      await renderBodyV2(state, req, res);
+    } else {
+      await renderBody(state, req, res);
+    }
     await renderJsonld(state, req, res);
     await addHeadingIds(state);
     state.timer?.update('serialize');

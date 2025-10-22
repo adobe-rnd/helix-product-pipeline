@@ -15,6 +15,9 @@
     "regular": "399.95",
     "final": "349.95"
   },
+  "metadata": {
+    "pipeline": "beta"
+  },
   "options": [
     {
       "id": "color",

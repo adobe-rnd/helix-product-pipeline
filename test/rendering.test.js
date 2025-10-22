@@ -13,6 +13,7 @@
 import assert from 'assert';
 import esmock from 'esmock';
 import path from 'path';
+import fetchMock from 'fetch-mock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { readFile } from 'fs/promises';
 import { JSDOM } from 'jsdom';
@@ -73,7 +74,7 @@ describe('Rendering', () => {
       s3Loader: loader,
       org: 'adobe',
       site: 'helix-pages',
-      ref: 'super-test',
+      ref: 'main',
       partition,
       config,
       path: selector ? `${url.pathname}${selector}.html` : url.pathname,
@@ -89,7 +90,7 @@ describe('Rendering', () => {
   }
 
   // eslint-disable-next-line default-param-last
-  async function testRender(url, domSelector = 'main', expStatus, partition = 'live') {
+  async function testRender(url, domSelector = 'main', expStatus, partition = 'live', productContent = true) {
     if (!(url instanceof URL)) {
       // eslint-disable-next-line no-param-reassign
       url = new URL(`https://www.blendify.com/us/en_us/products/${url}`);
@@ -107,6 +108,24 @@ describe('Rendering', () => {
       // eslint-disable-next-line no-param-reassign
       expStatus = expHtml === null ? 404 : 200;
     }
+
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    const productContentUrl = `https://${config.ref}--${config.repo}--${config.owner}.aem.live${url.pathname}.plain.html`;
+    if (productContent) {
+      const edgeHtml = await readFile(path.resolve(__testdir, 'fixtures', 'product', 'product-content.html'), 'utf-8');
+      fetchMockGlobal.get(productContentUrl, {
+        body: edgeHtml,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Last-Modified': 'Wed, 22 Oct 2025 03:47:18 GMT',
+        },
+      });
+    } else {
+      fetchMockGlobal.get(productContentUrl, {
+        status: 404,
+      });
+    }
+
     const response = await render(url, '', expStatus, partition);
     const actHtml = response.body;
     // console.log(actHtml);
@@ -115,16 +134,29 @@ describe('Rendering', () => {
       const $expMain = new JSDOM(expHtml).window.document.querySelector(domSelector);
       await assertHTMLEquals($actMain.outerHTML, $expMain.outerHTML);
     }
+
+    // Should be the new last modified date of the fragment
+    if (productContent) {
+      assert.strictEqual(response.headers.get('last-modified'), 'Wed, 22 Oct 2025 03:47:18 GMT');
+    }
     return response;
   }
 
   describe('Product', () => {
+    it('renders v1 product-configurable correctly', async () => {
+      await testRender('v1-configurable-product', 'html', 200, 'live', false);
+    });
+
     it('renders product-configurable correctly', async () => {
       await testRender('product-configurable', 'html', 200);
     });
 
     it('renders product-simple correctly', async () => {
       await testRender('product-simple', 'html', 200);
+    });
+
+    it('renders v1 product-simple correctly', async () => {
+      await testRender('v1-simple-product', 'html', 200, 'live', false);
     });
 
     it('renders product-bundle correctly', async () => {
@@ -159,7 +191,7 @@ describe('Rendering', () => {
       await testRender('no-price', 'html', 200);
     });
 
-    it('renders no variants', async () => {
+    it('renders no variant options', async () => {
       await testRender('variants-no-options', 'html', 200);
     });
 
@@ -181,6 +213,14 @@ describe('Rendering', () => {
 
     it('renders non-mediabus images as absolute urls with query params', async () => {
       await testRender('non-mediabus-images', 'html', 200);
+    });
+
+    it('renders with no product content, only html description', async () => {
+      await testRender('no-product-content-html-description', 'html', 200, 'live', false);
+    });
+
+    it('renders with no product content, only text description', async () => {
+      await testRender('no-product-content-text-description', 'html', 200, 'live', false);
     });
   });
 });

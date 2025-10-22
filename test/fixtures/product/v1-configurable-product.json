@@ -12,17 +12,15 @@
     { "url": "./media_a1b2c3d4e5f6789012345678901234567890abcd.png" },
     { "url": "./media_b2c3d4e5f6789012345678901234567890abcdef.png" },
     { "url": "./media_c3d4e5f6789012345678901234567890abcdef01.png" },
-    { "url": "./media_d4e5f6789012345678901234567890abcdef012.png", "video": "https://www.youtube.com/watch?v=123456" }
+    { "url": "./media_d4e5f6789012345678901234567890abcdef0123.png", "video": "https://www.youtube.com/watch?v=123456" }
   ],
   "brand": "Blendify",
   "availability": "InStock",
+  "gtin": "1234567890123",
   "price": {
     "currency": "USD",
     "regular": "399.95",
     "final": "349.95"
-  },
-  "metadata": {
-    "pipeline": "beta"
   },
   "options": [
     {
@@ -31,14 +29,17 @@
       "position": 1,
       "values": [
         {
-          "value": "Midnight Black"
+          "value": "Midnight Black",
+          "uid": "Y29uZmlndXJhYmxlLzkzLzQz"
         },
         {
-          "value": "Silver Steel"
+          "value": "Silver Steel",
+          "uid": "Y29uZmlndXJhYmxlLzkzLzUy"
         }
       ]
     }
   ],
+  "specifications": "<ul><li><strong>Series:</strong> Ascent X</li><li><strong>Container Capacity:</strong> 48 Oz.</li><li><strong>Programs:</strong> 3</li><li><strong>Touch Screen:</strong> No</li><li><strong>Timer:</strong> Yes</li><li><strong>Pulse:</strong> Yes</li><li><strong>Self-Detect Technology:</strong> Yes</li><li><strong>Dishwasher Safe:</strong> Yes</li><li><strong>Dimensions:</strong> 9.75 x 7.75 x 17 in.</li><li><strong>HP:</strong> 2.2 HP - peak</li><li><strong>Warranty:</strong> 10 Years</li></ul>",
   "custom": {
     "warranty": "5 Year Standard Warranty",
     "collection": "BlitzMax Collection",
@@ -64,15 +65,17 @@
         "regular": "399.95",
         "final": "349.95"
       },
+      "gtin": "1234567890333",
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
-        { "url": "./media_a1b2c3d4e5f6789012345678901234567890abcd.png" },
-        { "url": "./media_b2c3d4e5f6789012345678901234567890abcdef.png" }
+        { "url": "./media_e5f6789012345678901234567890abcdef012345.png" },
+        { "url": "./media_f6789012345678901234567890abcdef01234567.png" }
       ],
       "availability": "InStock",
       "options": [
         {
           "id": "color",
+          "uid": "Y29uZmlndXJhYmxlLzkzLzQz",
           "value": "Midnight Black"
         }
       ],
@@ -93,10 +96,11 @@
         "regular": "399.95",
         "final": "399.95"
       },
+      "gtin": "1234567890444",
       "url": "https://www.blendify.com/shop/blitzmax-5000",
       "images": [
-        { "url": "./media_b2c3d4e5f6789012345678901234567890abcdef.png" },
-        { "url": "./media_c3d4e5f6789012345678901234567890abcdef01.png" }
+        { "url": "./media_0789012345678901234567890abcdef012345678.png" },
+        { "url": "./media_1890123456789012345678abcdef0123456789ab.png" }
       ],
       "availability": "InStock",
       "options": [
