@@ -41,6 +41,9 @@
     "regular": "499.95",
     "final": "449.95"
   },
+  "metadata": {
+    "pipeline": "next"
+  },
   "options": [
     {
       "id": "color",

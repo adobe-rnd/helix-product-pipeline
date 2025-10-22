@@ -10,8 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-/* c8 ignore start */
-
 /* eslint-disable max-len */
 import { select } from 'hast-util-select';
 import { h } from 'hastscript';
@@ -52,14 +50,6 @@ function formatOptions(variant) {
   return sectionMetadata;
 }
 
-function createBlock(name, content) {
-  return h('div', { className: name }, [
-    h('div', [
-      h('div', fromHtml(content, { fragment: true })),
-    ]),
-  ]);
-}
-
 // Render media. Image first than anchor if video
 function renderMedia(media) {
   const { url, alt, title } = media;
@@ -72,6 +62,17 @@ function renderMedia(media) {
   return h('p', createOptimizedPicture(url, alt, title));
 }
 
+function renderProductContent(edge, description) {
+  // If content exists in edge, use it, otherwise use description
+  if (edge) {
+    return fromHtml(edge, { fragment: true });
+  }
+
+  const descriptionIsHTML = maybeHTML(description);
+  const descriptionNode = descriptionIsHTML ? fromHtml(description, { fragment: true }) : h('p', description);
+  return h('div', descriptionNode);
+}
+
 /**
  * @type PipelineStep
  * @param {PipelineState} state
@@ -81,29 +82,27 @@ function renderMedia(media) {
  */
 export default async function render(state, req, res) {
   const { content } = state;
-  const { hast } = content;
+  const { hast, edge } = content;
 
   const {
     name,
     description,
-    specifications,
     images = [],
     price,
     variants = [],
   } = content.data;
 
-  const descriptionIsHTML = maybeHTML(description);
+  const productContent = renderProductContent(edge, description);
 
   const main = select('main', hast);
   main.children = [
     h('div', [
       h('h1', name),
       formatPrice(price),
-      descriptionIsHTML ? fromHtml(description, { fragment: true }) : h('p', description),
-      specifications ? createBlock('specifications', specifications) : null,
       ...(images?.length > 0 ? images.map((img) => renderMedia(img)) : []),
     ]),
-    ...variants.map((variant) => h('div', [
+    productContent,
+    ...variants.map((variant) => h('div', { className: 'variant' }, [
       h('h2', variant.name),
       formatPrice(variant.price),
       ...(variant.images?.length > 0 ? variant.images.map((img) => h('p', createOptimizedPicture(img.url, img.alt, img.title))) : []),
@@ -113,5 +112,3 @@ export default async function render(state, req, res) {
 
   res.document = hast;
 }
-
-/* c8 ignore stop */

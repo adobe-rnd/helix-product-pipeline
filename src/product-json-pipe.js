@@ -14,7 +14,7 @@ import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipelin
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
-import fetchContent from './steps/fetch-content.js';
+import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders, setProductCacheHeaders } from './steps/set-cache-headers.js';
 
@@ -52,7 +52,7 @@ export async function productJSONPipe(state, req) {
     await initConfig(state, req, res);
 
     state.timer?.update('content-fetch');
-    await fetchContent(state, req, res);
+    await fetchProductBusContent(state, req, res);
     if (res.error) {
       if (res.status < 400) {
         return res;

@@ -14,7 +14,7 @@ import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipelin
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
-import fetchContent from './steps/fetch-content.js';
+import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders } from './steps/set-cache-headers.js';
 
@@ -30,7 +30,8 @@ import { set404CacheHeaders } from './steps/set-cache-headers.js';
 export function toSpreadsheet(index) {
   const columns = new Set(['sku']);
 
-  const products = Object.entries(index).reduce((acc, [sku, product]) => {
+  const products = Object.entries(index).reduce((acc, [sluggedSku, product]) => {
+    const sku = product.sku ?? sluggedSku;
     // add each property to columns if not already present
     Object.keys(product).forEach((key) => {
       if (key !== 'variants') {
@@ -53,7 +54,8 @@ export function toSpreadsheet(index) {
         columns.add('variantSkus');
 
         const variantSkus = [];
-        variants.forEach(([variantSku, variant]) => {
+        variants.forEach(([vSluggedSku, variant]) => {
+          const variantSku = variant.sku ?? vSluggedSku;
           Object.keys(variant).forEach((key) => {
             columns.add(key);
           });
@@ -114,7 +116,7 @@ export async function productIndexPipe(state, req) {
     await initConfig(state, req, res);
 
     state.timer?.update('content-fetch');
-    await fetchContent(state, req, res);
+    await fetchProductBusContent(state, req, res);
     if (res.error) {
       if (res.status < 400) {
         return res;

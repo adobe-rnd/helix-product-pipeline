@@ -1,3 +1,23 @@
+# [1.7.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.7...v1.7.0) (2025-10-22)
+
+
+### Bug Fixes
+
+* rename last mod record label ([070d4d8](https://github.com/adobe-rnd/helix-product-pipeline/commit/070d4d8d60323f865354520c6472c173658b4a47))
+* switch from beta to next ([9835bfa](https://github.com/adobe-rnd/helix-product-pipeline/commit/9835bfa74e979038a63465220ac4ea466e2bf0dd))
+
+
+### Features
+
+* load fragments from edge ([ec66675](https://github.com/adobe-rnd/helix-product-pipeline/commit/ec66675470a40286e5cbc95d177c01686bb70cfe))
+
+## [1.6.7](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.6...v1.6.7) (2025-10-21)
+
+
+### Bug Fixes
+
+* include unslugged skus ([167eff6](https://github.com/adobe-rnd/helix-product-pipeline/commit/167eff61e3971442c7a847e43f4b584578d20918))
+
 ## [1.6.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.6.5...v1.6.6) (2025-10-15)
 
 
