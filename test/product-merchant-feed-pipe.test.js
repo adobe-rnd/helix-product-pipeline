@@ -251,117 +251,130 @@ describe('Product Merchant Feed Pipe Test', () => {
         {
           // product without title and price
           1111: {
-            id: '1111',
-            description: 'This is a description',
-            link: 'https://www.harborfreight.com/1111.html',
-            image_link: './media_1111.jpg',
-            condition: 'new',
-            availability: 'in_stock',
-            brand: 'Foo',
+            data: {
+              id: '1111',
+              description: 'This is a description',
+              link: 'https://www.harborfreight.com/1111.html',
+              image_link: './media_1111.jpg',
+              condition: 'new',
+              availability: 'in_stock',
+              brand: 'Foo',
+            },
           },
           1436: {
-            id: '1436',
-            title: '28 ft. 10 in. x 39 ft. 4 in. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
-            description: 'This 28 ft. 10 in. x 39 ft. 4 in. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.',
-            link: 'https://www.harborfreight.com/28-ft-10-inch-x-39-ft-4-inch-reflective-heavy-duty-silver-tarpaulin-1436.html',
-            image_link: './media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
-            condition: 'new',
-            availability: 'in_stock',
-            price: '119.99 USD',
-            brand: 'HFT',
-            adult: 'no',
-            variants: {
-              1437: {
-                id: '1437',
-                title: '29 ft. 4 in. x 49 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
-                description: 'This 29 ft. 4 in. x 49 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.',
-                link: 'https://www.harborfreight.com/29-ft-4-inch-x-49-ft-reflective-heavy-duty-silver-tarpaulin-1437.html',
-                image_link: './media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
-                condition: 'new',
-                availability: 'in_stock',
-                price: '139.99 USD',
-                brand: 'HFT',
-                adult: 'no',
-                item_group_id: '1436',
-                shipping: {
-                  country: 'US',
-                  region: 'CA',
-                  service: 'Fedex',
-                  price: '8.99 USD',
-                  min_handling_time: '1',
-                  max_handling_time: '3',
-                  min_transit_time: '1',
-                  max_transit_time: '5',
+            data: {
+              id: '1436',
+              title: '28 ft. 10 in. x 39 ft. 4 in. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
+              description: 'This 28 ft. 10 in. x 39 ft. 4 in. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.',
+              link: 'https://www.harborfreight.com/28-ft-10-inch-x-39-ft-4-inch-reflective-heavy-duty-silver-tarpaulin-1436.html',
+              image_link: './media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
+              condition: 'new',
+              availability: 'in_stock',
+              price: '119.99 USD',
+              brand: 'HFT',
+              adult: 'no',
+              variants: {
+                1437: {
+                  id: '1437',
+                  title: '29 ft. 4 in. x 49 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
+                  description: 'This 29 ft. 4 in. x 49 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.',
+                  link: 'https://www.harborfreight.com/29-ft-4-inch-x-49-ft-reflective-heavy-duty-silver-tarpaulin-1437.html',
+                  image_link: './media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
+                  condition: 'new',
+                  availability: 'in_stock',
+                  price: '139.99 USD',
+                  brand: 'HFT',
+                  adult: 'no',
+                  item_group_id: '1436',
+                  shipping: {
+                    country: 'US',
+                    region: 'CA',
+                    service: 'Fedex',
+                    price: '8.99 USD',
+                    min_handling_time: '1',
+                    max_handling_time: '3',
+                    min_transit_time: '1',
+                    max_transit_time: '5',
+                  },
                 },
-              },
-              1438: {
-                id: '1438',
-                title: '28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
-                description: 'This 28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.',
-                link: 'https://www.harborfreight.com/29-ft-4-inch-x-59-inch-reflective-heavy-duty-silver-tarpaulin-1438.html',
-                image_link: '/media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
-                condition: 'new',
-                availability: 'in_stock',
-                price: '159.99 USD',
-                brand: 'HFT',
-                adult: 'no',
-                item_group_id: '1436',
+
+                1438: {
+                  id: '1438',
+                  title: '28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp',
+                  description: 'This 28 ft. 10 in. x 59 ft. Heavy Duty Reflective All-Purpose Weather-Resistant Tarp provides exceptional protection for equipment, tools, and other materials. Made with 14 x 14 mesh of 1000 denier nylon threads, the tarp is designed to withstand rain, snow, and especially sun with its silver reflective color that also keeps the items underneath cooler compared to conventional tarps. For tying down, the tarp has rust-resistant aluminum grommets.',
+                  link: 'https://www.harborfreight.com/29-ft-4-inch-x-59-inch-reflective-heavy-duty-silver-tarpaulin-1438.html',
+                  image_link: '/media_b526c80c86439f4afb9308d8963f073b872edef7.jpg',
+                  condition: 'new',
+                  availability: 'in_stock',
+                  price: '159.99 USD',
+                  brand: 'HFT',
+                  adult: 'no',
+                  item_group_id: '1436',
+                },
               },
             },
           },
           1072: {
-            id: '1072',
-            title: '7 in. Bench Brush',
-            description: 'The "beaver tail" bench brush has a natural lacquered hardwood handle with a hang-up hole for storage. The extra-long synthetic bristles effectively trap dust and clear larger debris such as wood chips or metal shavings.',
-            link: 'https://www.harborfreight.com/7-inch-bench-brush-1072.html',
-            image_link: './media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg',
-            condition: 'new',
-            availability: 'in_stock',
-            price: '2.49 USD',
-            adult: 'no',
-            shipping: [
-              {
-                country: 'US',
-                service: 'Standard',
-                price: '2.49 USD',
-              },
-            ],
+            data: {
+              id: '1072',
+              title: '7 in. Bench Brush',
+              description: 'The "beaver tail" bench brush has a natural lacquered hardwood handle with a hang-up hole for storage. The extra-long synthetic bristles effectively trap dust and clear larger debris such as wood chips or metal shavings.',
+              link: 'https://www.harborfreight.com/7-inch-bench-brush-1072.html',
+              image_link: './media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg',
+              condition: 'new',
+              availability: 'in_stock',
+              price: '2.49 USD',
+              adult: 'no',
+              shipping: [
+                {
+                  country: 'US',
+                  service: 'Standard',
+                  price: '2.49 USD',
+                },
+              ],
+            },
           },
           1106: {
-            id: '1106',
-            title: '4 Oz. Flexible Spout Oil Can',
-            description: 'This easy-to-use oil can has a seamless steel body for durability. The oil can incorporates a flexible braided PVC spout to reach hard-to-access areas. Built to handle frequent use in any busy shop.',
-            link: 'https://www.harborfreight.com/4-oz-flexible-spout-oil-can-1106.html',
-            image_link: './media_28c3ba6019250f2825570c2da1142b4985279290.jpg',
-            condition: 'new',
-            availability: 'in_stock',
-            price: '5.99 USD',
-            adult: 'no',
-            shipping: 'US:CA:Overnight:16.00 USD:1:1:2:3',
+            data: {
+              id: '1106',
+              title: '4 Oz. Flexible Spout Oil Can',
+              description: 'This easy-to-use oil can has a seamless steel body for durability. The oil can incorporates a flexible braided PVC spout to reach hard-to-access areas. Built to handle frequent use in any busy shop.',
+              link: 'https://www.harborfreight.com/4-oz-flexible-spout-oil-can-1106.html',
+              image_link: './media_28c3ba6019250f2825570c2da1142b4985279290.jpg',
+              condition: 'new',
+              availability: 'in_stock',
+              price: '5.99 USD',
+              adult: 'no',
+              shipping: 'US:CA:Overnight:16.00 USD:1:1:2:3',
+            },
           },
           1132: {
-            id: '1132',
-            title: '36 in. Steel Pipe Wrench',
-            description: 'This steel pipe wrench stands up to heavy jobsite use. The heat-treated jaws grip tight and resist wear.',
-            link: 'https://www.harborfreight.com/36-inch-steel-pipe-wrench-1132.html',
-            image_link: './media_6aac6a6332c1608f9fa40bb43875dfb3ca80179c.jpg',
-            condition: 'new',
-            availability: 'in_stock',
-            price: '22.99 USD',
-            brand: 'PITTSBURGH',
-            adult: 'no',
+            data: {
+              id: '1132',
+              title: '36 in. Steel Pipe Wrench',
+              description: 'This steel pipe wrench stands up to heavy jobsite use. The heat-treated jaws grip tight and resist wear.',
+              link: 'https://www.harborfreight.com/36-inch-steel-pipe-wrench-1132.html',
+              image_link: './media_6aac6a6332c1608f9fa40bb43875dfb3ca80179c.jpg',
+              condition: 'new',
+              availability: 'in_stock',
+              price: '22.99 USD',
+              brand: 'PITTSBURGH',
+              adult: 'no',
+            },
           },
           1142: {
-            id: '1142',
-            title: '8 in. White Cable Ties, 100-Pack',
-            description: 'Organize wires, cables, and ropes and eliminate tangles or tripping hazards with these cable ties. The cable ties are made of tough nylon and certified to current fire standards.',
-            link: 'https://www.harborfreight.com/pack-of-100-7-7-8-eighth-inch-x-3-16-inch-ties-1142.html',
-            image_link: './media_1e2b7d649bcdd7bb69756a080111b74df57f0ef9.jpg',
-            condition: 'new',
-            availability: 'in_stock',
-            price: '2.49 USD',
-            brand: 'STOREHOUSE',
-            adult: 'no',
+            data: {
+              id: '1142',
+              title: '8 in. White Cable Ties, 100-Pack',
+              description: 'Organize wires, cables, and ropes and eliminate tangles or tripping hazards with these cable ties. The cable ties are made of tough nylon and certified to current fire standards.',
+              link: 'https://www.harborfreight.com/pack-of-100-7-7-8-eighth-inch-x-3-16-inch-ties-1142.html',
+              image_link: './media_1e2b7d649bcdd7bb69756a080111b74df57f0ef9.jpg',
+              condition: 'new',
+              availability: 'in_stock',
+              price: '2.49 USD',
+              brand: 'STOREHOUSE',
+              adult: 'no',
+            },
           },
         },
       );
@@ -512,22 +525,24 @@ describe('Product Merchant Feed Pipe Test', () => {
         new PipelineRequest('https://www.harborfreight.com/products/merchant-center-feed.xml'),
         {
           1072: {
-            id: '1072',
-            title: '7 in. Bench Brush',
-            description: 'The "beaver tail" bench brush has a natural lacquered hardwood handle with a hang-up hole for storage. The extra-long synthetic bristles effectively trap dust and clear larger debris such as wood chips or metal shavings.',
-            link: 'https://www.harborfreight.com/7-inch-bench-brush-1072.html',
-            image_link: './media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg',
-            condition: 'new',
-            availability: 'in_stock',
-            price: '2.49 USD',
-            adult: 'no',
-            shipping: [
-              {
-                country: 'US',
-                service: 'Standard',
-                price: '2.49 USD',
-              },
-            ],
+            data: {
+              id: '1072',
+              title: '7 in. Bench Brush',
+              description: 'The "beaver tail" bench brush has a natural lacquered hardwood handle with a hang-up hole for storage. The extra-long synthetic bristles effectively trap dust and clear larger debris such as wood chips or metal shavings.',
+              link: 'https://www.harborfreight.com/7-inch-bench-brush-1072.html',
+              image_link: './media_71d3a9f748fab108ffc9405e65cd872efb143005.jpg',
+              condition: 'new',
+              availability: 'in_stock',
+              price: '2.49 USD',
+              adult: 'no',
+              shipping: [
+                {
+                  country: 'US',
+                  service: 'Standard',
+                  price: '2.49 USD',
+                },
+              ],
+            },
           },
         },
       );
@@ -556,6 +571,140 @@ describe('Product Merchant Feed Pipe Test', () => {
     <g:price>2.49 USD</g:price>                        
     </g:shipping>
   </item>  
+</channel>
+</rss>`);
+    });
+
+    it('handles includes - noindex, includes all, should include', () => {
+      const xml = toFeedXML(
+        {
+          prodHost: 'https://www.test.com',
+          config: {
+            merchantFeedConfig: {
+              title: 'Test Title',
+              description: 'Test Description',
+              link: 'https://test.com',
+            },
+          },
+        },
+        new PipelineRequest('https://www.example.com/products/merchant-center-feed.xml?include=all'),
+        {
+          foo: {
+            filters: {
+              noindex: true,
+            },
+            data: {
+              id: 'foo',
+              title: 'Foo',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+<channel>
+  <title>Test Title</title>
+  <link>https://test.com</link>
+  <description>
+  Test Description
+  </description>
+  <item>
+    <g:id>foo</g:id>
+    <g:title>Foo</g:title>
+    <g:description>
+    
+    </g:description>
+    <g:link></g:link>
+    <g:image_link></g:image_link>
+    <g:condition></g:condition>
+    <g:availability></g:availability>
+    <g:price></g:price>
+    <g:brand></g:brand>
+  </item>  
+</channel>
+</rss>`);
+    });
+
+    it('handles includes - noindex, includes noindex, should include', () => {
+      const xml = toFeedXML(
+        {
+          prodHost: 'https://www.test.com',
+          config: {
+            merchantFeedConfig: {
+              title: 'Test Title',
+              description: 'Test Description',
+              link: 'https://test.com',
+            },
+          },
+        },
+        new PipelineRequest('https://www.example.com/products/merchant-center-feed.xml?include=noindex'),
+        {
+          foo: {
+            filters: {
+              noindex: true,
+            },
+            data: {
+              id: 'foo',
+              title: 'Foo',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+<channel>
+  <title>Test Title</title>
+  <link>https://test.com</link>
+  <description>
+  Test Description
+  </description>
+  <item>
+    <g:id>foo</g:id>
+    <g:title>Foo</g:title>
+    <g:description>
+    
+    </g:description>
+    <g:link></g:link>
+    <g:image_link></g:image_link>
+    <g:condition></g:condition>
+    <g:availability></g:availability>
+    <g:price></g:price>
+    <g:brand></g:brand>
+  </item>  
+</channel>
+</rss>`);
+    });
+
+    it('handles includes - noindex, includes foo, should not include', () => {
+      const xml = toFeedXML(
+        {
+          prodHost: 'https://www.test.com',
+          config: {
+            merchantFeedConfig: {
+              title: 'Test Title',
+              description: 'Test Description',
+              link: 'https://test.com',
+            },
+          },
+        },
+        new PipelineRequest('https://www.example.com/products/merchant-center-feed.xml?include=foo'),
+        {
+          foo: {
+            filters: {
+              noindex: true,
+            },
+            data: {
+              id: 'foo',
+              title: 'Foo',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
+<channel>
+  <title>Test Title</title>
+  <link>https://test.com</link>
+  <description>
+  Test Description
+  </description>
 </channel>
 </rss>`);
     });

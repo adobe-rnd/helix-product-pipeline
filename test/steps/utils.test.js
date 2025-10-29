@@ -11,12 +11,13 @@
  */
 /* global describe, it */
 import assert from 'assert';
-
+import { PipelineRequest } from '@adobe/helix-html-pipeline';
 import {
   getOriginalHost,
   stripHTML,
   maybeHTML,
   limitWords,
+  getIncludes,
 } from '../../src/steps/utils.js';
 
 describe('Get Original Host', () => {
@@ -307,5 +308,22 @@ describe('Limit Words', () => {
     const text = 'Hello, world! How are you today? I hope you\'re doing well.';
     assert.strictEqual(limitWords(text, 4), 'Hello, world! How are...');
     assert.strictEqual(limitWords(text, 6), 'Hello, world! How are you today?...');
+  });
+});
+
+describe('Get Includes', () => {
+  it('returns an empty object for no includes', () => {
+    const req = new PipelineRequest(new URL('https://example.com'));
+    assert.deepStrictEqual(getIncludes(req), {});
+  });
+
+  it('returns an object with true for each include', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo,bar'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true, bar: true });
+  });
+
+  it('returns an object with true for each include', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo&include=all'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true, all: true });
   });
 });

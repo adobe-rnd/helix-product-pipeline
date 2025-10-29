@@ -8,20 +8,22 @@ import type {
 } from '@adobe/helix-html-pipeline';
 
 declare global {
-  type PathInfo = ImportedPathInfo;
-  type PipelineRequest = ImportedPipelineRequest;
-  type PipelineStep = ImportedPipelineStep;
+  export * as SharedTypes from '@dylandepass/helix-product-shared/types';
 
-  interface LastModifiedSource {
+  export type PathInfo = ImportedPathInfo;
+  export type PipelineRequest = ImportedPipelineRequest;
+  export type PipelineStep = ImportedPipelineStep;
+
+  export interface LastModifiedSource {
     time: number;
     date: string;
   }
 
-  interface PipelineResponse extends ImportedPipelineResponse {
+  export interface PipelineResponse extends ImportedPipelineResponse {
     lastModifiedSources?: Record<string, LastModifiedSource>;
   }
 
-  interface PipelineProductRouteConfig {
+  export interface PipelineProductRouteConfig {
     params: Record<string, string>;
     pageType: 'product' | string;
     storeViewCode: string;
@@ -30,11 +32,18 @@ declare global {
     confMap: ConfigMap;
   }
 
-  interface PipelineSiteConfig extends ImportedPipelineSiteConfig {
+  export interface PipelineSiteConfig extends ImportedPipelineSiteConfig {
     route: PipelineProductRouteConfig;
+    merchantFeedConfig?: {
+      title?: string;
+      description?: string;
+      link?: string;
+    };
   }
 
-  interface PipelineState extends ImportedPipelineState {
+  export interface PipelineState extends ImportedPipelineState {
     config: PipelineSiteConfig;
   }
 }
+
+export { };
