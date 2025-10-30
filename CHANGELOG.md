@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.7.2...v1.8.0) (2025-10-30)
+
+
+### Features
+
+* index filters ([e9663fe](https://github.com/adobe-rnd/helix-product-pipeline/commit/e9663fe17c8b3d189325f5f6e631d21cfd3d55ed))
+
 ## [1.7.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.7.1...v1.7.2) (2025-10-22)
 
 
