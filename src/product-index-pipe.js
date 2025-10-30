@@ -17,63 +17,68 @@ import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders } from './steps/set-cache-headers.js';
+import { getIncludes } from './steps/utils.js';
 
 /**
  * Returns index as spreadsheet
- * @param {StoredIndex} index
+ * @param {SharedTypes.StoredIndex} index
+ * @param {Record<string, boolean>} includes
  * @returns {{
 *   ':type': 'sheet',
 *   columns: string[],
 *   data: Record<string, string>[]
 * }}
 */
-export function toSpreadsheet(index) {
+export function toSpreadsheet(index, includes) {
   const columns = new Set(['sku']);
 
-  const products = Object.entries(index).reduce((acc, [sluggedSku, product]) => {
-    const sku = product.sku ?? sluggedSku;
-    // add each property to columns if not already present
-    Object.keys(product).forEach((key) => {
-      if (key !== 'variants') {
-        columns.add(key);
-      }
-    });
-    // return the row, include sku as property
-    const records = [{
-      sku,
-      ...product,
-      variants: undefined,
-    }];
+  const products = Object.entries(index)
+    .filter(([_, entry]) => includes.all || !entry.filters?.noindex || includes.noindex)
+    .reduce((acc, [sluggedSku, entry]) => {
+      const product = entry.data;
+      const sku = product.sku ?? sluggedSku;
+      // add each property to columns if not already present
+      Object.keys(product).forEach((key) => {
+        if (key !== 'variants') {
+          columns.add(key);
+        }
+      });
+      // return the row, include sku as property
+      const records = [{
+        sku,
+        ...product,
+        variants: undefined,
+      }];
 
-    // add a row for each variant, if any
-    if (typeof product.variants === 'object' && product.variants !== null) {
-      const variants = Object.entries(product.variants);
+      // add a row for each variant, if any
+      if (typeof product.variants === 'object' && product.variants !== null) {
+        const variants = Object.entries(product.variants);
 
-      if (variants.length) {
-        columns.add('parentSku');
-        columns.add('variantSkus');
+        if (variants.length) {
+          columns.add('parentSku');
+          columns.add('variantSkus');
 
-        const variantSkus = [];
-        variants.forEach(([vSluggedSku, variant]) => {
-          const variantSku = variant.sku ?? vSluggedSku;
-          Object.keys(variant).forEach((key) => {
-            columns.add(key);
+          const variantSkus = [];
+          variants.forEach(([vSluggedSku, variant]) => {
+            const variantSku = variant.sku ?? vSluggedSku;
+            Object.keys(variant).forEach((key) => {
+              columns.add(key);
+            });
+            variantSkus.push(variantSku);
+            records.push({
+              parentSku: sku,
+              sku: variantSku,
+              ...variant,
+            });
           });
-          variantSkus.push(variantSku);
-          records.push({
-            parentSku: sku,
-            sku: variantSku,
-            ...variant,
-          });
-        });
 
-        records[0].variantSkus = variantSkus.join(',');
+          records[0].variantSkus = variantSkus.join(',');
+        }
       }
-    }
 
-    acc.push(...records);
-    return acc;
-  }, []);
+      acc.push(...records);
+      return acc;
+    }, []);
 
   return {
     ':type': 'sheet',
@@ -130,7 +135,7 @@ export async function productIndexPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = JSON.stringify(toSpreadsheet(state.content.data), null, 2);
+    res.body = JSON.stringify(toSpreadsheet(state.content.data, getIncludes(req)), null, 2);
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 3 */

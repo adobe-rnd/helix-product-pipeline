@@ -108,3 +108,20 @@ export function limitWords(text, maxWords = 25) {
   }
   return `${words.slice(0, maxWords).join(' ')}...`;
 }
+
+/**
+ * Get include params from request URL
+ * @param {PipelineRequest} req
+ * @returns {Record<string, boolean>}
+ */
+export function getIncludes(req) {
+  const includeStrs = req.url.searchParams.getAll('include');
+  /** @type {Record<string, boolean>} */
+  const includes = {};
+  for (const str of includeStrs) {
+    str.split(',').forEach((item) => {
+      includes[item.trim()] = true;
+    });
+  }
+  return includes;
+}

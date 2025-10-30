@@ -17,6 +17,7 @@ import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders } from './steps/set-cache-headers.js';
+import { getIncludes } from './steps/utils.js';
 
 /**
  * @param {string} key
@@ -53,15 +54,15 @@ const relToAbsLink = (state, req, relLink) => {
 };
 
 /**
- * @param {{ shipping?: string | object | object[] }} entry
+ * @param {{ shipping?: string | object | object[] }} data
  * @returns {string}
  */
-const shipping = (entry) => {
-  if (entry.shipping && typeof entry.shipping === 'object') {
+const shipping = (data) => {
+  if (data.shipping && typeof data.shipping === 'object') {
     return (
-      Array.isArray(entry.shipping)
-        ? entry.shipping
-        : [entry.shipping]
+      Array.isArray(data.shipping)
+        ? data.shipping
+        : [data.shipping]
     ).map((s) => `
     <g:shipping>\
       ${optionalEntry('g:country', s.country)}\
@@ -74,8 +75,8 @@ const shipping = (entry) => {
       ${optionalEntry('g:max_transit_time', s.max_transit_time)}
     </g:shipping>`).join('\n');
   }
-  if (entry.shipping && typeof entry.shipping === 'string') {
-    return entry.shipping;
+  if (data.shipping && typeof data.shipping === 'string') {
+    return data.shipping;
   }
   return '';
 };
@@ -83,47 +84,50 @@ const shipping = (entry) => {
 /**
  * @param {PipelineState} state
  * @param {PipelineRequest} req
- * @param {StoredMerchantFeed[string]} entry
+ * @param {SharedTypes.StoredMerchantFeed[string]['data']} data
  * @returns {string}
  */
-const feedEntry = (state, req, entry) => `
+const feedEntry = (state, req, data) => `
   <item>
-    <g:id>${entry.id}</g:id>
-    <g:title>${entry.title ?? ''}</g:title>
+    <g:id>${data.id}</g:id>
+    <g:title>${data.title ?? ''}</g:title>
     <g:description>
-    ${entry.description ?? ''}
+    ${data.description ?? ''}
     </g:description>
-    <g:link>${entry.link ?? ''}</g:link>
-    <g:image_link>${relToAbsLink(state, req, entry.image_link)}</g:image_link>
-    <g:condition>${entry.condition ?? ''}</g:condition>
-    <g:availability>${entry.availability ?? ''}</g:availability>
-    <g:price>${entry.price ?? ''}</g:price>
-    <g:brand>${entry.brand ?? ''}</g:brand>\
-${optionalEntry('g:age_group', entry.age_group)}\
-${optionalEntry('g:google_product_category', entry.google_product_category)}\
-${optionalEntry('g:product_type', entry.product_type)}\
-${optionalEntry('g:color', entry.color)}\
-${optionalEntry('g:size', entry.size)}\
-${optionalEntry('g:gender', entry.gender)}\
-${optionalEntry('g:material', entry.material)}\
-${optionalEntry('g:pattern', entry.pattern)}\
-${optionalEntry('g:gtin', entry.gtin)}\
-${optionalEntry('g:mpn', entry.mpn)}\
-${optionalEntry('g:identifier_exists', entry.identifier_exists)}\
-${optionalEntry('g:item_group_id', entry.item_group_id)}\
-${optionalEntry('g:is_bundle', entry.is_bundle)}\
-${shipping(entry)}
+    <g:link>${data.link ?? ''}</g:link>
+    <g:image_link>${relToAbsLink(state, req, data.image_link)}</g:image_link>
+    <g:condition>${data.condition ?? ''}</g:condition>
+    <g:availability>${data.availability ?? ''}</g:availability>
+    <g:price>${data.price ?? ''}</g:price>
+    <g:brand>${data.brand ?? ''}</g:brand>\
+${optionalEntry('g:age_group', data.age_group)}\
+${optionalEntry('g:google_product_category', data.google_product_category)}\
+${optionalEntry('g:product_type', data.product_type)}\
+${optionalEntry('g:color', data.color)}\
+${optionalEntry('g:size', data.size)}\
+${optionalEntry('g:gender', data.gender)}\
+${optionalEntry('g:material', data.material)}\
+${optionalEntry('g:pattern', data.pattern)}\
+${optionalEntry('g:gtin', data.gtin)}\
+${optionalEntry('g:mpn', data.mpn)}\
+${optionalEntry('g:identifier_exists', data.identifier_exists)}\
+${optionalEntry('g:item_group_id', data.item_group_id)}\
+${optionalEntry('g:is_bundle', data.is_bundle)}\
+${shipping(data)}
   </item>\
-  ${entry.variants ? Object.entries(entry.variants).map(([_, variant]) => feedEntry(state, req, variant)).join('') : ''}`;
+  ${data.variants
+    ? Object.entries(data.variants).map(([_, variant]) => feedEntry(state, req, variant)).join('')
+    : ''}`;
 
 /**
- * @param {State} state
+ * @param {PipelineState} state
  * @param {PipelineRequest} req
- * @param {StoredMerchantFeed} merchantFeed
+ * @param {SharedTypes.StoredMerchantFeed} merchantFeed
  * @returns {string}
  */
 export function toFeedXML(state, req, merchantFeed) {
   const { title, description, link } = state.config?.merchantFeedConfig ?? {};
+  const includes = getIncludes(req);
   return `\
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
 <channel>
@@ -132,7 +136,9 @@ export function toFeedXML(state, req, merchantFeed) {
   <description>
   ${description ?? ''}
   </description>\
-${Object.entries(merchantFeed).map(([_, entry]) => feedEntry(state, req, entry)).join('')}
+${Object.entries(merchantFeed)
+    .filter(([_, entry]) => includes.all || !entry.filters?.noindex || includes.noindex)
+    .map(([_, entry]) => feedEntry(state, req, entry.data)).join('')}
 </channel>
 </rss>`;
 }

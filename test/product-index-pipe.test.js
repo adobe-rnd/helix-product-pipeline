@@ -233,64 +233,70 @@ describe('Product Index Pipe Test', () => {
     it('returns a spreadsheet', () => {
       const spreadsheet = toSpreadsheet({
         vbndax5ks: {
-          urlKey: 'ascent-x5-smartprep-kitchen-system',
-          title: 'Ascent® X5 SmartPrep™ Kitchen System',
-          price: '949.95',
-          image: './media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg',
-          description: '',
-          series: 'Ascent X Series',
-          variants: {
-            '073495-04-VB': {
-              title: 'Ascent X5-Brushed Stainless Metal Finish',
-              price: '949.95',
-              image: './media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg',
+          data: {
+            urlKey: 'ascent-x5-smartprep-kitchen-system',
+            title: 'Ascent® X5 SmartPrep™ Kitchen System',
+            price: '949.95',
+            image: './media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg',
+            description: '',
+            series: 'Ascent X Series',
+            variants: {
+              '073495-04-VB': {
+                title: 'Ascent X5-Brushed Stainless Metal Finish',
+                price: '949.95',
+                image: './media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg',
+              },
+              '074104-04-VB': {
+                title: 'Ascent X5-Graphite Metal Finish',
+                price: '949.95',
+                image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+              },
             },
-            '074104-04-VB': {
-              title: 'Ascent X5-Graphite Metal Finish',
-              price: '949.95',
-              image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
-            },
+            colors: 'Brushed Stainless Metal Finish,Black',
           },
-          colors: 'Brushed Stainless Metal Finish,Black',
         },
         'x2-kitchen-system': {
-          urlKey: 'ascent-x2-smartprep-kitchen-system',
-          title: 'Ascent® X2 SmartPrep Kitchen System',
-          price: '749.95',
-          colors: 'Shadow Black',
-          image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
-          description: '',
-          series: 'Ascent X Series',
-          variants: {
-            '075710-100': {
-              title: 'Ascent® X2 SmartPrep Kitchen System-Shadow Black',
-              price: '749.95',
-              image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+          data: {
+            urlKey: 'ascent-x2-smartprep-kitchen-system',
+            title: 'Ascent® X2 SmartPrep Kitchen System',
+            price: '749.95',
+            colors: 'Shadow Black',
+            image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+            description: '',
+            series: 'Ascent X Series',
+            variants: {
+              '075710-100': {
+                title: 'Ascent® X2 SmartPrep Kitchen System-Shadow Black',
+                price: '749.95',
+                image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
+              },
             },
           },
         },
         'ascent-x5': {
-          urlKey: 'ascent-x5',
-          title: 'Ascent® X5',
-          price: '749.95',
-          colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
-          image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
-          description: '',
-          series: 'Ascent X Series',
-          variants: {
-            '073495-04': {
-              title: 'Ascent X5-Brushed Stainless Metal Finish',
-              price: '749.95',
-              image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
-            },
-            '074104-04': {
-              title: 'Ascent® X5-Graphite Metal Finish',
-              price: '749.95',
-              image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+          data: {
+            urlKey: 'ascent-x5',
+            title: 'Ascent® X5',
+            price: '749.95',
+            colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
+            image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
+            description: '',
+            series: 'Ascent X Series',
+            variants: {
+              '073495-04': {
+                title: 'Ascent X5-Brushed Stainless Metal Finish',
+                price: '749.95',
+                image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
+              },
+              '074104-04': {
+                title: 'Ascent® X5-Graphite Metal Finish',
+                price: '749.95',
+                image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+              },
             },
           },
         },
-      });
+      }, {});
       assert.deepStrictEqual(spreadsheet, {
         ':type': 'sheet',
         columns: [
@@ -378,6 +384,87 @@ describe('Product Index Pipe Test', () => {
             image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
           },
         ],
+      });
+    });
+
+    it('handles includes - noindex, includes all, should include', () => {
+      const spreadsheet = toSpreadsheet({
+        foo: {
+          filters: {
+            noindex: true,
+          },
+          data: {
+            urlKey: 'foo',
+            title: 'Foo',
+          },
+        },
+      }, { all: true });
+      assert.deepStrictEqual(spreadsheet, {
+        ':type': 'sheet',
+        columns: [
+          'sku',
+          'urlKey',
+          'title',
+        ],
+        data: [
+          {
+            sku: 'foo',
+            urlKey: 'foo',
+            title: 'Foo',
+            variants: undefined,
+          },
+        ],
+      });
+    });
+
+    it('handles includes - noindex, includes noindex, should include', () => {
+      const spreadsheet = toSpreadsheet({
+        foo: {
+          filters: {
+            noindex: true,
+          },
+          data: {
+            urlKey: 'foo',
+            title: 'Foo',
+          },
+        },
+      }, { noindex: true });
+      assert.deepStrictEqual(spreadsheet, {
+        ':type': 'sheet',
+        columns: [
+          'sku',
+          'urlKey',
+          'title',
+        ],
+        data: [
+          {
+            sku: 'foo',
+            urlKey: 'foo',
+            title: 'Foo',
+            variants: undefined,
+          },
+        ],
+      });
+    });
+
+    it('handles includes - noindex, includes foo, should not include', () => {
+      const spreadsheet = toSpreadsheet({
+        foo: {
+          filters: {
+            noindex: true,
+          },
+          data: {
+            urlKey: 'foo',
+            title: 'Foo',
+          },
+        },
+      }, { foo: true });
+      assert.deepStrictEqual(spreadsheet, {
+        ':type': 'sheet',
+        columns: [
+          'sku',
+        ],
+        data: [],
       });
     });
   });
