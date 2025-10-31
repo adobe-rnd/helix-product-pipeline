@@ -1,3 +1,10 @@
+## [1.8.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.0...v1.8.1) (2025-10-31)
+
+
+### Bug Fixes
+
+* set authored content cache key ([0c910d2](https://github.com/adobe-rnd/helix-product-pipeline/commit/0c910d2410b5cafd2307084848b58d0c174768e3))
+
 # [1.8.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.7.2...v1.8.0) (2025-10-30)
 
 
