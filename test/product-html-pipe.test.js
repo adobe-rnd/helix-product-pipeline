@@ -125,7 +125,7 @@ describe('Product HTML Pipe Test', () => {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
-      'surrogate-key': 'VS5-46Z_DsIjIydC juOVlP_wU3xIZXph aa9iB4ZoKa28Ulqx gZ8sZQGPdZ1uFask main--site--org',
+      'surrogate-key': 'VS5-46Z_DsIjIydC juOVlP_wU3xIZXph aa9iB4ZoKa28Ulqx gZ8sZQGPdZ1uFask main--site--org mRN24kMQcclw-dMQ',
     });
   });
 
@@ -154,7 +154,7 @@ describe('Product HTML Pipe Test', () => {
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
-      'cache-tag': 'VS5-46Z_DsIjIydC,juOVlP_wU3xIZXph,aa9iB4ZoKa28Ulqx,gZ8sZQGPdZ1uFask,main--site--org',
+      'cache-tag': 'VS5-46Z_DsIjIydC,juOVlP_wU3xIZXph,aa9iB4ZoKa28Ulqx,gZ8sZQGPdZ1uFask,main--site--org,XI4_5DVAssKv-Mlu',
       'cdn-cache-control': 'max-age=300, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
