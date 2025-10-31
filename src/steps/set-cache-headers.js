@@ -12,7 +12,9 @@
 
 /* eslint-disable camelcase */
 
-import { computeProductKeys, compute404Key, computeMediaKeys } from '@dylandepass/helix-product-shared';
+import {
+  computeProductKeys, compute404Key, computeMediaKeys, computeAuthoredContentKey,
+} from '@dylandepass/helix-product-shared';
 
 export const isMediaRequest = (url) => /\/media_[0-9a-f]{40,}[/a-zA-Z0-9_-]*\.[0-9a-z]+$/.test(url.pathname);
 const BYO_CDN_TYPES = ['akamai', 'cloudflare', 'fastly', 'cloudfront'];
@@ -156,13 +158,14 @@ export async function set404CacheHeaders(state, req, resp) {
  */
 export async function setProductCacheHeaders(state, req, resp) {
   const {
-    content, config, org, site,
+    content, config, org, site, contentBusId, info,
   } = state;
   const { sku, urlKey } = content.data || config.route.params;
   const { storeCode, storeViewCode } = config.route.params;
 
-  const keys = await computeProductKeys(org, site, storeCode, storeViewCode, sku, urlKey);
-  setCachingHeaders(req, resp, keys);
+  const productKeys = await computeProductKeys(org, site, storeCode, storeViewCode, sku, urlKey);
+  const authoredContentKey = await computeAuthoredContentKey(contentBusId, info.originalPath);
+  setCachingHeaders(req, resp, [...productKeys, authoredContentKey]);
 }
 
 /**
