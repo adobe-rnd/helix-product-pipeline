@@ -17,6 +17,15 @@ const BREAK_POINTS = [
   { width: '750' },
 ];
 
+/**
+ * Creates an img element
+ * @param {string} src The source URL of the image
+ * @param {string} alt The alt text of the image
+ * @param {string} title The title of the image
+ * @param {string} width The width of the image
+ * @param {string} height The height of the image
+ * @returns {import('hast').Element} The img element
+ */
 function createImgElement(src, alt, title, width, height) {
   return h('img', {
     loading: 'lazy',
@@ -28,6 +37,13 @@ function createImgElement(src, alt, title, width, height) {
   });
 }
 
+/**
+ * Creates a picture element with optimized images
+ * @param {string} src The source URL of the image
+ * @param {string} alt The alt text of the image
+ * @param {string} title The title of the image
+ * @returns {import('hast').Element} The picture element
+ */
 export function createOptimizedPicture(src, alt = '', title = undefined) {
   const url = new URL(src, 'https://localhost/');
   const { pathname, hash = '' } = url;
@@ -79,6 +95,12 @@ export function createOptimizedPicture(src, alt = '', title = undefined) {
   return h('picture', sources);
 }
 
+/**
+ * Constructs the image URL
+ * @param {PipelineState} state
+ * @param {string} urlOrPath The URL or path of the image
+ * @returns {string} The constructed image URL
+ */
 export function constructImageUrl(state, urlOrPath) {
   if (!urlOrPath) {
     return '';

@@ -14,7 +14,6 @@ import { setProduct404CacheHeaders } from './set-cache-headers.js';
 
 /**
  * Loads the 404.html from code-bus and stores it in `res.body`
- * @type PipelineStep
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
@@ -33,7 +32,7 @@ export default async function fetch404(state, req, res) {
     }
 
     // keep 404 response status
-    res.body = ret.body;
+    res.body = await ret.text();
     res.headers.set('last-modified', ret.headers.get('last-modified'));
     res.headers.set('content-type', 'text/html; charset=utf-8');
   }

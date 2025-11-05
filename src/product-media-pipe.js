@@ -35,7 +35,7 @@ export async function productMediaPipe(state, req) {
     await initConfig(state, req, res);
 
     state.timer?.update('content-fetch');
-    await fetchMedia(state, req, res);
+    await fetchMedia(state, res);
     if (res.status === 404) {
       return new PipelineResponse('', {
         status: 404,

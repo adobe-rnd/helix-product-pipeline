@@ -80,6 +80,7 @@ function convertToJsonLD(state, product) {
     gtin,
   } = product;
 
+  /** @type {any} */
   const jsonld = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -109,13 +110,11 @@ function convertToJsonLD(state, product) {
 }
 
 /**
- * @type PipelineStep
  * @param {PipelineState} state
- * @param {PipelineRequest} req
  * @param {PipelineResponse} res
  * @returns {Promise<void>}
  */
-export default async function render(state, _, res) {
+export default async function render(state, res) {
   const { content } = state;
   const { hast } = content;
 

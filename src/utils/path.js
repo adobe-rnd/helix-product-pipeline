@@ -37,9 +37,12 @@ export function getPathInfo(path) {
     originalPath: path,
     originalFilename: segs.pop(),
     unmappedPath: '',
+    pathPrefix: '',
+    path: '',
+    resourcePath: '',
   };
 
-  // create the path prefix.. I
+  // create the path prefix..
   const prefix = segs.join('/');
   if (prefix) {
     info.pathPrefix = `/${prefix}`;

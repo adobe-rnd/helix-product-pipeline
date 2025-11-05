@@ -30,8 +30,8 @@ export function setLastModified(state, res) {
 /**
  * Returns the last modified date from response headers, giving 'x-amz-meta-x-source-last-modified'
  * preference.
- * @param {Map<string, string>} headers
- * @return {string} the last modified date
+ * @param {Map<string, string> | Headers} headers
+ * @returns {string | null} the last modified date
  */
 export function extractLastModified(headers) {
   let lastModified = headers.get('x-amz-meta-x-source-last-modified');

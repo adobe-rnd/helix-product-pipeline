@@ -21,7 +21,6 @@ import fetchMedia from '../../src/steps/fetch-media.js';
 describe('fetchMedia', () => {
   let s3Loader;
   let state;
-  let req;
   let res;
 
   beforeEach(() => {
@@ -38,7 +37,6 @@ describe('fetchMedia', () => {
       content: {},
     };
 
-    req = {};
     res = new PipelineResponse('');
   });
 
@@ -51,7 +49,7 @@ describe('fetchMedia', () => {
     s3Loader.headers('media_11fa1411c77cbc54df349acdf818c84519d82750.png', 'content-type', 'image/png');
     s3Loader.headers('media_11fa1411c77cbc54df349acdf818c84519d82750.png', 'content-length', '1000');
 
-    await fetchMedia(state, req, res);
+    await fetchMedia(state, res);
 
     assert.strictEqual(res.status, 200);
     assert.strictEqual(res.error, undefined);
@@ -67,7 +65,7 @@ describe('fetchMedia', () => {
 
     s3Loader.override('media_11fa1411c77cbc54df349acdf818c84519d82750.png', Buffer.from([]));
     s3Loader.headers('media_11fa1411c77cbc54df349acdf818c84519d82750.png', 'last-modified', 'Tue, 15 Jul 2025 12:00:00 GMT');
-    await fetchMedia(state, req, res);
+    await fetchMedia(state, res);
 
     assert.strictEqual(res.status, 200);
     // Verify that lastModifiedSources is set (this is handled by recordLastModified)
@@ -82,7 +80,7 @@ describe('fetchMedia', () => {
     state.info.originalFilename = 'non-existent-file.png';
     state.info.resourcePath = '/non-existent-file.png';
 
-    await fetchMedia(state, req, res);
+    await fetchMedia(state, res);
 
     assert.strictEqual(res.status, 404);
     assert.strictEqual(res.error, 'failed to load /non-existent-file.png from product-bus: 404');
@@ -99,7 +97,7 @@ describe('fetchMedia', () => {
       res.status = 200;
       res.error = undefined;
 
-      await fetchMedia(state, req, res);
+      await fetchMedia(state, res);
 
       assert.strictEqual(res.status, 502);
       assert.strictEqual(res.error, `failed to load /media_11fa1411c77cbc54df349acdf818c84519d82750.png from product-bus: ${status}`);

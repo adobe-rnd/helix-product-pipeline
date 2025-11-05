@@ -4,23 +4,22 @@ import type {
   PipelineState as ImportedPipelineState,
   PipelineStep as ImportedPipelineStep,
   PipelineSiteConfig as ImportedPipelineSiteConfig,
+  PipelineContent as ImportedPipelineContent,
   PathInfo as ImportedPathInfo,
 } from '@adobe/helix-html-pipeline';
+import type { Root } from 'hast';
 
 declare global {
   export * as SharedTypes from '@dylandepass/helix-product-shared/types';
-
-  export type PathInfo = ImportedPathInfo;
-  export type PipelineRequest = ImportedPipelineRequest;
-  export type PipelineStep = ImportedPipelineStep;
-
-  export interface LastModifiedSource {
-    time: number;
-    date: string;
+  
+  export interface PipelineRequest extends ImportedPipelineRequest {
+    params: Record<string, string>;
   }
 
+  export type PipelineStep = ImportedPipelineStep;
+
   export interface PipelineResponse extends ImportedPipelineResponse {
-    lastModifiedSources?: Record<string, LastModifiedSource>;
+    document: Root;
   }
 
   export interface PipelineProductRouteConfig {
@@ -34,15 +33,69 @@ declare global {
 
   export interface PipelineSiteConfig extends ImportedPipelineSiteConfig {
     route: PipelineProductRouteConfig;
+    public: PublicConfig;
     merchantFeedConfig?: {
       title?: string;
       description?: string;
       link?: string;
     };
+    cdn?: {
+      preview?: {
+        host?: string;
+      };
+      live?: {
+        host?: string;
+      };
+      prod?: {
+        host?: string;
+      };
+    };
+    lastModified?: string;
+  }
+
+  export interface PathInfo extends ImportedPathInfo {
+    pathPrefix: string;
   }
 
   export interface PipelineState extends ImportedPipelineState {
     config: PipelineSiteConfig;
+    info: PathInfo;
+    content: PipelineContent;
+  }
+
+  export interface PipelineContent extends ImportedPipelineContent {
+    edge: string;
+    data: ProductBusEntry;
+  }
+
+  export interface PublicConfig {
+    patterns: {
+      base: {
+        storeViewCode: string
+        storeCode: string
+      }
+      [pattern: string]: {
+        pageType?: string
+        storeViewCode?: string
+        storeCode?: string
+      }
+    }
+  
+    productIndexerConfig: {
+      properties: Record<string, string>
+    }
+  
+    mixerConfig: {
+      patterns: Record<string, string>
+      backends: Record<
+        string,
+        {
+          origin: string
+          pathPrefix?: string
+          path?: string
+        }
+      >
+    }
   }
 }
 

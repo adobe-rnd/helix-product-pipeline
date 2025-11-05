@@ -19,10 +19,7 @@ import { constructImageUrl } from './create-pictures.js';
 import { limitWords, stripHTML } from './utils.js';
 
 /**
- * @type PipelineStep
  * @param {PipelineState} state
- * @param {PipelineRequest} req
- * @param {PipelineResponse} res
  * @returns {Promise<void>}
  */
 export default async function render(state) {
@@ -76,6 +73,7 @@ export default async function render(state) {
     const $headHtml = await unified()
       .use(rehypeParse, { fragment: true })
       .parse(headHtml);
+    // @ts-ignore
     head.children.push(...$headHtml.children);
   }
 }

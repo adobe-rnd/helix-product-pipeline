@@ -58,11 +58,9 @@ function extractPathParams(pattern, path) {
  * Initializes the pipeline state with the config from the config service
  * (passed via the `config` parameter during state construction).
  *
- * @type PipelineStep
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
- * @returns {Promise<void>}
  */
 export default function initConfig(state, req, res) {
   const { config } = state;
@@ -74,6 +72,9 @@ export default function initConfig(state, req, res) {
   );
 
   const resolved = {
+    pageType: 'product',
+    storeViewCode: '',
+    storeCode: '',
     ...paths.reduce((conf, key) => ({
       ...conf,
       ...confMap[key],

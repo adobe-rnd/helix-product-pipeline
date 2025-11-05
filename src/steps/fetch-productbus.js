@@ -16,7 +16,6 @@ const INDEXER_URL_KEYS = ['index', 'merchant-center-feed'];
 
 /**
  * Loads the content from either the content-bus or code-bus and stores it in `state.content`
- * @type PipelineStep
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
