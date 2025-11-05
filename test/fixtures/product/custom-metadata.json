@@ -24,8 +24,7 @@
   "metadata": {
     "foo": "bar",
     "baz": "qux",
-    "robots": "noindex",
-    "pipeline": "next"
+    "robots": "noindex"
   },
   "options": [
     {

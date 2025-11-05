@@ -20,7 +20,6 @@ import fetchEdgeContent from './steps/fetch-edge-product.js';
 import { setLastModified } from './utils/last-modified.js';
 import html from './steps/make-html.js';
 import renderBody from './steps/render-body.js';
-import renderBodyV2 from './steps/render-body-v2.js';
 import renderJsonld from './steps/render-jsonld.js';
 import renderHead from './steps/render-head.js';
 import tohtml from './steps/stringify-response.js';
@@ -73,12 +72,8 @@ export async function productHTMLPipe(state, req) {
     await html(state);
     await renderHead(state);
 
-    if (state.content?.data?.metadata?.pipeline === 'next') {
-      await fetchEdgeContent(state, res);
-      await renderBodyV2(state, req, res);
-    } else {
-      await renderBody(state, req, res);
-    }
+    await fetchEdgeContent(state, res);
+    await renderBody(state, req, res);
     await renderJsonld(state, req, res);
     await addHeadingIds(state);
     state.timer?.update('serialize');

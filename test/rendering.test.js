@@ -143,20 +143,12 @@ describe('Rendering', () => {
   }
 
   describe('Product', () => {
-    it('renders v1 product-configurable correctly', async () => {
-      await testRender('v1-configurable-product', 'html', 200, 'live', false);
-    });
-
     it('renders product-configurable correctly', async () => {
       await testRender('product-configurable', 'html', 200);
     });
 
     it('renders product-simple correctly', async () => {
       await testRender('product-simple', 'html', 200);
-    });
-
-    it('renders v1 product-simple correctly', async () => {
-      await testRender('v1-simple-product', 'html', 200, 'live', false);
     });
 
     it('renders product-bundle correctly', async () => {
@@ -221,6 +213,10 @@ describe('Rendering', () => {
 
     it('renders with no product content, only text description', async () => {
       await testRender('no-product-content-text-description', 'html', 200, 'live', false);
+    });
+
+    it('renders with no product content', async () => {
+      await testRender('no-product-content', 'html', 200, 'live', false);
     });
   });
 });

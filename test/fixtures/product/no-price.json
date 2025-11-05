@@ -17,9 +17,6 @@
   "brand": "Blendify",
   "availability": "InStock",
   "price": null,
-  "metadata": {
-    "pipeline": "next"
-  },
   "options": [
     {
       "id": "color",
