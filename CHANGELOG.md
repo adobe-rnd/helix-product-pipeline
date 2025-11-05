@@ -1,3 +1,10 @@
+## [1.8.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.1...v1.8.2) (2025-11-05)
+
+
+### Bug Fixes
+
+* remove special handling for next pipeline ([2250862](https://github.com/adobe-rnd/helix-product-pipeline/commit/2250862f5dfc02a0ffca27f1fce7bd3ad6a9f200))
+
 ## [1.8.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.0...v1.8.1) (2025-10-31)
 
 
