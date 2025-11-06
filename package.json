@@ -45,7 +45,7 @@
     "node": ">=16.x"
   },
   "dependencies": {
-    "@adobe/helix-html-pipeline": "6.25.2",
+    "@adobe/helix-html-pipeline": "6.27.9",
     "@adobe/helix-shared-utils": "3.0.2",
     "@dylandepass/helix-product-shared": "1.2.4",
     "github-slugger": "2.0.0",
