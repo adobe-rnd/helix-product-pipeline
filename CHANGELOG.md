@@ -1,3 +1,12 @@
+## [1.8.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.2...v1.8.3) (2025-11-07)
+
+
+### Bug Fixes
+
+* html pipeline lib update ([85b0835](https://github.com/adobe-rnd/helix-product-pipeline/commit/85b0835568e53d0e6a6163098f6f8508100b43a8))
+* no type checking tests ([2ef75cd](https://github.com/adobe-rnd/helix-product-pipeline/commit/2ef75cd427115b96edc0c7e829c4026c3ad92958))
+* types work ([d985ba5](https://github.com/adobe-rnd/helix-product-pipeline/commit/d985ba5e3e049032f0994554287061b9818e8766))
+
 ## [1.8.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.1...v1.8.2) (2025-11-05)
 
 
