@@ -123,7 +123,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 404;
         },
       },
@@ -156,7 +156,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 200;
           res.error = 'warning message';
         },
@@ -190,7 +190,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 500;
           res.error = 'server error';
         },
@@ -223,7 +223,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 200;
           state.content = {
             headers: new Map([['content-type', 'image/png']]),
@@ -272,7 +272,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 200;
           state.content = {
             headers: new Map(),
@@ -309,7 +309,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 200;
           state.content = {
             headers: new Map(),
@@ -346,7 +346,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 200;
           state.content = {
             headers: new Map(),
@@ -447,7 +447,7 @@ describe('Product Media Pipe Test', () => {
         default: async () => {},
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           res.status = 200;
           state.content = {
             headers: new Map(),
@@ -521,7 +521,7 @@ describe('Product Media Pipe Test', () => {
         },
       },
       '../src/steps/fetch-media.js': {
-        default: async (state, req, res) => {
+        default: async (state, res) => {
           callOrder.push('fetchMedia');
           res.status = 200;
           state.content = {

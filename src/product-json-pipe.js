@@ -69,11 +69,13 @@ export async function productJSONPipe(state, req) {
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       status: e instanceof PipelineStatusError ? e.code : 500,
+      headers: {
+        'x-error': cleanupHeaderValue(e.message),
+      },
     });
     const level = errorRes.status >= 500 ? 'error' : 'info';
     log[level](`pipeline status: ${errorRes.status} ${e.message}`, e);
     errorRes.body = '';
-    errorRes.headers.set('x-error', cleanupHeaderValue(e.message));
     if (errorRes.status === 404) {
       await set404CacheHeaders(state, req, errorRes);
     }

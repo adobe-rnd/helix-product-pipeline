@@ -14,13 +14,12 @@ import { visit } from 'unist-util-visit';
 
 /**
  * Adds missing `id` attributes to the headings
- * @type PipelineStep
- * @param {PipelineContent } content The current context of processing pipeline
+ * @param {PipelineState} state
  */
 export default async function fixSections({ content }) {
   const { slugger, hast } = content;
   visit(hast, (node) => {
-    if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)) {
+    if (node.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)) {
       const { properties } = node;
       if (!properties.id) {
         const text = toString(node).trim();

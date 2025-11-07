@@ -164,8 +164,9 @@ describe('Product HTML Pipe Test', () => {
   it('handles a 404', async () => {
     const dirname = path.dirname(fileURLToPath(import.meta.url));
     const fetchMockGlobal = fetchMock.mockGlobal();
+    const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
     fetchMockGlobal.get('https://main--helix-pages--adobe.aem.live/404.html', {
-      body: await readFile(path.join(dirname, 'fixtures', 'product', '404.html')),
+      body: html404,
       headers: {
         'cache-control': 'max-age=7200, must-revalidate',
         'Content-Type': 'text/html; charset=utf-8',
@@ -201,6 +202,9 @@ describe('Product HTML Pipe Test', () => {
       'cdn-cache-control': 'max-age=300, must-revalidate',
       'x-error': 'failed to load /products/product-404.json from product-bus: 404',
     });
+
+    const resBody = resp.body;
+    assert.strictEqual(resBody, html404.toString());
   });
 
   it('handles html generation exceptions during pipeline execution', async () => {

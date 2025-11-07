@@ -44,14 +44,20 @@ function renderMedia(media) {
   return h('p', createOptimizedPicture(url, alt, title));
 }
 
+/**
+ * Render the product content.
+ * @param {string} edge
+ * @param {string} description
+ * @returns {import('hast').Element | import('hast').Root}
+ */
 function renderProductContent(edge, description) {
   // If content exists in edge, use it, otherwise use description
   if (edge) {
-    return fromHtml(edge, { fragment: true });
+    return (fromHtml(edge, { fragment: true }));
   }
 
   if (!description) {
-    return '';
+    return undefined;
   }
 
   const descriptionIsHTML = maybeHTML(description);
@@ -72,7 +78,7 @@ function variantDataAttrs(variant) {
 }
 
 /**
- * @type PipelineStep
+ * Render the body of the product page.
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
@@ -102,6 +108,7 @@ export default async function render(state, req, res) {
   ];
 
   if (productContent) {
+    // @ts-ignore
     main.children.push(productContent);
   }
 

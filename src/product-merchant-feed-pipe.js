@@ -194,13 +194,15 @@ export async function productMerchantFeedPipe(state, req) {
     res.body = toFeedXML(state, req, state.content.data);
   } catch (e) {
     const errorRes = new PipelineResponse('', {
-      /* c8 ignore next 3 */
+      /* c8 ignore next 6 */
       status: e instanceof PipelineStatusError ? e.code : 500,
+      headers: {
+        'x-error': cleanupHeaderValue(e.message),
+      },
     });
     const level = errorRes.status >= 500 ? 'error' : 'info';
     log[level](`pipeline status: ${errorRes.status} ${e.message}`, e);
     errorRes.body = '';
-    errorRes.headers.set('x-error', cleanupHeaderValue(e.message));
     if (errorRes.status === 404) {
       await set404CacheHeaders(state, req, errorRes);
     }

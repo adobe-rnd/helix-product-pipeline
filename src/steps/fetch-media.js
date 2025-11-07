@@ -13,13 +13,11 @@ import { extractLastModified, recordLastModified } from '../utils/last-modified.
 
 /**
  * Loads the content from either the content-bus or code-bus and stores it in `state.content`
- * @type PipelineStep
  * @param {PipelineState} state
- * @param {PipelineRequest} req
  * @param {PipelineResponse} res
  * @returns {Promise<void>}
  */
-export default async function fetchMedia(state, req, res) {
+export default async function fetchMedia(state, res) {
   const {
     info, owner, repo,
   } = state;

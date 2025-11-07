@@ -59,7 +59,7 @@ export function setCachingHeaders(req, resp, cacheKeys) {
     resp.headers.set('cache-control', 'private; no-cache');
   } else {
     if (isMediaRequest(url)) {
-      browserTTL = resp.ok ? 2592000 : 3600;
+      browserTTL = resp.status === 200 ? 2592000 : 3600;
     } else {
       browserTTL = 7200;
     }
@@ -72,7 +72,7 @@ export function setCachingHeaders(req, resp, cacheKeys) {
     // don't cache 400 & 401 repsonses in order to avoid potential downstream caching issues
     cdnTTL = 0;
   } else if (isMediaRequest(url)) {
-    cdnTTL = resp.ok ? 2592000 : 3600;
+    cdnTTL = resp.status === 200 ? 2592000 : 3600;
   } else {
     cdnTTL = pushInvalidation ? 172800 : 300;
   }

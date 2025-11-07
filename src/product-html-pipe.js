@@ -41,6 +41,7 @@ export async function productHTMLPipe(state, req) {
     });
   }
 
+  /** @type {PipelineResponse} */
   const res = new PipelineResponse('', {
     headers: {
       'content-type': 'text/html; charset=utf-8',
@@ -74,7 +75,7 @@ export async function productHTMLPipe(state, req) {
 
     await fetchEdgeContent(state, res);
     await renderBody(state, req, res);
-    await renderJsonld(state, req, res);
+    await renderJsonld(state, res);
     await addHeadingIds(state);
     state.timer?.update('serialize');
     await tohtml(state, req, res);

@@ -14,7 +14,6 @@ import { h } from 'hastscript';
 
 /**
  * Converts the markdown to a jsdom dom and stores it in `content.document`
- * @type PipelineStep
  * @param {PipelineState} state
  */
 export default function html(state) {
