@@ -1,6 +1,7 @@
 {
   "vbndax5ks": {
     "data": {
+      "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
       "urlKey": "ascent-x5-smartprep-kitchen-system",
       "title": "Ascent® X5 SmartPrep™ Kitchen System",
       "price": "949.95",
@@ -9,11 +10,13 @@
       "series": "Ascent X Series",
       "variants": {
         "073495-04-VB": {
+          "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
           "title": "Ascent X5-Brushed Stainless Metal Finish",
           "price": "949.95",
           "image": "./media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg"
         },
         "074104-04-VB": {
+          "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
           "title": "Ascent X5-Graphite Metal Finish",
           "price": "949.95",
           "image": "./media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png"
@@ -24,6 +27,7 @@
   },
   "x2-kitchen-system": {
     "data": {
+      "url": "https://www.example.com/ascent-x2-smartprep-kitchen-system",
       "urlKey": "ascent-x2-smartprep-kitchen-system",
       "title": "Ascent® X2 SmartPrep Kitchen System",
       "price": "749.95",
@@ -33,6 +37,7 @@
       "series": "Ascent X Series",
       "variants": {
         "075710-100": {
+          "url": "https://www.example.com/ascent-x2-smartprep-kitchen-system",
           "title": "Ascent® X2 SmartPrep Kitchen System-Shadow Black",
           "price": "749.95",
           "image": "./media_42814a23e6b2d867123d19097af62a27234991ab.jpg"
@@ -42,6 +47,7 @@
   },
   "ascent-x5": {
     "data": {
+      "url": "https://www.example.com/ascent-x5",
       "urlKey": "ascent-x5",
       "title": "Ascent® X5",
       "price": "749.95",
@@ -51,11 +57,13 @@
       "series": "Ascent X Series",
       "variants": {
         "073495-04": {
+          "url": "https://www.example.com/ascent-x5",
           "title": "Ascent X5-Brushed Stainless Metal Finish",
           "price": "749.95",
           "image": "./media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg"
         },
         "074104-04": {
+          "url": "https://www.example.com/ascent-x5",
           "title": "Ascent® X5-Graphite Metal Finish",
           "price": "749.95",
           "image": "./media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png"
@@ -65,6 +73,7 @@
   },
   "ascent-x3": {
     "data": {
+      "url": "https://www.example.com/ascent-x3",
       "urlKey": "ascent-x3",
       "title": "Ascent® X3",
       "price": "649.95",
@@ -74,11 +83,13 @@
       "series": "Ascent X Series",
       "variants": {
         "073493": {
+          "url": "https://www.example.com/ascent-x3",
           "title": "Ascent X3-Shadow Black",
           "price": "649.95",
           "image": "./media_15c2801b61b5e1736ff828154da0bfbfc637cd4e.jpg"
         },
         "074097": {
+          "url": "https://www.example.com/ascent-x3",
           "title": "Ascent X3-Polar White",
           "price": "649.95",
           "image": "./media_fdd5312b15e741890074232b7ca5567d9ddae532.jpg"
@@ -88,6 +99,7 @@
   },
   "ascent-x2": {
     "data": {
+      "url": "https://www.example.com/ascent-x2",
       "urlKey": "ascent-x2",
       "title": "Ascent® X2",
       "price": "549.95",
@@ -97,21 +109,25 @@
       "series": "Ascent X Series",
       "variants": {
         "073492-04": {
+          "url": "https://www.example.com/ascent-x2",
           "title": "Ascent X2-Shadow Black",
           "price": "549.95",
           "image": "./media_bc62e9d86264b33e2600b8aa889cc49e9f249289.jpg"
         },
         "074094-04": {
+          "url": "https://www.example.com/ascent-x2",
           "title": "Ascent X2-Polar White",
           "price": "549.95",
           "image": "./media_413e9a9e8bd489edc5f383138d82004769470b6f.jpg"
         },
         "074095-04": {
+          "url": "https://www.example.com/ascent-x2",
           "title": "Ascent X2- Nano Gray",
           "price": "549.95",
           "image": "./media_424a2d7c1a6acc023603016958343809df5da517.jpg"
         },
         "074096-04": {
+          "url": "https://www.example.com/ascent-x2",
           "title": "Ascent X2-Midnight Blue",
           "price": "549.95",
           "image": "./media_7c4ea652378a9560b28e767dab1ebee177e114f8.jpg"
@@ -121,6 +137,7 @@
   },
   "vbnd5200lb": {
     "data": {
+      "url": "https://www.example.com/5200-legacy-bundle",
       "urlKey": "5200-legacy-bundle",
       "title": "5200 Legacy Bundle",
       "price": "649.95",
@@ -129,16 +146,19 @@
       "description": "",
       "variants": {
         "001372-1093-VB": {
+          "url": "https://www.example.com/5200-legacy-bundle",
           "title": "5200 Standard - Getting Started",
           "price": "649.95",
           "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg"
         },
         "001371-1092-VB": {
+          "url": "https://www.example.com/5200-legacy-bundle",
           "title": "5200 Standard - Getting Started White",
           "price": "649.95",
           "image": "./media_64c4c80da4be5f6927530dd69d04a6e41e24039e.jpg"
         },
         "001392-1138-VB": {
+          "url": "https://www.example.com/5200-legacy-bundle",
           "title": "5200 Standard - Getting Started Red",
           "price": "649.95",
           "image": "./media_afb408cb9a5dd7812327b21f3d1265818a2c2c53.jpg"
@@ -148,6 +168,7 @@
   },
   "propel750": {
     "data": {
+      "url": "https://www.example.com/propel-series-750",
       "urlKey": "propel-series-750",
       "title": "Propel 750",
       "price": "629.95",
@@ -156,21 +177,25 @@
       "description": "",
       "variants": {
         "071395": {
+          "url": "https://www.example.com/propel-series-750",
           "title": "Propel Series 750 Black",
           "price": "629.95",
           "image": "./media_da2da61a3412c3f8ed311a10ce1d30147f7673e0.jpg"
         },
         "073294": {
+          "url": "https://www.example.com/propel-series-750",
           "title": "Propel Series 750 Red",
           "price": "629.95",
           "image": "./media_4e9ffc439f66cc5e662721dd501d506e0b86dcfa.png"
         },
         "073295": {
+          "url": "https://www.example.com/propel-series-750",
           "title": "Propel Series 750 White",
           "price": "629.95",
           "image": "./media_462badead7c64b4ac3d890e2353c3353fa76dbec.png"
         },
         "073296": {
+          "url": "https://www.example.com/propel-series-750",
           "title": "Propel Series 750 Slate",
           "price": "629.95",
           "image": "./media_289ac0dd71906308849bf789920c2e7414b303cf.png"
@@ -181,6 +206,7 @@
   "propel510": {
     "data": {
       "urlKey": "propel-series-510",
+      "url": "https://www.example.com/propel-series-510",
       "title": "Propel 510",
       "price": "499.95",
       "colors": "Black,Red,White,Slate",
@@ -189,19 +215,23 @@
       "variants": {
         "071394": {
           "title": "Propel Series 510 - Black",
-          "price": "499.95"
+          "price": "499.95",
+          "url": "https://www.example.com/propel-series-510"
         },
         "073291": {
+          "url": "https://www.example.com/propel-series-510",
           "title": "Propel Series 510 - Red",
           "price": "499.95",
           "image": "./media_6b91bd8f1ec90f0d75e085323b4837373ee7742c.png"
         },
         "073292": {
+          "url": "https://www.example.com/propel-series-510",
           "title": "Propel Series 510 - White",
           "price": "499.95",
           "image": "./media_236c6c9a5b3edaf055dd84f447c9d4894b643f83.png"
         },
         "073293": {
+          "url": "https://www.example.com/propel-series-510",
           "title": "Propel Series 510 - Slate",
           "price": "499.95",
           "image": "./media_760d2307ac66ab8cc9b96030d52bfd57c848e686.png"
@@ -211,6 +241,7 @@
   },
   "vbndibcb": {
     "data": {
+      "url": "https://www.example.com/5-speed-immersion-blender-complete-bundle",
       "urlKey": "5-speed-immersion-blender-complete-bundle",
       "title": "5-Speed Immersion Blender Complete Bundle",
       "price": "269.95",
@@ -222,6 +253,7 @@
   },
   "vbnde310": {
     "data": {
+      "url": "https://www.example.com/e310-and-pca-bundle",
       "urlKey": "e310-and-pca-bundle",
       "title": "E310 + Personal Cup Adapter",
       "price": "499.95",
@@ -231,15 +263,18 @@
       "series": "Explorian Series",
       "variants": {
         "065971-VB": {
+          "url": "https://www.example.com/e310-and-pca-bundle",
           "title": "E310 Black",
           "price": "499.95"
         },
         "066071-VB": {
+          "url": "https://www.example.com/e310-and-pca-bundle",
           "title": "E310 Red",
           "price": "499.95",
           "image": "./media_b5c889e055c690555d34d09fd6ac1880371f87eb.jpg"
         },
         "065755-VB": {
+          "url": "https://www.example.com/e310-and-pca-bundle",
           "title": "E310 Slate",
           "price": "499.95",
           "image": "./media_b4070b91e8066da94cb7b79bd38f9bdbec1faf09.jpg"
@@ -249,7 +284,8 @@
   },
   "5-speed-immersion-blender-4-piece-deluxe-bundle": {
     "data": {
-      "urlKey": "4-piece-deluxe-immersion-blender-bundle",
+      "url": "https://www.example.com/5-piece-deluxe-immersion-blender-bundle",
+      "urlKey": "5-piece-deluxe-immersion-blender-bundle",
       "title": "5-Speed Immersion Blender 4-Piece Deluxe Bundle",
       "price": "259.95",
       "colors": "Black,Red,White",
@@ -257,16 +293,19 @@
       "description": "4-Piece Deluxe Immersion Blender Bundle ",
       "variants": {
         "071239": {
+          "url": "https://www.example.com/5-piece-deluxe-immersion-blender-bundle",
           "title": "4-Piece Deluxe Immersion Blender Bundle-Black",
           "price": "259.95",
           "image": "./media_7c70eae5f43e8c9aa20bb33a0b2e9fe938c7c8a4.png"
         },
         "073791": {
+          "url": "https://www.example.com/5-piece-deluxe-immersion-blender-bundle",
           "title": "4-Piece Deluxe Immersion Blender Bundle-Red",
           "price": "259.95",
           "image": "./media_d269f206ec3190ef9793666e0bf1d681a72717ac.jpg"
         },
         "073792": {
+          "url": "https://www.example.com/5-piece-deluxe-immersion-blender-bundle",
           "title": "4-Piece Deluxe Immersion Blender Bundle-White",
           "price": "259.95",
           "image": "./media_87e27c4d4fb78252924d8d730191bbdecb37edcd.jpg"
@@ -276,6 +315,7 @@
   },
   "vbndp750": {
     "data": {
+      "url": "https://www.example.com/propel-750-classic-bundle",
       "urlKey": "propel-750-classic-bundle",
       "title": "Propel 750 Classic Bundle",
       "price": "699.95",
@@ -285,21 +325,25 @@
       "series": "Propel Series",
       "variants": {
         "071395-VB": {
+          "url": "https://www.example.com/propel-750-classic-bundle",
           "title": "Propel Series 750 Black",
           "price": "699.95",
           "image": "./media_da2da61a3412c3f8ed311a10ce1d30147f7673e0.jpg"
         },
         "073294-VB": {
+          "url": "https://www.example.com/propel-750-classic-bundle",
           "title": "Propel Series 750 Red",
           "price": "699.95",
           "image": "./media_4e9ffc439f66cc5e662721dd501d506e0b86dcfa.png"
         },
         "073295-VB": {
+          "url": "https://www.example.com/propel-750-classic-bundle",
           "title": "Propel Series 750 White",
           "price": "699.95",
           "image": "./media_462badead7c64b4ac3d890e2353c3353fa76dbec.png"
         },
         "073296-VB": {
+          "url": "https://www.example.com/propel-750-classic-bundle",
           "title": "Propel Series 750 Slate",
           "price": "699.95",
           "image": "./media_289ac0dd71906308849bf789920c2e7414b303cf.png"
@@ -309,6 +353,7 @@
   },
   "5-speed-immersion-blender": {
     "data": {
+      "url": "https://www.example.com/5-speed-immersion-blender",
       "urlKey": "5-speed-immersion-blender",
       "title": "5-Speed Immersion Blender",
       "price": "169.95",
@@ -318,11 +363,13 @@
       "series": "Immersion",
       "variants": {
         "067991": {
+          "url": "https://www.example.com/5-speed-immersion-blender",
           "title": "Vitamix Immersion Blender-Black",
           "price": "169.95",
           "image": "./media_bffe56dc2da48744128a4babed392e2e3b44b423.png"
         },
         "074051": {
+          "url": "https://www.example.com/5-speed-immersion-blender",
           "title": "Vitamix Immersion Blender-White",
           "price": "169.95",
           "image": "./media_fd209a85703900becf33e13e7d6a348b00123379.png"
@@ -332,6 +379,7 @@
   },
   "ascent-x4": {
     "data": {
+      "url": "https://www.example.com/ascent-x4",
       "urlKey": "ascent-x4",
       "title": "Ascent® X4",
       "price": "699.95",
@@ -341,21 +389,25 @@
       "series": "Ascent X Series",
       "variants": {
         "073494-04": {
+          "url": "https://www.example.com/ascent-x4",
           "title": "Ascent X4-Brushed Stainless Metal Finish",
           "price": "699.95",
           "image": "./media_d277e72e9c7730679dc59fc6d5df8758728ac1d3.jpg"
         },
         "074100-04": {
+          "url": "https://www.example.com/ascent-x4",
           "title": "Ascent X4-Black Stainless Metal Finish",
           "price": "699.95",
           "image": "./media_585faa6a718633cc9cbe1f4d280acce15fecf842.jpg"
         },
         "074101-04": {
+          "url": "https://www.example.com/ascent-x4",
           "title": "Ascent X4-Graphite Metal Finish",
           "price": "699.95",
           "image": "./media_171f830dfba33ae5e80c0cb58014b2ab0a3d6a40.jpg"
         },
         "074102-04": {
+          "url": "https://www.example.com/ascent-x4",
           "title": "Ascent X4-Polar White",
           "price": "699.95",
           "image": "./media_eb0db244655306781fc24e21dd40a4c7ded43f55.png"
@@ -365,6 +417,7 @@
   },
   "e310": {
     "data": {
+      "url": "https://www.example.com/e310",
       "urlKey": "e310",
       "title": "E310",
       "price": "379.95",
@@ -374,15 +427,18 @@
       "series": "Explorian Series",
       "variants": {
         "065971": {
+          "url": "https://www.example.com/e310",
           "title": "E310 Black",
           "price": "379.95"
         },
         "066071": {
+          "url": "https://www.example.com/e310",
           "title": "E310 Red",
           "price": "379.95",
           "image": "./media_b5c889e055c690555d34d09fd6ac1880371f87eb.jpg"
         },
         "065755": {
+          "url": "https://www.example.com/e310",
           "title": "E310 Slate",
           "price": "379.95",
           "image": "./media_b4070b91e8066da94cb7b79bd38f9bdbec1faf09.jpg"
@@ -392,6 +448,7 @@
   },
   "5-speed-immersion-blender-3-piece-bundle": {
     "data": {
+      "url": "https://www.example.com/5-speed-immersion-blender-3-piece-bundle",
       "urlKey": "5-speed-immersion-blender-3-piece-bundle",
       "title": "5-Speed Immersion Blender 3-Piece Bundle",
       "price": "189.95",
@@ -401,6 +458,7 @@
       "series": "Immersion",
       "variants": {
         "071238": {
+          "url": "https://www.example.com/5-speed-immersion-blender-3-piece-bundle",
           "title": "5-Speed Immersion Blender 3-Piece Bundle-Black",
           "price": "189.95",
           "image": "./media_8a82902bdc81f389fe13e9ceaf7c60984fcb06f5.jpg"
@@ -410,6 +468,7 @@
   },
   "a2300": {
     "data": {
+      "url": "https://www.example.com/a2300",
       "urlKey": "a2300",
       "title": "A2300",
       "price": "399.95",
@@ -419,21 +478,25 @@
       "series": "Ascent Series",
       "variants": {
         "061006": {
+          "url": "https://www.example.com/a2300",
           "title": "A2300 Black US",
           "price": "399.95",
           "image": "./media_13f34abcff863c53e25028911749e9a9d1d6f1c4.jpg"
         },
         "062047": {
+          "url": "https://www.example.com/a2300",
           "title": "A2300 Red US",
           "price": "399.95",
           "image": "./media_a378c3b84062ab2631361994fb52f68090b7ecd6.jpg"
         },
         "062049": {
+          "url": "https://www.example.com/a2300",
           "title": "A2300 White US",
           "price": "399.95",
           "image": "./media_5ad686c41788061ad405b9d1119826d389628951.jpg"
         },
         "062326": {
+          "url": "https://www.example.com/a2300",
           "title": "A2300 Slate US/CA",
           "price": "399.95",
           "image": "./media_388262d85b810d60aae9aacf4acf19c3f4d3f3b3.jpg"
@@ -443,6 +506,7 @@
   },
   "certified-reconditioned-explorian-series": {
     "data": {
+      "url": "https://www.example.com/certified-reconditioned-explorian",
       "urlKey": "certified-reconditioned-explorian",
       "title": "Certified Reconditioned Explorian™ Series",
       "price": "269.95",
@@ -451,11 +515,13 @@
       "description": "",
       "variants": {
         "065542": {
+          "url": "https://www.example.com/certified-reconditioned-explorian",
           "title": "Certified Reconditioned Explorian Series Black",
           "price": "269.95",
           "image": "./media_408d41561b90b337412062fa74af7d3080f9e158.jpg"
         },
         "065543": {
+          "url": "https://www.example.com/certified-reconditioned-explorian",
           "title": "Certified Reconditioned Explorian Series Red",
           "price": "269.95",
           "image": "./media_ac88dc6c27b6adb4fbe342c639735c83b6688a35.jpg"
@@ -465,6 +531,7 @@
   },
   "certified-reconditioned-standard": {
     "data": {
+      "url": "https://www.example.com/certified-reconditioned-standard",
       "urlKey": "certified-reconditioned-standard",
       "title": "Certified Reconditioned Standard",
       "price": "349.95",
@@ -473,6 +540,7 @@
       "description": "",
       "variants": {
         "001811": {
+          "url": "https://www.example.com/certified-reconditioned-standard",
           "title": "Certified Reconditioned Standard Black",
           "price": "349.95",
           "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg"
@@ -482,6 +550,7 @@
   },
   "certified-reconditioned-explorian-with-programs": {
     "data": {
+      "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
       "urlKey": "certified-reconditioned-explorian-with-programs",
       "title": "Certified Reconditioned Explorian with Programs",
       "price": "279.95",
@@ -491,11 +560,13 @@
       "series": "Explorian Series",
       "variants": {
         "072611": {
+          "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
           "title": "Certified Reconditioned Explorian with Programs-Black",
           "price": "279.95",
           "image": "./media_d0eaed3e681e355e67c38d02b2eb6b41a3398917.png"
         },
         "072612": {
+          "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
           "title": "Certified Reconditioned Explorian with Programs-Slate",
           "price": "279.95",
           "image": "./media_a496f32fb66c9c3e5419e0b1309c5990841ddc38.png"
@@ -505,6 +576,7 @@
   },
   "certified-reconditioned-a2500": {
     "data": {
+      "url": "https://www.example.com/certified-reconditioned-a2500",
       "urlKey": "certified-reconditioned-a2500",
       "title": "Certified Reconditioned A2500",
       "price": "349.95",
@@ -513,21 +585,25 @@
       "description": "",
       "variants": {
         "065942": {
+          "url": "https://www.example.com/certified-reconditioned-a2500",
           "title": "Certified Reconditioned A2500 Black",
           "price": "349.95",
           "image": "./media_085c82042636dead23dbd72970803237c7d7a2ae.jpg"
         },
         "065943": {
+          "url": "https://www.example.com/certified-reconditioned-a2500",
           "title": "Certified Reconditioned A2500 Red",
           "price": "349.95",
           "image": "./media_cfae20a1aeb34e2b9a5eb3f97599877f9ef617e4.jpg"
         },
         "065945": {
+          "url": "https://www.example.com/certified-reconditioned-a2500",
           "title": "Certified Reconditioned A2500 White",
           "price": "349.95",
           "image": "./media_02420ba40543181cefaf736d243b62f46ba86767.jpg"
         },
         "065944": {
+          "url": "https://www.example.com/certified-reconditioned-a2500",
           "title": "Certified Reconditioned A2500 Slate",
           "price": "349.95",
           "image": "./media_72b36534abcb088ef28eee301fec7938e7543f22.jpg"
@@ -537,6 +613,7 @@
   },
   "certified-reconditioned-a3500": {
     "data": {
+      "url": "https://www.example.com/certified-reconditioned-a3500",
       "urlKey": "certified-reconditioned-a3500",
       "title": "Certified Reconditioned A3500",
       "price": "449.95",
@@ -546,21 +623,25 @@
       "series": "Ascent Series",
       "variants": {
         "065946": {
+          "url": "https://www.example.com/certified-reconditioned-a3500",
           "title": "Certified Reconditioned A3500 BSM",
           "price": "449.95",
           "image": "./media_892a5d5aefae9abeeb5ba9e84a5c21a183e3c40e.jpg"
         },
         "066911": {
+          "url": "https://www.example.com/certified-reconditioned-a3500",
           "title": "Certified Reconditioned A3500 White",
           "price": "449.95",
           "image": "./media_8ced67e4ba1ff91ab336c30418e866373436fd74.jpg"
         },
         "065948": {
+          "url": "https://www.example.com/certified-reconditioned-a3500",
           "title": "Certified Reconditioned A3500 Black Stainless",
           "price": "449.95",
           "image": "./media_35aa0db6d777e331c630ed1aaa041c2f5f08fd30.jpg"
         },
         "065949": {
+          "url": "https://www.example.com/certified-reconditioned-a3500",
           "title": "Certified Reconditioned A3500 Graphite",
           "price": "449.95",
           "image": "./media_33c52f77dbdf939e89a40c893e0d224f780ca9ac.jpg"
@@ -570,6 +651,7 @@
   },
   "certified-reconditioned-propel-750": {
     "data": {
+      "url": "https://www.example.com/certified-reconditioned-propel-750",
       "urlKey": "certified-reconditioned-propel-750",
       "title": "Certified Reconditioned Propel 750",
       "price": "399.95",
@@ -578,6 +660,7 @@
       "description": "",
       "variants": {
         "074592": {
+          "url": "https://www.example.com/certified-reconditioned-propel-750",
           "title": "Certified Reconditioned Propel 750-Black",
           "price": "399.95",
           "image": "./media_7e94e5e540bdf401636579281016f4c1509571d8.png"
@@ -587,6 +670,7 @@
   },
   "x4-kitchen-system": {
     "data": {
+      "url": "https://www.example.com/ascent-x4-gourmet-smartprep-kitchen-system",
       "urlKey": "ascent-x4-gourmet-smartprep-kitchen-system",
       "title": "Ascent® X4 Gourmet SmartPrep Kitchen System",
       "price": "899.95",
@@ -596,6 +680,7 @@
       "series": "Ascent X Series",
       "variants": {
         "075708-100": {
+          "url": "https://www.example.com/ascent-x4-gourmet-smartprep-kitchen-system",
           "title": "Ascent® X4 Gourmet SmartPrep Kitchen System-Polar White",
           "price": "899.95",
           "image": "./media_9d1e9401bd788b2df6d8a5c79a710cca2eac16f3.jpg"
@@ -605,6 +690,7 @@
   },
   "certified-reconditioned-5300": {
     "data": {
+      "url": "https://www.example.com/certified-reconditioned-5300",
       "urlKey": "certified-reconditioned-5300",
       "title": "Certified Reconditioned 5300",
       "price": "269.95",
@@ -613,11 +699,13 @@
       "description": "",
       "variants": {
         "058544": {
+          "url": "https://www.example.com/certified-reconditioned-5300",
           "title": "Certified Reconditioned 5300 Black",
           "price": "269.95",
           "image": "./media_ae1e6523742b57432897737fa7f2b1a6abeafd9e.jpg"
         },
         "058545": {
+          "url": "https://www.example.com/certified-reconditioned-5300",
           "title": "Certified Reconditioned 5300  Red",
           "price": "269.95",
           "image": "./media_fb97ecf636a7c5b0ab9fb8092e33a91ce071e383.jpg"
