@@ -242,6 +242,7 @@
     },
     {
       "sku": "propel510",
+      "url": "https://www.example.com/propel-series-510",
       "urlKey": "propel-series-510",
       "title": "Propel 510",
       "price": "499.95",
@@ -252,12 +253,14 @@
     },
     {
       "parentSku": "propel510",
+      "url": "https://www.example.com/propel-series-510",
       "sku": "071394",
       "title": "Propel Series 510 - Black",
       "price": "499.95"
     },
     {
       "parentSku": "propel510",
+      "url": "https://www.example.com/propel-series-510",
       "sku": "073291",
       "title": "Propel Series 510 - Red",
       "price": "499.95",
@@ -265,6 +268,7 @@
     },
     {
       "parentSku": "propel510",
+      "url": "https://www.example.com/propel-series-510",
       "sku": "073292",
       "title": "Propel Series 510 - White",
       "price": "499.95",
@@ -272,6 +276,7 @@
     },
     {
       "parentSku": "propel510",
+      "url": "https://www.example.com/propel-series-510",
       "sku": "073293",
       "title": "Propel Series 510 - Slate",
       "price": "499.95",
