@@ -143,6 +143,11 @@ ${Object.entries(merchantFeed)
 </rss>`;
 }
 
+/**
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @returns {Promise<PipelineResponse>}
+ */
 export async function productMerchantFeedPipe(state, req) {
   const { log, info } = state;
   const { extension } = info;

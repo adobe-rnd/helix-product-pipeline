@@ -14,3 +14,4 @@ export * from './product-json-pipe.js';
 export * from './product-media-pipe.js';
 export { productIndexPipe } from './product-index-pipe.js';
 export { productMerchantFeedPipe } from './product-merchant-feed-pipe.js';
+export { productSitemapPipe } from './product-sitemap-pipe.js';
