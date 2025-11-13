@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.3...v1.9.0) (2025-11-13)
+
+
+### Features
+
+* sitemap ([609f0a8](https://github.com/adobe-rnd/helix-product-pipeline/commit/609f0a8b75fb22978a7eb4daa3f00fc8dea40aa6))
+
 ## [1.8.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.2...v1.8.3) (2025-11-07)
 
 
