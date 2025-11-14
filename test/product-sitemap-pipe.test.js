@@ -187,13 +187,20 @@ describe('Product Sitemap Pipe Test', () => {
   });
 
   describe('toSitemapXML', () => {
-    it('returns a merchant feed xml', () => {
+    it('returns a sitemap xml', () => {
       const xml = toSitemapXML(
         {
           prodHost: 'https://www.example.com',
           config: {
-            productSitemapConfig: {
-              lastmod: 'YYYY-MM-DD',
+            public: {
+              productSitemapConfig: {
+                lastmod: 'YYYY-MM-DD',
+              },
+            },
+            route: {
+              storeCode: 'main',
+              storeViewCode: 'default',
+              matchedPatterns: ['/products/{{urlKey}}'],
             },
           },
         },
@@ -222,8 +229,15 @@ describe('Product Sitemap Pipe Test', () => {
         {
           prodHost: 'https://www.example.com',
           config: {
-            productSitemapConfig: {
-              lastmod: 'YYYY-MM-DD',
+            public: {
+              productSitemapConfig: {
+                lastmod: 'YYYY-MM-DD',
+              },
+            },
+            route: {
+              storeCode: 'main',
+              storeViewCode: 'default',
+              matchedPatterns: ['/products/{{urlKey}}'],
             },
           },
         },
@@ -258,13 +272,23 @@ describe('Product Sitemap Pipe Test', () => {
 </urlset>`);
     });
 
-    it('allows setting an extension on urls', () => {
+    it('resolves location from config if no url in product data', () => {
       const xml = toSitemapXML(
         {
           prodHost: 'https://www.example.com',
           config: {
-            productSitemapConfig: {
-              extension: '.html',
+            public: {
+              patterns: {
+                '/products/{{urlKey}}': {
+                  storeCode: 'main',
+                  storeViewCode: 'default',
+                },
+              },
+            },
+            route: {
+              storeCode: 'main',
+              storeViewCode: 'default',
+              matchedPatterns: ['/products/{{urlKey}}'],
             },
           },
         },
@@ -273,7 +297,7 @@ describe('Product Sitemap Pipe Test', () => {
             data: {
               id: 'foo',
               description: 'This is a description',
-              url: 'https://www.example.com/foo',
+              urlKey: 'foo-url-key',
               lastModified: '2021-04-30T03:47:18Z',
             },
           },
@@ -282,7 +306,43 @@ describe('Product Sitemap Pipe Test', () => {
       assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.example.com/foo.html</loc>
+    <loc>https://www.example.com/products/foo-url-key</loc>
+  </url>
+</urlset>`);
+    });
+
+    it('allows setting an extension on urls, if url is not provided in product data', () => {
+      const xml = toSitemapXML(
+        {
+          prodHost: 'https://www.example.com',
+          config: {
+            public: {
+              productSitemapConfig: {
+                extension: '.html',
+              },
+            },
+            route: {
+              storeCode: 'main',
+              storeViewCode: 'default',
+              matchedPatterns: ['/products/{{urlKey}}'],
+            },
+          },
+        },
+        {
+          foo: {
+            data: {
+              id: 'foo',
+              description: 'This is a description',
+              urlKey: 'foo-url-key',
+              lastModified: '2021-04-30T03:47:18Z',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.example.com/products/foo-url-key.html</loc>
   </url>
 </urlset>`);
     });

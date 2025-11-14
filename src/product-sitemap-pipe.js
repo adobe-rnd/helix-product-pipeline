@@ -37,45 +37,35 @@ const optionalEntry = (key, value) => {
 
 /**
  * @param {PipelineState} state
- * @param {PipelineRequest} req
  * @param {SharedTypes.StoredMerchantFeed[string]['data']} data
+ * @param {string} extension applied only if no url is defined
  * @returns {string}
  */
-const resolveLocation = (state, req, data) => {
+const resolveLocation = (state, data, extension) => {
   if (data.url && typeof data.url === 'string') {
     return data.url;
   }
-  // find config entry that matches the current request's store/view codes
-  // assumes that each store/view code combination is unique
-  // replace urlKey and/or sku in the pattern with the product's
-  const { storeCode, storeViewCode } = state.config.route;
-  const path = req.url.pathname.replace(/sitemap\.xml$/, '');
-  const match = Object.entries(
-    state.config.public.patterns,
-  ).find(([pattern, conf]) => conf.storeCode === storeCode
-  && conf.storeViewCode === storeViewCode
-  && pattern.startsWith(path));
 
-  if (!match) {
+  // if no url is defined, use the pattern from config & product's urlKey/sku
+  const [pattern] = state.config.route.matchedPatterns;
+  if (!pattern) {
     return null;
   }
-  const [pattern] = match;
-  return pattern.replace('{{urlKey}}', data.urlKey).replace('{{sku}}', data.sku);
+  return `${state.prodHost}${pattern.replace('{{urlKey}}', data.urlKey).replace('{{sku}}', data.sku)}${extension}`;
 };
 
 /**
  * @param {PipelineState} state
- * @param {PipelineRequest} req
  * @param {SharedTypes.StoredMerchantFeed[string]['data']} data
  * @returns {string}
  */
-const sitemapEntry = (state, req, data) => {
+const sitemapEntry = (state, data) => {
   const {
     lastmod: lastmodConfig,
     extension = '',
-  } = state.config?.productSitemapConfig ?? {};
+  } = state.config?.public?.productSitemapConfig ?? {};
 
-  const location = resolveLocation(state, req, data);
+  const location = resolveLocation(state, data, extension);
   if (!location) {
     return '';
   }
@@ -90,24 +80,23 @@ const sitemapEntry = (state, req, data) => {
 
   return `
   <url>
-    <loc>${data.url}${extension}</loc>\
+    <loc>${location}</loc>\
 ${optionalEntry('lastmod', lastmod)}
   </url>`;
 };
 
 /**
  * @param {PipelineState} state
- * @param {PipelineRequest} req
  * @param {SharedTypes.StoredIndex} index
  * @returns {string}
  */
-export function toSitemapXML(state, req, index) {
+export function toSitemapXML(state, index) {
   return `\
 <?xml version="1.0" encoding="utf-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\
 ${Object.entries(index)
     .filter(([_, entry]) => !entry.filters?.noindex)
-    .map(([_, entry]) => sitemapEntry(state, req, entry.data)).join('')}
+    .map(([_, entry]) => sitemapEntry(state, entry.data)).join('')}
 </urlset>`;
 }
 
@@ -164,7 +153,7 @@ export async function productSitemapPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = toSitemapXML(state, req, state.content.data);
+    res.body = toSitemapXML(state, state.content.data);
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */
