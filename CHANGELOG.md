@@ -1,3 +1,11 @@
+## [1.9.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.0...v1.9.1) (2025-11-14)
+
+
+### Bug Fixes
+
+* handle products without urls ([25d54b3](https://github.com/adobe-rnd/helix-product-pipeline/commit/25d54b395ba3965abde48c0fbd0c1d6a1fdb914f))
+* tests ([39a58a7](https://github.com/adobe-rnd/helix-product-pipeline/commit/39a58a705beca516ee99dc130ea305dda90e0e74))
+
 # [1.9.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.8.3...v1.9.0) (2025-11-13)
 
 
