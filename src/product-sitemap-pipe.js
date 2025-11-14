@@ -38,13 +38,38 @@ const optionalEntry = (key, value) => {
 /**
  * @param {PipelineState} state
  * @param {SharedTypes.StoredMerchantFeed[string]['data']} data
+ * @param {string} extension applied only if no url is defined
+ * @returns {string}
+ */
+const resolveLocation = (state, data, extension) => {
+  if (data.url && typeof data.url === 'string') {
+    return data.url;
+  }
+
+  // if no url is defined, use the pattern from config & product's urlKey/sku
+  const [pattern] = state.config.route?.matchedPatterns ?? [];
+  if (!pattern) {
+    return null;
+  }
+  return `${state.prodHost}${pattern.replace('{{urlKey}}', data.urlKey).replace('{{sku}}', data.sku)}${extension}`;
+};
+
+/**
+ * @param {PipelineState} state
+ * @param {SharedTypes.StoredMerchantFeed[string]['data']} data
  * @returns {string}
  */
 const sitemapEntry = (state, data) => {
   const {
     lastmod: lastmodConfig,
     extension = '',
-  } = state.config?.productSitemapConfig ?? {};
+  } = state.config?.public?.productSitemapConfig ?? {};
+
+  const location = resolveLocation(state, data, extension);
+  if (!location) {
+    return '';
+  }
+
   let lastmod;
   if (lastmodConfig && data.lastModified !== undefined) {
     const date = dayjs.utc(new Date(data.lastModified));
@@ -52,9 +77,10 @@ const sitemapEntry = (state, data) => {
       lastmod = date.format(lastmodConfig);
     }
   }
+
   return `
   <url>
-    <loc>${data.url}${extension}</loc>\
+    <loc>${location}</loc>\
 ${optionalEntry('lastmod', lastmod)}
   </url>`;
 };

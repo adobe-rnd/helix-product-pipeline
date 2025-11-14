@@ -34,15 +34,6 @@ declare global {
   export interface PipelineSiteConfig extends ImportedPipelineSiteConfig {
     route: PipelineProductRouteConfig;
     public: PublicConfig;
-    merchantFeedConfig?: {
-      title?: string;
-      description?: string;
-      link?: string;
-    };
-    productSitemapConfig?: {
-      lastmod?: string;
-      extension?: string;
-    };
     cdn?: {
       preview?: {
         host?: string;
@@ -86,8 +77,14 @@ declare global {
       }
     }
 
-    productIndexerConfig: {
-      properties: Record<string, string>
+    merchantFeedConfig?: {
+      title?: string;
+      description?: string;
+      link?: string;
+    };
+
+    productIndexerConfig?: {
+      properties: Record<string, string>;
     }
 
     productSitemapConfig?: {
