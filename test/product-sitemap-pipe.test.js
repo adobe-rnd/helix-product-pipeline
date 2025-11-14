@@ -346,5 +346,33 @@ describe('Product Sitemap Pipe Test', () => {
   </url>
 </urlset>`);
     });
+
+    it('omits products with no matching pattern and no url', () => {
+      const xml = toSitemapXML(
+        {
+          prodHost: 'https://www.example.com',
+          config: {
+            route: {
+              storeCode: 'main',
+              storeViewCode: 'default',
+              matchedPatterns: null, // should never actually happen
+            },
+          },
+        },
+        {
+          foo: {
+            data: {
+              id: 'foo',
+              description: 'This is a description',
+              urlKey: 'foo-url-key',
+              lastModified: '2021-04-30T03:47:18Z',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+</urlset>`);
+    });
   });
 });

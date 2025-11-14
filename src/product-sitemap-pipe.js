@@ -47,7 +47,7 @@ const resolveLocation = (state, data, extension) => {
   }
 
   // if no url is defined, use the pattern from config & product's urlKey/sku
-  const [pattern] = state.config.route.matchedPatterns;
+  const [pattern] = state.config.route?.matchedPatterns ?? [];
   if (!pattern) {
     return null;
   }
