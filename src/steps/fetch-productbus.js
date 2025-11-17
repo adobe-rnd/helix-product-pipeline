@@ -12,7 +12,7 @@
 import { slugger } from '@dylandepass/helix-product-shared';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 
-const INDEXER_URL_KEYS = ['index', 'merchant-center-feed'];
+const INDEXER_URL_KEYS = ['index', 'merchant-center-feed', 'sitemap'];
 
 /**
  * Loads the content from either the content-bus or code-bus and stores it in `state.content`
@@ -59,7 +59,7 @@ export default async function fetchContent(state, req, res) {
   if ((!sku && !INDEXER_URL_KEYS.includes(urlKey)) || (sku && !INDEXER_URL_KEYS.includes(sku))) {
     const slug = slugger(sku);
     key = `${owner}/${site}/${storeCode}/${storeViewCode}/products/${slug}.json`;
-  } else if (urlKey === 'index' || sku === 'index') {
+  } else if (urlKey === 'index' || sku === 'index' || urlKey === 'sitemap' || sku === 'sitemap') {
     const id = req.params?.id ?? 'default';
     key = `${owner}/${site}/${storeCode}/${storeViewCode}/index/${id}.json`;
   } else if (urlKey === 'merchant-center-feed' || sku === 'merchant-center-feed') {

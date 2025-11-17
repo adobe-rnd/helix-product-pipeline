@@ -11,7 +11,7 @@ import type { Root } from 'hast';
 
 declare global {
   export * as SharedTypes from '@dylandepass/helix-product-shared/types';
-  
+
   export interface PipelineRequest extends ImportedPipelineRequest {
     params: Record<string, string>;
   }
@@ -34,11 +34,6 @@ declare global {
   export interface PipelineSiteConfig extends ImportedPipelineSiteConfig {
     route: PipelineProductRouteConfig;
     public: PublicConfig;
-    merchantFeedConfig?: {
-      title?: string;
-      description?: string;
-      link?: string;
-    };
     cdn?: {
       preview?: {
         host?: string;
@@ -58,6 +53,7 @@ declare global {
   }
 
   export interface PipelineState extends ImportedPipelineState {
+    type: 'json' | 'html' | 'media' | 'index' | 'merchant-feed' | 'sitemap';
     config: PipelineSiteConfig;
     info: PathInfo;
     content: PipelineContent;
@@ -80,11 +76,22 @@ declare global {
         storeCode?: string
       }
     }
-  
-    productIndexerConfig: {
-      properties: Record<string, string>
+
+    merchantFeedConfig?: {
+      title?: string;
+      description?: string;
+      link?: string;
+    };
+
+    productIndexerConfig?: {
+      properties: Record<string, string>;
     }
-  
+
+    productSitemapConfig?: {
+      lastmod?: string;
+      extension?: string;
+    };
+
     mixerConfig: {
       patterns: Record<string, string>
       backends: Record<
