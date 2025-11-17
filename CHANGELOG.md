@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.1...v1.9.2) (2025-11-17)
+
+
+### Bug Fixes
+
+* repoless support ([7e6d643](https://github.com/adobe-rnd/helix-product-pipeline/commit/7e6d643bc14bf744d695cea8c5bd7febaf72f237))
+
 ## [1.9.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.0...v1.9.1) (2025-11-14)
 
 
