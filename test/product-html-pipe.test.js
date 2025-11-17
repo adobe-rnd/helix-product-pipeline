@@ -97,6 +97,46 @@ describe('Product HTML Pipe Test', () => {
     });
   });
 
+  it('renders a configurable product html from repoless site', async () => {
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE({
+      ...DEFAULT_CONFIG,
+      site: 'repoless-site',
+    }, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+
+    state.site = 'repoless-site';
+    state.info = getPathInfo('/products/product-configurable');
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(
+        new URL('https://acme.com/products/product-configurable'),
+        {
+          headers: {
+            'x-byo-cdn-type': 'fastly',
+          },
+        },
+      ),
+    );
+    assert.strictEqual(resp.status, 200);
+    assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
+    assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
+      'content-type': 'text/html; charset=utf-8',
+      'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      'surrogate-control': 'max-age=300, stale-while-revalidate=0',
+      'surrogate-key': 'aVjSNe6DuUvP6Qt0 _H4KMAHPxerU_zHx E2NdXMQ8Jp-cg0zr mkywV26m8w1sg6tA main--repoless-site--org mRN24kMQcclw-dMQ',
+    });
+  });
+
   it('renders a configurable product html with CDN cache control headers', async () => {
     const s3Loader = new FileS3Loader();
     const state = DEFAULT_STATE(DEFAULT_CONFIG, {
@@ -165,7 +205,7 @@ describe('Product HTML Pipe Test', () => {
     const dirname = path.dirname(fileURLToPath(import.meta.url));
     const fetchMockGlobal = fetchMock.mockGlobal();
     const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
-    fetchMockGlobal.get('https://main--helix-pages--adobe.aem.live/404.html', {
+    fetchMockGlobal.get('https://main--site--adobe.aem.live/404.html', {
       body: html404,
       headers: {
         'cache-control': 'max-age=7200, must-revalidate',

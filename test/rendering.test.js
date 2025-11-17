@@ -32,6 +32,7 @@ const DEFAULT_CONFIG = {
   contentBusId: 'foo-id',
   owner: 'blendify',
   repo: 'website',
+  site: 'helix-pages',
   ref: 'main',
   cdn: {
     prod: {
@@ -110,7 +111,7 @@ describe('Rendering', () => {
     }
 
     const fetchMockGlobal = fetchMock.mockGlobal();
-    const productContentUrl = `https://${config.ref}--${config.repo}--${config.owner}.aem.live${url.pathname}.plain.html`;
+    const productContentUrl = `https://${config.ref}--${config.site}--${config.owner}.aem.live${url.pathname}.plain.html`;
     if (productContent) {
       const edgeHtml = await readFile(path.resolve(__testdir, 'fixtures', 'product', 'product-content.html'), 'utf-8');
       fetchMockGlobal.get(productContentUrl, {

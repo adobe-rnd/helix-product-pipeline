@@ -21,9 +21,9 @@ import { setProduct404CacheHeaders } from './set-cache-headers.js';
  */
 export default async function fetch404(state, req, res) {
   const {
-    owner, repo, ref,
+    owner, site, ref,
   } = state;
-  const ret = await fetch(`https://${ref}--${repo}--${owner}.aem.live/404.html`);
+  const ret = await fetch(`https://${ref}--${site}--${owner}.aem.live/404.html`);
   if (ret.status === 200) {
     // override last-modified if source-last-modified is set
     const lastModified = extractLastModified(ret.headers);

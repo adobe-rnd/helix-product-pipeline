@@ -23,7 +23,7 @@ const INDEXER_URL_KEYS = ['index', 'merchant-center-feed'];
  */
 export default async function fetchContent(state, req, res) {
   const {
-    info, owner, repo, config,
+    info, owner, site, config,
   } = state;
   const bucketId = 'adobe-commerce-catalog';
   const { route } = config;
@@ -39,7 +39,7 @@ export default async function fetchContent(state, req, res) {
   urlKey = urlKey?.replace(/\.xml$/, '');
 
   if (Object.keys(route.params).length === 1 && urlKey && !INDEXER_URL_KEYS.includes(urlKey)) {
-    const headKey = `${owner}/${repo}/${storeCode}/${storeViewCode}/urlkeys/${urlKey}`;
+    const headKey = `${owner}/${site}/${storeCode}/${storeViewCode}/urlkeys/${urlKey}`;
 
     const headRes = await state.s3Loader.headObject(bucketId, headKey);
 
@@ -58,12 +58,12 @@ export default async function fetchContent(state, req, res) {
   let key;
   if ((!sku && !INDEXER_URL_KEYS.includes(urlKey)) || (sku && !INDEXER_URL_KEYS.includes(sku))) {
     const slug = slugger(sku);
-    key = `${owner}/${repo}/${storeCode}/${storeViewCode}/products/${slug}.json`;
+    key = `${owner}/${site}/${storeCode}/${storeViewCode}/products/${slug}.json`;
   } else if (urlKey === 'index' || sku === 'index') {
     const id = req.params?.id ?? 'default';
-    key = `${owner}/${repo}/${storeCode}/${storeViewCode}/index/${id}.json`;
+    key = `${owner}/${site}/${storeCode}/${storeViewCode}/index/${id}.json`;
   } else if (urlKey === 'merchant-center-feed' || sku === 'merchant-center-feed') {
-    key = `${owner}/${repo}/${storeCode}/${storeViewCode}/merchant-feed/default.json`;
+    key = `${owner}/${site}/${storeCode}/${storeViewCode}/merchant-feed/default.json`;
   }
 
   const ret = await state.s3Loader.getObject(bucketId, key);
