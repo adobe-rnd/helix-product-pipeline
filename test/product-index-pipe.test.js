@@ -151,7 +151,7 @@ describe('Product Index Pipe Test', () => {
 
     const result = await productIndexPipe(state, new PipelineRequest(new URL('https://acme.com/products/index.json?id=404')));
     assert.strictEqual(result.status, 404);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to load adobe/helix-pages/main/default/index/404.json from product-bus: 404');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to load adobe/site/main/default/index/404.json from product-bus: 404');
   });
 
   it('returns 404 for invalid path info', async () => {

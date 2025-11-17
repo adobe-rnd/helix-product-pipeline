@@ -20,11 +20,11 @@ import { extractLastModified, recordLastModified } from '../utils/last-modified.
  */
 export default async function fetchEdgeContent(state, res) {
   const {
-    info, owner, repo, ref, log,
+    info, owner, site, ref, log,
   } = state;
   const { originalPath } = info;
 
-  const contentUrl = `https://${ref}--${repo}--${owner}.aem.live${originalPath}.plain.html`;
+  const contentUrl = `https://${ref}--${site}--${owner}.aem.live${originalPath}.plain.html`;
   try {
     const contentRes = await fetch(contentUrl);
     if (contentRes.status === 200) {
