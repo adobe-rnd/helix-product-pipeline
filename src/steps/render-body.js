@@ -23,10 +23,10 @@ import { maybeHTML } from './utils.js';
  * @param {Object} price
  * @returns {Object} HAST node
  */
-function formatPrice(price) {
+export function formatPrice(price) {
   if (!price) return '';
   const { regular, final } = price;
-  if (final < regular) {
+  if (parseFloat(final) < parseFloat(regular)) {
     return h('p', [`$${final} `, '(', h('del', `$${regular}`), ')']);
   }
   return h('p', `$${final}`);
