@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.2...v1.9.3) (2025-11-25)
+
+
+### Bug Fixes
+
+* sale price comparison ([d40958c](https://github.com/adobe-rnd/helix-product-pipeline/commit/d40958cac463cbca8fa906ca6bab6123057bbb61))
+
 ## [1.9.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.1...v1.9.2) (2025-11-17)
 
 
