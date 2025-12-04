@@ -143,13 +143,6 @@ describe('formatPrice', () => {
       assert.strictEqual(result.children[0].value, '$N/A');
     });
 
-    it('displays final price when final is empty string', () => {
-      const result = formatPrice({ final: '', regular: '99.99' });
-      assert.strictEqual(result.tagName, 'p');
-      assert.strictEqual(result.children.length, 1);
-      assert.strictEqual(result.children[0].value, '$');
-    });
-
     it('displays final price when regular is undefined', () => {
       const result = formatPrice({ final: '79.99', regular: undefined });
       assert.strictEqual(result.tagName, 'p');
@@ -171,6 +164,27 @@ describe('formatPrice', () => {
       assert.strictEqual(result.tagName, 'p');
       assert.strictEqual(result.children.length, 4);
       assert.strictEqual(result.children[0].value, '$79.99abc ');
+    });
+
+    it('displays regular price when final is empty string', () => {
+      const result = formatPrice({ final: '', regular: '99.99' });
+      assert.strictEqual(result.tagName, 'p');
+      assert.strictEqual(result.children.length, 1);
+      assert.strictEqual(result.children[0].value, '$99.99');
+    });
+
+    it('displays regular price when final is undefined', () => {
+      const result = formatPrice({ final: undefined, regular: '99.99' });
+      assert.strictEqual(result.tagName, 'p');
+      assert.strictEqual(result.children.length, 1);
+      assert.strictEqual(result.children[0].value, '$99.99');
+    });
+
+    it('displays regular price when final is undefined', () => {
+      const result = formatPrice({ final: null, regular: '99.99' });
+      assert.strictEqual(result.tagName, 'p');
+      assert.strictEqual(result.children.length, 1);
+      assert.strictEqual(result.children[0].value, '$99.99');
     });
   });
 
