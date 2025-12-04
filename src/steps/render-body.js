@@ -26,6 +26,9 @@ import { maybeHTML } from './utils.js';
 export function formatPrice(price) {
   if (!price) return '';
   const { regular, final } = price;
+  if (!final || final === '') {
+    return h('p', `$${regular}`);
+  }
   if (parseFloat(final) < parseFloat(regular)) {
     return h('p', [`$${final} `, '(', h('del', `$${regular}`), ')']);
   }
