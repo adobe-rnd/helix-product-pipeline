@@ -25,8 +25,6 @@ declare global {
   export interface PipelineProductRouteConfig {
     params: Record<string, string>;
     pageType: 'product' | string;
-    storeViewCode: string;
-    storeCode: string;
     matchedPatterns: string[];
     confMap: ConfigMap;
   }

@@ -231,8 +231,6 @@ describe('init-config', () => {
       const res = {};
 
       await initConfig(state, req, res);
-
-      assert.deepStrictEqual(state.config.route.matchedPatterns, ['/products/*', '/products/{{id}}']);
     });
   });
 

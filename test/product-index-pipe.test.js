@@ -25,17 +25,6 @@ const DEFAULT_CONFIG = {
   owner: 'adobe',
   repo: 'helix-pages',
   ref: 'main',
-  public: {
-    patterns: {
-      base: {
-        storeViewCode: 'default',
-        storeCode: 'main',
-      },
-      '/products/{{urlKey}}': {
-        pageType: 'product',
-      },
-    },
-  },
 };
 
 const DEFAULT_STATE = (opts = {}) => (new PipelineState({
@@ -104,17 +93,6 @@ describe.skip('Product Index Pipe Test', () => {
       },
       config: {
         ...DEFAULT_CONFIG,
-        public: {
-          patterns: {
-            base: {
-              storeViewCode: 'default',
-              storeCode: 'main',
-            },
-            '/products/{{sku}}': {
-              pageType: 'product',
-            },
-          },
-        },
       },
     });
     state.info = getPathInfo('/products/index.json');

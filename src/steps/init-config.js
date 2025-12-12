@@ -65,7 +65,7 @@ function extractPathParams(pattern, path) {
 export default function initConfig(state, req, res) {
   const { config } = state;
 
-  const confMap = config.public.patterns;
+  const confMap = config.public?.patterns || {};
   const paths = findOrderedMatches(
     Object.keys(confMap).filter((p) => p !== 'base'),
     state.info.path,
@@ -73,8 +73,6 @@ export default function initConfig(state, req, res) {
 
   const resolved = {
     pageType: 'product',
-    storeViewCode: '',
-    storeCode: '',
     ...paths.reduce((conf, key) => ({
       ...conf,
       ...confMap[key],

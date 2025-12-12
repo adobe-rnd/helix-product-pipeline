@@ -556,8 +556,6 @@ describe('setProductCacheHeaders', () => {
           params: {
             sku: 'config-sku-456',
             urlKey: 'config-url-key',
-            storeCode: 'us',
-            storeViewCode: 'en',
           },
         },
       },
@@ -593,8 +591,6 @@ describe('setProductCacheHeaders', () => {
           params: {
             sku: 'config-sku-456',
             urlKey: 'config-url-key',
-            storeCode: 'us',
-            storeViewCode: 'en',
           },
         },
       },
@@ -630,8 +626,6 @@ describe('setProductCacheHeaders', () => {
           params: {
             sku: 'config-sku-456',
             urlKey: 'config-url-key',
-            storeCode: 'us',
-            storeViewCode: 'en',
           },
         },
       },
@@ -667,10 +661,7 @@ describe('setProductCacheHeaders', () => {
       },
       config: {
         route: {
-          params: {
-            storeCode: 'us',
-            storeViewCode: 'en',
-          },
+          params: {},
         },
       },
       contentBusId: 'content-bus-id',

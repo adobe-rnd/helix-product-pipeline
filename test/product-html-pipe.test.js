@@ -27,17 +27,6 @@ const DEFAULT_CONFIG = {
   owner: 'adobe',
   repo: 'helix-pages',
   ref: 'main',
-  public: {
-    patterns: {
-      base: {
-        storeViewCode: 'default',
-        storeCode: 'main',
-      },
-      '/products/{{sku}}': {
-        pageType: 'product',
-      },
-    },
-  },
 };
 
 const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState({
