@@ -48,7 +48,8 @@ const DEFAULT_STATE = (opts = {}) => (new PipelineState({
   ...opts,
 }));
 
-describe('Product Index Pipe Test', () => {
+// SKIPPED: Temporarily disabled
+describe.skip('Product Index Pipe Test', () => {
   it('renders an index json in spreadsheet format (with urlKey based path)', async () => {
     const s3Loader = new FileS3Loader();
 

@@ -19,7 +19,7 @@ export class FileS3Loader {
   constructor() {
     Object.assign(this, {
       dirs: {
-        'adobe-commerce-catalog': path.resolve(__testdir, 'fixtures', 'product'),
+        'helix-product-bus': path.resolve(__testdir, 'fixtures', 'product'),
       },
       statusCodeOverrides: {},
       rewrites: [],

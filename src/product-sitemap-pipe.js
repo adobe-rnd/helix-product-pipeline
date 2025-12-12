@@ -106,6 +106,15 @@ ${Object.entries(index)
  * @returns {Promise<PipelineResponse>}
  */
 export async function productSitemapPipe(state, req) {
+  // TEMPORARILY DISABLED: Pending re-implementation from @maxed
+  return new PipelineResponse('', {
+    status: 501,
+    headers: {
+      'x-error': 'Product sitemap temporarily disabled during migration',
+    },
+  });
+
+  /* eslint-disable no-unreachable */
   const { log, info } = state;
   const { extension } = info;
   state.type = 'sitemap';

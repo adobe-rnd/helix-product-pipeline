@@ -13,7 +13,7 @@
 /* eslint-disable camelcase */
 
 import {
-  computeProductKeys, compute404Key, computeMediaKeys, computeAuthoredContentKey,
+  computeProductPathKey, computeSiteKey, compute404Key, computeMediaKeys, computeAuthoredContentKey,
 } from '@dylandepass/helix-product-shared';
 
 export const isMediaRequest = (url) => /\/media_[0-9a-f]{40,}[/a-zA-Z0-9_-]*\.[0-9a-z]+$/.test(url.pathname);
@@ -123,14 +123,13 @@ export function setCachingHeaders(req, resp, cacheKeys) {
  * @returns {Promise<void>}
  */
 export async function setProduct404CacheHeaders(state, req, resp) {
-  const {
-    content, config, org, site,
-  } = state;
-  const { sku, urlKey } = content.data || config.route.params;
-  const { storeCode, storeViewCode } = config.route.params;
+  const { org, site, info } = state;
 
-  const keys = await computeProductKeys(org, site, storeCode, storeViewCode, sku, urlKey);
-  keys.push(await compute404Key(org, site));
+  const keys = [
+    await computeProductPathKey(org, site, info.path),
+    await computeSiteKey(org, site),
+    await compute404Key(org, site),
+  ];
 
   setCachingHeaders(req, resp, keys);
 }
@@ -158,12 +157,13 @@ export async function set404CacheHeaders(state, req, resp) {
  */
 export async function setProductCacheHeaders(state, req, resp) {
   const {
-    content, config, org, site, contentBusId, info,
+    org, site, contentBusId, info,
   } = state;
-  const { sku, urlKey } = content.data || config.route.params;
-  const { storeCode, storeViewCode } = config.route.params;
 
-  const productKeys = await computeProductKeys(org, site, storeCode, storeViewCode, sku, urlKey);
+  const productKeys = [
+    await computeProductPathKey(org, site, info.path),
+    await computeSiteKey(org, site),
+  ];
   const authoredContentKey = await computeAuthoredContentKey(contentBusId, info.originalPath);
   setCachingHeaders(req, resp, [...productKeys, authoredContentKey]);
 }

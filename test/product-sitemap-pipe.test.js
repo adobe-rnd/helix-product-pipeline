@@ -48,7 +48,8 @@ const DEFAULT_STATE = (opts = {}) => (new PipelineState({
   ...opts,
 }));
 
-describe('Product Sitemap Pipe Test', () => {
+// SKIPPED: Temporarily disabled
+describe.skip('Product Sitemap Pipe Test', () => {
   it('renders a sitemap xml', async () => {
     const s3Loader = new FileS3Loader();
 

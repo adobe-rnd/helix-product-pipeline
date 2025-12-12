@@ -563,6 +563,7 @@ describe('setProductCacheHeaders', () => {
       },
       contentBusId: 'content-bus-id',
       info: {
+        path: '/test',
         originalPath: '/test',
       },
       org: 'test-org',
@@ -579,7 +580,7 @@ describe('setProductCacheHeaders', () => {
     // Should have set cache headers (we can verify by checking that cache-control was set)
     assert.ok(resp.headers.get('cache-control'));
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
-    assert.strictEqual(resp.headers.get('cache-tag'), 'G4kemBeEr-Qq98JV,Np-drNyxZRkcAVzv,k83Ix3frvjGCPirD,OLltHkX8uHammJUB,main--test-site--test-org,Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK');
   });
 
   it('should fallback to sku and urlKey from config.route.params when content.data is not available', async () => {
@@ -599,6 +600,7 @@ describe('setProductCacheHeaders', () => {
       },
       contentBusId: 'content-bus-id',
       info: {
+        path: '/test',
         originalPath: '/test',
       },
       org: 'test-org',
@@ -615,7 +617,7 @@ describe('setProductCacheHeaders', () => {
     // Should have set cache headers
     assert.ok(resp.headers.get('cache-control'));
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
-    assert.strictEqual(resp.headers.get('cache-tag'), 'G4kemBeEr-Qq98JV,Np-drNyxZRkcAVzv,gbOzDho97GUpjZQN,gLDIuz-Pf7SxoDJp,main--test-site--test-org,Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK');
   });
 
   it('should fallback to config.route.params when content.data is null', async () => {
@@ -635,6 +637,7 @@ describe('setProductCacheHeaders', () => {
       },
       contentBusId: 'content-bus-id',
       info: {
+        path: '/test',
         originalPath: '/test',
       },
       org: 'test-org',
@@ -651,7 +654,7 @@ describe('setProductCacheHeaders', () => {
     // Should have set cache headers
     assert.ok(resp.headers.get('cache-control'));
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
-    assert.strictEqual(resp.headers.get('cache-tag'), 'G4kemBeEr-Qq98JV,Np-drNyxZRkcAVzv,gbOzDho97GUpjZQN,gLDIuz-Pf7SxoDJp,main--test-site--test-org,Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK');
   });
 
   it('should work with different CDN types', async () => {
@@ -672,6 +675,7 @@ describe('setProductCacheHeaders', () => {
       },
       contentBusId: 'content-bus-id',
       info: {
+        path: '/test',
         originalPath: '/test',
       },
       org: 'test-org',
@@ -687,6 +691,6 @@ describe('setProductCacheHeaders', () => {
 
     // Should have set Fastly-specific headers
     assert.strictEqual(resp.headers.get('surrogate-control'), 'max-age=300, stale-while-revalidate=0');
-    assert.strictEqual(resp.headers.get('surrogate-key'), 'G4kemBeEr-Qq98JV Np-drNyxZRkcAVzv 2jliwsLFISvSooC_ 707m55agBdHVQzlC main--test-site--test-org Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('surrogate-key'), 'G56lYRBKFiJX2i-A main--test-site--test-org Id9xWdjCxe493biK');
   });
 });
