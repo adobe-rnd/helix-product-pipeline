@@ -13,7 +13,6 @@ import { extractLastModified, recordLastModified } from '../utils/last-modified.
 
 /**
  * Loads the content from product-bus using path-based storage and stores it in `state.content`
- * Falls back to legacy urlKey lookup for backward compatibility
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
@@ -43,8 +42,6 @@ export default async function fetchContent(state, req, res) {
       res.error = `failed to parse ${info.resourcePath} from product-bus: ${e.message}`;
     }
   } else {
-    // TODO: Add fallback to legacy urlKey lookup for backward compatibility during migration
-    // For now, just return the error
     res.status = ret.status === 404 ? 404 : 502;
     res.error = `failed to load ${info.resourcePath} from product-bus: ${ret.status}`;
   }

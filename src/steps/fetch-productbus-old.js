@@ -9,6 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
+/* eslint-disable */
+// @ts-nocheck
+
 import { slugger } from '@dylandepass/helix-product-shared';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 
