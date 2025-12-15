@@ -1,3 +1,19 @@
+# [1.10.0-next.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.3...v1.10.0-next.1) (2025-12-15)
+
+
+### Bug Fixes
+
+* cleanup init ([09d2809](https://github.com/adobe-rnd/helix-product-pipeline/commit/09d28098ab0a10bd0d71da2ffe2bf0eb4ba6d78a))
+* lower codecov requirements ([363c2d1](https://github.com/adobe-rnd/helix-product-pipeline/commit/363c2d1b26160df01de7755ad745037654465928))
+* lower coverage ([61fd59e](https://github.com/adobe-rnd/helix-product-pipeline/commit/61fd59e88fdfc554f8118eb85bc26b309c660e63))
+* more cleanup ([0a9cf49](https://github.com/adobe-rnd/helix-product-pipeline/commit/0a9cf49b96c065bf346f2b1b0769d9d36deb738c))
+* types cleanup, add authored content key to 404 ([9029d3e](https://github.com/adobe-rnd/helix-product-pipeline/commit/9029d3e93af7046bdbe6dcd1a0c1aa6f62b5706f))
+
+
+### Features
+
+* path based storage, disable index, sitemap and feed ([fbbdf1f](https://github.com/adobe-rnd/helix-product-pipeline/commit/fbbdf1f8e7fbf7c3f97af7d08048c070ad058d04))
+
 ## [1.9.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.2...v1.9.3) (2025-11-25)
 
 
