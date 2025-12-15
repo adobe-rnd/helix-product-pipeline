@@ -1,3 +1,10 @@
+# [1.10.0-next.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.2...v1.10.0-next.3) (2025-12-15)
+
+
+### Bug Fixes
+
+* exports ([175d808](https://github.com/adobe-rnd/helix-product-pipeline/commit/175d808f5ae33f0d1f03a5e6c0d9b9388c59ea3e))
+
 # [1.10.0-next.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.1...v1.10.0-next.2) (2025-12-15)
 
 
