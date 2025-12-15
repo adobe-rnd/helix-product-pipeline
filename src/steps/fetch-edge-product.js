@@ -13,7 +13,7 @@
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 
 /**
- * Loads the content from either the content-bus or code-bus and stores it in `state.content`
+ * Loads the content from either the content-bus and stores it in `state.content.edge`
  * @param {PipelineState} state
  * @param {PipelineResponse} res
  * @returns {Promise<void>}

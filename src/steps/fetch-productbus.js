@@ -12,7 +12,7 @@
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 
 /**
- * Loads the content from product-bus using path-based storage and stores it in `state.content`
+ * Loads the content from product-bus and stores it in `state.content.data`
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
@@ -24,8 +24,6 @@ export default async function fetchContent(state, req, res) {
 
   // Remove extension from path (.json or .xml)
   const path = info.path.replace(/\.json$/, '').replace(/\.xml$/, '');
-
-  // Direct path-based fetch: {org}/{site}/catalog{path}.json
   const key = `${owner}/${site}/catalog${path}.json`;
 
   const ret = await state.s3Loader.getObject(bucketId, key);
@@ -39,10 +37,10 @@ export default async function fetchContent(state, req, res) {
       recordLastModified(state, res, 'content', extractLastModified(ret.headers));
     } catch (e) {
       res.status = 400;
-      res.error = `failed to parse ${info.resourcePath} from product-bus: ${e.message}`;
+      res.error = `failed to parse ${key} from product-bus: ${e.message}`;
     }
   } else {
     res.status = ret.status === 404 ? 404 : 502;
-    res.error = `failed to load ${info.resourcePath} from product-bus: ${ret.status}`;
+    res.error = `failed to load ${key} from product-bus: ${ret.status}`;
   }
 }

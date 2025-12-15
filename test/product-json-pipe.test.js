@@ -127,7 +127,7 @@ describe('Product JSON Pipe Test', () => {
     });
     const result = await productJSONPipe(state, new PipelineRequest(new URL('https://acme.com/products/product-404.json')));
     assert.strictEqual(result.status, 404);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to load /products/product-404.json from product-bus: 404');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to load adobe/site/catalog/products/product-404.json from product-bus: 404');
   });
 
   it('returns 404 for invalid path info', async () => {
@@ -396,7 +396,7 @@ describe('Product JSON Pipe Test', () => {
       new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
     );
     assert.strictEqual(result.status, 502);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to load /products/product-configurable.json from product-bus: 500');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to load adobe/site/catalog/products/product-configurable.json from product-bus: 500');
   });
 
   it('handles json parsing error', async () => {
@@ -422,7 +422,7 @@ describe('Product JSON Pipe Test', () => {
       new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
     );
     assert.strictEqual(result.status, 400);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to parse /products/product-configurable.json from product-bus: Unexpected token \'i\', "invalid json" is not valid JSON');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to parse adobe/site/catalog/products/product-configurable.json from product-bus: Unexpected token \'i\', "invalid json" is not valid JSON');
   });
 
   it('handles error during initConfig', async () => {
@@ -480,7 +480,7 @@ describe('Product JSON Pipe Test', () => {
     assert.strictEqual(result.status, 404);
     assert.deepStrictEqual(Object.fromEntries(result.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
-      'x-error': 'failed to load /products/product-configurable.json from product-bus: 404',
+      'x-error': 'failed to load adobe/site/catalog/products/product-configurable.json from product-bus: 404',
       'cache-tag': 'main--site--org_404',
       'cdn-cache-control': 'max-age=300, must-revalidate',
     });

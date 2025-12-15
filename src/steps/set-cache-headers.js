@@ -123,12 +123,16 @@ export function setCachingHeaders(req, resp, cacheKeys) {
  * @returns {Promise<void>}
  */
 export async function setProduct404CacheHeaders(state, req, resp) {
-  const { org, site, info } = state;
+  const {
+    org, site, contentBusId, info,
+  } = state;
 
+  const authoredContentKey = await computeAuthoredContentKey(contentBusId, info.originalPath);
   const keys = [
     await computeProductPathKey(org, site, info.path),
     await computeSiteKey(org, site),
     await compute404Key(org, site),
+    authoredContentKey,
   ];
 
   setCachingHeaders(req, resp, keys);

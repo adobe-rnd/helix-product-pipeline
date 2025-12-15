@@ -227,9 +227,9 @@ describe('Product HTML Pipe Test', () => {
       'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
-      'cache-tag': '9Bhm36MntXqXr3kA,main--site--org,main--site--org_404',
+      'cache-tag': '9Bhm36MntXqXr3kA,main--site--org,main--site--org_404,uOhB41fFzP0Al-SD',
       'cdn-cache-control': 'max-age=300, must-revalidate',
-      'x-error': 'failed to load /products/product-404.json from product-bus: 404',
+      'x-error': 'failed to load adobe/site/catalog/products/product-404.json from product-bus: 404',
     });
 
     const resBody = resp.body;

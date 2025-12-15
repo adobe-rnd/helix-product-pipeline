@@ -54,6 +54,7 @@ export class FileS3Loader {
   }
 
   async getObject(bucketId, key) {
+    // eslint-disable-next-line no-console
     console.log('getObject', bucketId, key);
     const dir = this.dirs[bucketId];
     if (!dir) {
