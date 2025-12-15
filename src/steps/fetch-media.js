@@ -21,7 +21,7 @@ export default async function fetchMedia(state, res) {
   const {
     info, owner, site,
   } = state;
-  const bucketId = 'adobe-commerce-catalog';
+  const bucketId = 'helix-product-bus';
 
   const key = `${owner}/${site}/media/${info.originalFilename}`;
   const ret = await state.s3Loader.getObject(bucketId, key);

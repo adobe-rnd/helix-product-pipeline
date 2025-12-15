@@ -25,36 +25,6 @@ function replaceParams(str, info) {
 }
 
 /**
- * This function finds ordered matches between a list of patterns and a given path.
- * @param {string[]} patterns - An array of pattern strings to match against.
- * @param {string} path - The path string to match patterns against.
- */
-function findOrderedMatches(patterns, path) {
-  return patterns
-    .map((pattern) => {
-      const re = new RegExp(pattern.replace(/\{\{([^}]+)\}\}/g, '([^{]+)').replace(/\*/g, '([^/]+)'));
-      const match = path.match(re);
-      return match ? pattern : null;
-    })
-    .filter(Boolean)
-    .sort((a, b) => a.length - b.length);
-}
-
-/**
- * This function extracts path parameters from a pattern and a path.
- * @param {string} pattern - The pattern string.
- * @param {string} path - The path string.
- * @returns {Record<string, string>} - The path parameters.
- */
-function extractPathParams(pattern, path) {
-  // create a RegExp with named groups from the string contained in '{{}}'
-  const re = new RegExp(pattern.replace(/\{\{([^}]+)\}\}/g, '(?<$1>[^{]+)').replace(/\*/g, '([^/]+)'));
-  const match = path.match(re);
-  /* c8 ignore next */
-  return match ? match.groups : {};
-}
-
-/**
  * Initializes the pipeline state with the config from the config service
  * (passed via the `config` parameter during state construction).
  *
@@ -64,33 +34,6 @@ function extractPathParams(pattern, path) {
  */
 export default function initConfig(state, req, res) {
   const { config } = state;
-
-  const confMap = config.public.patterns;
-  const paths = findOrderedMatches(
-    Object.keys(confMap).filter((p) => p !== 'base'),
-    state.info.path,
-  );
-
-  const resolved = {
-    pageType: 'product',
-    storeViewCode: '',
-    storeCode: '',
-    ...paths.reduce((conf, key) => ({
-      ...conf,
-      ...confMap[key],
-      params: {
-        ...conf.params,
-        ...extractPathParams(key, state.info.path),
-      },
-    }), {
-      ...(confMap.base ?? {}),
-      params: {},
-    }),
-    confMap,
-    matchedPatterns: paths,
-  };
-
-  state.config.route = resolved;
 
   // set custom preview and live hosts
   state.previewHost = replaceParams(config.cdn?.preview?.host, state);

@@ -42,17 +42,6 @@ const DEFAULT_CONFIG = {
   head: {
     html: '<link id="favicon" rel="icon" type="image/svg+xml" href="/icons/spark.svg">\n<meta name="viewport" content="width=device-width, initial-scale=1"/>\n<script src="/scripts.js" type="module"></script>\n<link rel="stylesheet" href="/styles.css"/>\n',
   },
-  public: {
-    patterns: {
-      base: {
-        storeViewCode: 'default',
-        storeCode: 'main',
-      },
-      '/us/en_us/products/{{sku}}': {
-        pageType: 'product',
-      },
-    },
-  },
 };
 
 describe('Rendering', () => {
