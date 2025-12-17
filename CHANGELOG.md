@@ -1,3 +1,10 @@
+# [1.10.0-next.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.4...v1.10.0-next.5) (2025-12-17)
+
+
+### Bug Fixes
+
+* media loading ([5d1eb8a](https://github.com/adobe-rnd/helix-product-pipeline/commit/5d1eb8ab3f45bd9c2c0f3f7d63faa7cbb009fadc))
+
 # [1.10.0-next.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.3...v1.10.0-next.4) (2025-12-17)
 
 
