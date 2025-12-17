@@ -1,3 +1,10 @@
+# [1.10.0-next.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.3...v1.10.0-next.4) (2025-12-17)
+
+
+### Bug Fixes
+
+* use org over owner ([6e5fc58](https://github.com/adobe-rnd/helix-product-pipeline/commit/6e5fc5801c7aba58d6280dbba7f3c5c455febb22))
+
 # [1.10.0-next.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.2...v1.10.0-next.3) (2025-12-15)
 
 
