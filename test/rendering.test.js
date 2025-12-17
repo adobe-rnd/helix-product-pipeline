@@ -31,6 +31,7 @@ const { productHTMLPipe } = await esmock('../src/index.js', {
 const DEFAULT_CONFIG = {
   contentBusId: 'foo-id',
   owner: 'blendify',
+  org: 'blendify',
   repo: 'website',
   site: 'helix-pages',
   ref: 'main',
@@ -62,9 +63,9 @@ describe('Rendering', () => {
     const state = new PipelineState({
       log: console,
       s3Loader: loader,
-      org: 'adobe',
-      site: 'helix-pages',
-      ref: 'main',
+      org: config.org,
+      site: config.site,
+      ref: config.ref,
       partition,
       config,
       path: selector ? `${url.pathname}${selector}.html` : url.pathname,
@@ -100,7 +101,7 @@ describe('Rendering', () => {
     }
 
     const fetchMockGlobal = fetchMock.mockGlobal();
-    const productContentUrl = `https://${config.ref}--${config.site}--${config.owner}.aem.live${url.pathname}.plain.html`;
+    const productContentUrl = `https://${config.ref}--${config.site}--${config.org}.aem.live${url.pathname}.plain.html`;
     if (productContent) {
       const edgeHtml = await readFile(path.resolve(__testdir, 'fixtures', 'product', 'product-content.html'), 'utf-8');
       fetchMockGlobal.get(productContentUrl, {
