@@ -194,7 +194,7 @@ describe('Product HTML Pipe Test', () => {
     const dirname = path.dirname(fileURLToPath(import.meta.url));
     const fetchMockGlobal = fetchMock.mockGlobal();
     const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
-    fetchMockGlobal.get('https://main--site--adobe.aem.live/404.html', {
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', {
       body: html404,
       headers: {
         'cache-control': 'max-age=7200, must-revalidate',
@@ -229,7 +229,7 @@ describe('Product HTML Pipe Test', () => {
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
       'cache-tag': '9Bhm36MntXqXr3kA,main--site--org,main--site--org_404,uOhB41fFzP0Al-SD',
       'cdn-cache-control': 'max-age=300, must-revalidate',
-      'x-error': 'failed to load adobe/site/catalog/products/product-404.json from product-bus: 404',
+      'x-error': 'failed to load org/site/catalog/products/product-404.json from product-bus: 404',
     });
 
     const resBody = resp.body;

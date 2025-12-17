@@ -19,12 +19,12 @@ import { extractLastModified, recordLastModified } from '../utils/last-modified.
  * @returns {Promise<void>}
  */
 export default async function fetchContent(state, req, res) {
-  const { info, owner, site } = state;
+  const { info, org, site } = state;
   const bucketId = 'helix-product-bus';
 
   // Remove extension from path (.json or .xml)
   const path = info.path.replace(/\.json$/, '').replace(/\.xml$/, '');
-  const key = `${owner}/${site}/catalog${path}.json`;
+  const key = `${org}/${site}/catalog${path}.json`;
 
   const ret = await state.s3Loader.getObject(bucketId, key);
 
