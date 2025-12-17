@@ -17,7 +17,6 @@ function replaceParams(str, info) {
     return '';
   }
   return str
-    .replaceAll('$owner', info.owner)
     .replaceAll('$org', info.org)
     .replaceAll('$site', info.site)
     .replaceAll('$repo', info.repo)

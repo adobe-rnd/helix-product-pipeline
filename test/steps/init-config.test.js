@@ -18,7 +18,6 @@ describe('init-config', () => {
   describe('replaceParams function (tested through initConfig)', () => {
     it('should replace all parameter placeholders with correct values', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -27,7 +26,7 @@ describe('init-config', () => {
         config: {
           cdn: {
             preview: { host: 'https://$ref--$site--$org.example.com' },
-            live: { host: 'https://$owner.$org.$site.com' },
+            live: { host: 'https://$org.$site.com' },
           },
         },
       };
@@ -43,13 +42,12 @@ describe('init-config', () => {
       );
       assert.strictEqual(
         state.liveHost,
-        'https://testowner.testorg.testsite.com',
+        'https://testorg.testsite.com',
       );
     });
 
     it('should return empty string when input string is null', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -74,7 +72,6 @@ describe('init-config', () => {
 
     it('should return empty string when input string is empty', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -99,7 +96,6 @@ describe('init-config', () => {
 
     it('should handle strings with no parameter placeholders', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -124,7 +120,6 @@ describe('init-config', () => {
 
     it('should handle partial parameter replacements', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -149,7 +144,6 @@ describe('init-config', () => {
 
     it('should handle multiple occurrences of the same parameter', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -176,7 +170,6 @@ describe('init-config', () => {
   describe('initConfig main function', () => {
     it('should set prodHost from config when available', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -201,7 +194,6 @@ describe('init-config', () => {
 
     it('should fallback to x-forwarded-host when prod host not configured', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -227,7 +219,6 @@ describe('init-config', () => {
 
     it('should handle missing cdn config gracefully', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
@@ -248,7 +239,6 @@ describe('init-config', () => {
 
     it('should record lastModified from config', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
