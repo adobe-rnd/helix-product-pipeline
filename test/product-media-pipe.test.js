@@ -31,14 +31,6 @@ describe('Product Media Pipe Test', () => {
     owner: 'test-owner',
     repo: 'test-repo',
     ref: 'main',
-    public: {
-      patterns: {
-        base: {
-          storeViewCode: 'default',
-          storeCode: 'main',
-        },
-      },
-    },
   };
 
   beforeEach(async () => {
