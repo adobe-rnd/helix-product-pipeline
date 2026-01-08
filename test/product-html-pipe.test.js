@@ -51,6 +51,10 @@ const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState
 }));
 
 describe('Product HTML Pipe Test', () => {
+  afterEach(() => {
+    fetchMock.unmockGlobal();
+  });
+
   it('returns 404 for invalid path info', async () => {
     const state = DEFAULT_STATE(DEFAULT_CONFIG, {
       log: console,
