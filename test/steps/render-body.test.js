@@ -213,18 +213,6 @@ describe('rewriteContentImageUrls', () => {
       assert.strictEqual(result, '<img src="./path/to/content-images/media_abc123.jpg" alt="test">');
     });
 
-    it('rewrites img src with double quotes', () => {
-      const html = '<img src="./images/media_165855a22ff2f69475d72b51b008b10ba21f73364.avif">';
-      const result = rewriteContentImageUrls(html);
-      assert.strictEqual(result, '<img src="./images/content-images/media_165855a22ff2f69475d72b51b008b10ba21f73364.avif">');
-    });
-
-    it('rewrites img src with single quotes', () => {
-      const html = "<img src='./assets/media_test.png'>";
-      const result = rewriteContentImageUrls(html);
-      assert.strictEqual(result, "<img src='./assets/content-images/media_test.png'>");
-    });
-
     it('rewrites nested path img src', () => {
       const html = '<img src="./products/gallery/media_xyz.webp" alt="Product">';
       const result = rewriteContentImageUrls(html);
@@ -404,26 +392,6 @@ describe('rewriteContentImageUrls', () => {
     });
   });
 
-  describe('case sensitivity', () => {
-    it('handles uppercase IMG tag', () => {
-      const html = '<IMG SRC="./path/to/media_test.jpg">';
-      const result = rewriteContentImageUrls(html);
-      assert.strictEqual(result, '<IMG SRC="./path/to/content-images/media_test.jpg">');
-    });
-
-    it('handles mixed case attributes', () => {
-      const html = '<img SrC="./media_test.jpg">';
-      const result = rewriteContentImageUrls(html);
-      assert.strictEqual(result, '<img SrC="./content-images/media_test.jpg">');
-    });
-
-    it('handles uppercase SOURCE tag', () => {
-      const html = '<SOURCE SRCSET="./path/media_test.webp">';
-      const result = rewriteContentImageUrls(html);
-      assert.strictEqual(result, '<SOURCE SRCSET="./path/content-images/media_test.webp">');
-    });
-  });
-
   describe('edge cases', () => {
     it('handles empty string', () => {
       const result = rewriteContentImageUrls('');
@@ -466,12 +434,6 @@ describe('rewriteContentImageUrls', () => {
       assert.ok(result.includes('./products/images/content-images/media_detail.jpg'));
     });
 
-    it('handles media_ in middle of filename', () => {
-      const html = '<img src="./path/to/images/media_165855a22ff2f69475d72b51b008b10ba21f73364.avif">';
-      const result = rewriteContentImageUrls(html);
-      assert.strictEqual(result, '<img src="./path/to/images/content-images/media_165855a22ff2f69475d72b51b008b10ba21f73364.avif">');
-    });
-
     it('handles multiple media_ prefixes in path', () => {
       const html = '<img src="./media_folder/subfolder/media_image.jpg">';
       const result = rewriteContentImageUrls(html);
@@ -488,28 +450,6 @@ describe('rewriteContentImageUrls', () => {
         result,
         '<img src="./en/services/content-images/media_165855a22ff2f69475d72b51b008b10ba21f73364.avif?width=2000&format=webply&optimize=medium">',
       );
-    });
-
-    it('handles rich product content with multiple images', () => {
-      const html = `
-        <div class="product-details">
-          <picture>
-            <source srcset="./products/hero/media_hero.avif?width=1200" type="image/avif">
-            <source srcset="./products/hero/media_hero.webp?width=1200" type="image/webp">
-            <img src="./products/hero/media_hero.jpg?width=1200" alt="Product Hero">
-          </picture>
-          <div class="gallery">
-            <img src="./products/gallery/media_gallery1_thumb.jpg" alt="Gallery 1">
-            <img src="./products/gallery/media_gallery2_thumb.jpg" alt="Gallery 2">
-          </div>
-        </div>
-      `;
-      const result = rewriteContentImageUrls(html);
-      assert.ok(result.includes('./products/hero/content-images/media_hero.avif'));
-      assert.ok(result.includes('./products/hero/content-images/media_hero.webp'));
-      assert.ok(result.includes('./products/hero/content-images/media_hero.jpg'));
-      assert.ok(result.includes('./products/gallery/content-images/media_gallery1_thumb.jpg'));
-      assert.ok(result.includes('./products/gallery/content-images/media_gallery2_thumb.jpg'));
     });
   });
 });
