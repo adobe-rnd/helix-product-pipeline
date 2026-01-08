@@ -51,10 +51,6 @@ const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState
 }));
 
 describe('Product HTML Pipe Test', () => {
-  afterEach(() => {
-    fetchMock.unmockGlobal();
-  });
-
   it('returns 404 for invalid path info', async () => {
     const state = DEFAULT_STATE(DEFAULT_CONFIG, {
       log: console,
@@ -103,9 +99,8 @@ describe('Product HTML Pipe Test', () => {
 
   it('rewrites image URLs in edge content with /content-images/ prefix', async () => {
     const fetchMockGlobal = fetchMock.mockGlobal();
-
     // Mock the fetch call for edge content that contains media_ images
-    fetchMockGlobal.get('https://main--site--adobe.aem.live/products/product-simple.plain.html', {
+    fetchMockGlobal.get('https://main--site--adobe.aem.live/products/authored-images.plain.html', {
       body: `
         <div>
           <h2>Product Features</h2>
@@ -128,17 +123,17 @@ describe('Product HTML Pipe Test', () => {
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/products/product-simple',
+      path: '/products/authored-images',
       partition: 'live',
       timer: {
         update: () => { },
       },
     });
-    state.info = getPathInfo('/products/product-simple');
+    state.info = getPathInfo('/products/authored-images');
 
     const resp = await productHTMLPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
+      new PipelineRequest(new URL('https://acme.com/products/authored-images')),
     );
 
     assert.strictEqual(resp.status, 200);
@@ -267,8 +262,8 @@ describe('Product HTML Pipe Test', () => {
 
   it('handles a 404', async () => {
     const dirname = path.dirname(fileURLToPath(import.meta.url));
-    const fetchMockGlobal = fetchMock.mockGlobal();
     const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
+    const fetchMockGlobal = fetchMock.mockGlobal();
     fetchMockGlobal.get('https://main--site--adobe.aem.live/404.html', {
       body: html404,
       headers: {
