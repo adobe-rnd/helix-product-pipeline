@@ -46,14 +46,11 @@ function renderMedia(media) {
 
 /**
  * Rewrite image URLs in authored content to include /content-images/ prefix.
- * This allows the Mixer to route these images back to aem.live instead of the product media bus.
- * Content from Edge Delivery is trusted and only contains relative paths.
+ * This allows the aem.network to route these images back to aem.live instead of the product media bus.
  * @param {string} html - HTML content containing image references
  * @returns {string} HTML with rewritten image URLs
  */
 export function rewriteContentImageUrls(html) {
-  // Simple and fast: replace /media_ with /content-images/media_
-  // Works because Edge Delivery content only uses relative paths
   return html.replace(/\/media_/g, '/content-images/media_');
 }
 
