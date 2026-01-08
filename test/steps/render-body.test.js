@@ -11,7 +11,7 @@
  */
 /* eslint-env mocha */
 import assert from 'assert';
-import { formatPrice } from '../../src/steps/render-body.js';
+import { formatPrice, rewriteContentImageUrls } from '../../src/steps/render-body.js';
 
 describe('formatPrice', () => {
   describe('null and empty cases', () => {
@@ -201,6 +201,158 @@ describe('formatPrice', () => {
       const result = formatPrice({ final: '-10', regular: '5' });
       assert.strictEqual(result.tagName, 'p');
       assert.strictEqual(result.children.length, 4);
+    });
+  });
+
+  describe('rewriteContentImageUrls', () => {
+    describe('basic img src rewriting', () => {
+      it('rewrites simple img src with media_ prefix', () => {
+        const html = '<img src="./path/to/media_abc123.jpg" alt="test">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="./path/to/content-images/media_abc123.jpg" alt="test">');
+      });
+
+      it('rewrites nested path img src', () => {
+        const html = '<img src="./products/gallery/media_xyz.webp" alt="Product">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="./products/gallery/content-images/media_xyz.webp" alt="Product">');
+      });
+
+      it('rewrites relative paths with query parameters', () => {
+        const html = '<img src="./content/media_1e34827d47552143150804dd7663928c2b4b88bbf.jpg?width=2000&format=webply&optimize=medium">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="./content/content-images/media_1e34827d47552143150804dd7663928c2b4b88bbf.jpg?width=2000&format=webply&optimize=medium">');
+      });
+
+      it('rewrites absolute paths', () => {
+        const html = '<img src="/services/media_165855a22ff2f69475d72b51b008b10ba21f73364.avif">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="/services/content-images/media_165855a22ff2f69475d72b51b008b10ba21f73364.avif">');
+      });
+
+      it('rewrites parent relative paths', () => {
+        const html = '<img src="../media_test.jpg">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="../content-images/media_test.jpg">');
+      });
+    });
+
+    describe('multiple images', () => {
+      it('rewrites multiple img tags in same content', () => {
+        const html = `
+          <img src="./gallery/media_1.jpg">
+          <img src="./gallery/media_2.png">
+          <img src="./gallery/media_3.webp">
+        `;
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./gallery/content-images/media_1.jpg'));
+        assert.ok(result.includes('./gallery/content-images/media_2.png'));
+        assert.ok(result.includes('./gallery/content-images/media_3.webp'));
+      });
+
+      it('rewrites images with mixed path styles', () => {
+        const html = `
+          <div>
+            <img src="./images/hero/media_a.jpg">
+            <div>
+              <img src="./images/thumbnails/media_b.jpg">
+            </div>
+          </div>
+        `;
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./images/hero/content-images/media_a.jpg'));
+        assert.ok(result.includes('./images/thumbnails/content-images/media_b.jpg'));
+      });
+    });
+
+    describe('different image formats', () => {
+      it('rewrites .jpg images', () => {
+        const html = '<img src="./products/media_image.jpg">';
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./products/content-images/media_image.jpg'));
+      });
+
+      it('rewrites .jpeg images', () => {
+        const html = '<img src="./assets/images/media_image.jpeg">';
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./assets/images/content-images/media_image.jpeg'));
+      });
+
+      it('rewrites .png images', () => {
+        const html = '<img src="./content/media_image.png">';
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./content/content-images/media_image.png'));
+      });
+
+      it('rewrites .webp images', () => {
+        const html = '<img src="./gallery/photos/media_image.webp">';
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./gallery/photos/content-images/media_image.webp'));
+      });
+
+      it('rewrites .avif images', () => {
+        const html = '<img src="./images/media_image.avif">';
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./images/content-images/media_image.avif'));
+      });
+
+      it('rewrites .gif images', () => {
+        const html = '<img src="./animations/media_image.gif">';
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./animations/content-images/media_image.gif'));
+      });
+
+      it('rewrites .svg images', () => {
+        const html = '<img src="./icons/media_image.svg">';
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./icons/content-images/media_image.svg'));
+      });
+    });
+
+    describe('query parameters', () => {
+      it('rewrites images with query parameters', () => {
+        const html = '<img src="./products/images/media_image.jpg?width=500&format=webp">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="./products/images/content-images/media_image.jpg?width=500&format=webp">');
+      });
+
+      it('rewrites images with single query parameter', () => {
+        const html = '<img src="./gallery/media_image.avif?width=2000">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="./gallery/content-images/media_image.avif?width=2000">');
+      });
+
+      it('rewrites images with complex query strings', () => {
+        const html = '<img src="./assets/photos/media_test.jpg?width=2000&format=webply&optimize=medium">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<img src="./assets/photos/content-images/media_test.jpg?width=2000&format=webply&optimize=medium">');
+      });
+    });
+
+    describe('source tag srcset', () => {
+      it('rewrites source srcset attribute', () => {
+        const html = '<source srcset="./images/responsive/media_image.webp" type="image/webp">';
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, '<source srcset="./images/responsive/content-images/media_image.webp" type="image/webp">');
+      });
+
+      it('rewrites source srcset with single quotes', () => {
+        const html = "<source srcset='./products/media_image.jpg'>";
+        const result = rewriteContentImageUrls(html);
+        assert.strictEqual(result, "<source srcset='./products/content-images/media_image.jpg'>");
+      });
+
+      it('rewrites multiple source tags', () => {
+        const html = `
+          <picture>
+            <source srcset="./gallery/hero/media_img.avif" type="image/avif">
+            <source srcset="./gallery/hero/media_img.webp" type="image/webp">
+          </picture>
+        `;
+        const result = rewriteContentImageUrls(html);
+        assert.ok(result.includes('./gallery/hero/content-images/media_img.avif'));
+        assert.ok(result.includes('./gallery/hero/content-images/media_img.webp'));
+      });
     });
   });
 });

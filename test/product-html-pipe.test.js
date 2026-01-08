@@ -126,6 +126,66 @@ describe('Product HTML Pipe Test', () => {
     });
   });
 
+  it('rewrites image URLs in edge content with /content-images/ prefix', async () => {
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Mock the fetch call for edge content that contains media_ images
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/authored-images.plain.html', {
+      body: `
+      <div>
+        <h2>Product Features</h2>
+        <picture>
+          <source srcset="./images/media_hero123456789012345678901234567890abcdef.avif?width=1200" type="image/avif">
+          <img src="./images/media_hero123456789012345678901234567890abcdef.jpg?width=1200" alt="Product">
+        </picture>
+        <p>This is the product description with an image.</p>
+        <img src="./gallery/media_detail987654321098765432109876543210fedcba.png" alt="Detail">
+      </div>
+    `,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/authored-images',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/authored-images');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/authored-images')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+
+    // Verify that the image URLs were rewritten with /content-images/
+    assert.ok(
+      resp.body.includes('./images/content-images/media_hero123456789012345678901234567890abcdef.avif?width=1200'),
+      'Source srcset should have /content-images/ prefix',
+    );
+    assert.ok(
+      resp.body.includes('./images/content-images/media_hero123456789012345678901234567890abcdef.jpg?width=1200'),
+      'Img src should have /content-images/ prefix',
+    );
+    assert.ok(
+      resp.body.includes('./gallery/content-images/media_detail987654321098765432109876543210fedcba.png'),
+      'Second img src should have /content-images/ prefix',
+    );
+
+    // Verify edge content was included
+    assert.ok(resp.body.includes('Product Features'), 'Should contain "Product Features" from edge content');
+  });
+
   it('renders a configurable product html with CDN cache control headers', async () => {
     const s3Loader = new FileS3Loader();
     const state = DEFAULT_STATE(DEFAULT_CONFIG, {
@@ -156,6 +216,8 @@ describe('Product HTML Pipe Test', () => {
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
       'surrogate-key': 'PQRh0Ll8tmPyJpcP main--site--org mRN24kMQcclw-dMQ',
     });
+
+    fetchMock.unmockGlobal();
   });
 
   it('renders a simple product html', async () => {
