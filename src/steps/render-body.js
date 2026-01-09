@@ -45,6 +45,16 @@ function renderMedia(media) {
 }
 
 /**
+ * Rewrite image URLs in authored content to include /content-images/ prefix.
+ * This allows the aem.network to route these images back to aem.live instead of the product media bus.
+ * @param {string} html - HTML content containing image references
+ * @returns {string} HTML with rewritten image URLs
+ */
+export function rewriteContentImageUrls(html) {
+  return html.replace(/\/(media_[a-f0-9]+\.\w+)/g, '/content-images/$1');
+}
+
+/**
  * Render the product content.
  * @param {string} edge
  * @param {string} description
@@ -53,7 +63,8 @@ function renderMedia(media) {
 function renderProductContent(edge, description) {
   // If content exists in edge, use it, otherwise use description
   if (edge) {
-    return (fromHtml(edge, { fragment: true }));
+    const rewrittenEdge = rewriteContentImageUrls(edge);
+    return (fromHtml(rewrittenEdge, { fragment: true }));
   }
 
   if (!description) {
