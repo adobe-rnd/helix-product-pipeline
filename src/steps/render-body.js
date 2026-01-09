@@ -51,7 +51,7 @@ function renderMedia(media) {
  * @returns {string} HTML with rewritten image URLs
  */
 export function rewriteContentImageUrls(html) {
-  return html.replace(/\/media_/g, '/content-images/media_');
+  return html.replace(/\/(media_[a-f0-9]+\.\w+)/g, '/content-images/$1');
 }
 
 /**

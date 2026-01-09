@@ -135,11 +135,11 @@ describe('Product HTML Pipe Test', () => {
       <div>
         <h2>Product Features</h2>
         <picture>
-          <source srcset="./images/media_hero123456789012345678901234567890abcdef.avif?width=1200" type="image/avif">
-          <img src="./images/media_hero123456789012345678901234567890abcdef.jpg?width=1200" alt="Product">
+          <source srcset="./images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.avif?width=1200" type="image/avif">
+          <img src="./images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.jpg?width=1200" alt="Product">
         </picture>
         <p>This is the product description with an image.</p>
-        <img src="./gallery/media_detail987654321098765432109876543210fedcba.png" alt="Detail">
+        <img src="./gallery/media_9876543210fedcba9876543210fedcba98765432.png" alt="Detail">
       </div>
     `,
       headers: {
@@ -170,15 +170,15 @@ describe('Product HTML Pipe Test', () => {
 
     // Verify that the image URLs were rewritten with /content-images/
     assert.ok(
-      resp.body.includes('./images/content-images/media_hero123456789012345678901234567890abcdef.avif?width=1200'),
+      resp.body.includes('./images/content-images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.avif?width=1200'),
       'Source srcset should have /content-images/ prefix',
     );
     assert.ok(
-      resp.body.includes('./images/content-images/media_hero123456789012345678901234567890abcdef.jpg?width=1200'),
+      resp.body.includes('./images/content-images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.jpg?width=1200'),
       'Img src should have /content-images/ prefix',
     );
     assert.ok(
-      resp.body.includes('./gallery/content-images/media_detail987654321098765432109876543210fedcba.png'),
+      resp.body.includes('./gallery/content-images/media_9876543210fedcba9876543210fedcba98765432.png'),
       'Second img src should have /content-images/ prefix',
     );
 
