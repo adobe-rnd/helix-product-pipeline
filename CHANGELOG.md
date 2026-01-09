@@ -1,3 +1,13 @@
+# [1.10.0-next.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.5...v1.10.0-next.6) (2026-01-09)
+
+
+### Bug Fixes
+
+* cleanup comments ([77b26fb](https://github.com/adobe-rnd/helix-product-pipeline/commit/77b26fb31dbae401e5e232a86f9131553ef72fda))
+* remove authored-images.html ([9a3c12c](https://github.com/adobe-rnd/helix-product-pipeline/commit/9a3c12ced4cf56ed5de32593bdb578a1dafff99f))
+* Rewrite image URLs in authored content with /content-images ([6465051](https://github.com/adobe-rnd/helix-product-pipeline/commit/64650513f2109253b9bbdfd55498911e59566180))
+* update regex ([cc9d04b](https://github.com/adobe-rnd/helix-product-pipeline/commit/cc9d04bc58b228276760fa5c89abcf123c631f26))
+
 # [1.10.0-next.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.4...v1.10.0-next.5) (2025-12-17)
 
 
