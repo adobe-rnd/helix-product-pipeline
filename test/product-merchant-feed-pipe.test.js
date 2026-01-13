@@ -37,8 +37,7 @@ const DEFAULT_STATE = (opts = {}) => (new PipelineState({
   ...opts,
 }));
 
-// SKIPPED: Temporarily disabled
-describe.skip('Product Merchant Feed Pipe Test', () => {
+describe('Product Merchant Feed Pipe Test', () => {
   it('renders a merchant feed xml', async () => {
     const s3Loader = new FileS3Loader();
 
@@ -122,7 +121,7 @@ describe.skip('Product Merchant Feed Pipe Test', () => {
 
   it('handles a 404', async () => {
     const s3Loader = new FileS3Loader();
-    s3Loader.rewrite('default.json', 'missing-file-404.json');
+    s3Loader.rewrite('merchant-feed.json', 'missing-file-404.json');
 
     const state = DEFAULT_STATE({
       s3Loader,
@@ -135,7 +134,7 @@ describe.skip('Product Merchant Feed Pipe Test', () => {
       new PipelineRequest(new URL('https://acme.com/products2/merchant-center-feed.xml')),
     );
     assert.strictEqual(result.status, 404);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to load /products/merchant-center-feed.xml from product-bus: 404');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to load org/site/indices/products/merchant-feed.json from product-bus: 404');
   });
 
   it('returns 404 for invalid path info', async () => {

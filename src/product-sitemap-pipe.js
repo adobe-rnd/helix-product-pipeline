@@ -10,10 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-// TODO: remove eslint-disable and @ts-nocheck once the pipe is re-implemented
-/* eslint-disable */
-// @ts-nocheck
-
 import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import dayjs from 'dayjs';
@@ -46,16 +42,20 @@ const optionalEntry = (key, value) => {
  * @returns {string}
  */
 const resolveLocation = (state, data, extension) => {
-  // if (data.url && typeof data.url === 'string') {
-  //   return data.url;
-  // }
+  // If product has explicit canonical URL, use it
+  if (data.url && typeof data.url === 'string') {
+    return data.url;
+  }
 
-  // // if no url is defined, use the pattern from config & product's urlKey/sku
-  // const [pattern] = state.config.route?.matchedPatterns ?? [];
-  // if (!pattern) {
-  //   return null;
-  // }
-  // return `${state.prodHost}${pattern.replace('{{urlKey}}', data.urlKey).replace('{{sku}}', data.sku)}${extension}`;
+  // Otherwise construct URL from product's path
+  if (data.path) {
+    const { prodHost } = state;
+    const host = /^https?:\/\//.test(prodHost) ? prodHost : `https://${prodHost}`;
+    return `${host}${data.path}${extension}`;
+  }
+
+  // Products without url or path cannot be included in sitemap
+  return null;
 };
 
 /**
@@ -110,15 +110,6 @@ ${Object.entries(index)
  * @returns {Promise<PipelineResponse>}
  */
 export async function productSitemapPipe(state, req) {
-  // TEMPORARILY DISABLED: Pending re-implementation from @maxed
-  return new PipelineResponse('', {
-    status: 501,
-    headers: {
-      'x-error': 'Product sitemap temporarily disabled during migration',
-    },
-  });
-
-  /* eslint-disable no-unreachable */
   const { log, info } = state;
   const { extension } = info;
   state.type = 'sitemap';

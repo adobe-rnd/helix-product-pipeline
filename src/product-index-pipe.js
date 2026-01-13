@@ -88,15 +88,6 @@ export function toSpreadsheet(index, includes) {
 }
 
 export async function productIndexPipe(state, req) {
-  // TEMPORARILY DISABLED: Pending re-implementation from @maxed
-  return new PipelineResponse('', {
-    status: 501,
-    headers: {
-      'x-error': 'Product indexing temporarily disabled during migration',
-    },
-  });
-
-  /* eslint-disable no-unreachable */
   const { log, info } = state;
   const { extension } = info;
   state.type = 'index';
