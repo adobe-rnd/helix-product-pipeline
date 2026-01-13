@@ -278,5 +278,102 @@ describe('Product Sitemap Pipe Test', () => {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
 </urlset>`);
     });
+
+    it('constructs location from path when url is not provided', () => {
+      const xml = toSitemapXML(
+        {
+          prodHost: 'https://www.example.com',
+          config: {
+            public: {
+              productSitemapConfig: {
+                lastmod: 'YYYY-MM-DD',
+              },
+            },
+          },
+        },
+        {
+          foo: {
+            data: {
+              id: 'foo',
+              description: 'This is a description',
+              path: '/products/foo-product',
+              lastModified: '2021-04-30T03:47:18Z',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.example.com/products/foo-product</loc>
+    <lastmod>2021-04-30</lastmod>
+  </url>
+</urlset>`);
+    });
+
+    it('constructs location from path with extension when url is not provided', () => {
+      const xml = toSitemapXML(
+        {
+          prodHost: 'https://www.example.com',
+          config: {
+            public: {
+              productSitemapConfig: {
+                extension: '.html',
+                lastmod: 'YYYY-MM-DD',
+              },
+            },
+          },
+        },
+        {
+          foo: {
+            data: {
+              id: 'foo',
+              description: 'This is a description',
+              path: '/products/foo-product',
+              lastModified: '2021-04-30T03:47:18Z',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.example.com/products/foo-product.html</loc>
+    <lastmod>2021-04-30</lastmod>
+  </url>
+</urlset>`);
+    });
+
+    it('adds https protocol to prodHost if not present', () => {
+      const xml = toSitemapXML(
+        {
+          prodHost: 'www.example.com',
+          config: {
+            public: {
+              productSitemapConfig: {
+                lastmod: 'YYYY-MM-DD',
+              },
+            },
+          },
+        },
+        {
+          foo: {
+            data: {
+              id: 'foo',
+              description: 'This is a description',
+              path: '/products/foo-product',
+              lastModified: '2021-04-30T03:47:18Z',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.example.com/products/foo-product</loc>
+    <lastmod>2021-04-30</lastmod>
+  </url>
+</urlset>`);
+    });
   });
 });

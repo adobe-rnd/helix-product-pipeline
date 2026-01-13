@@ -211,6 +211,33 @@ describe('Product Index Pipe Test', () => {
     assert.strictEqual(result.body, '');
   });
 
+  it('handles root-level index path', async () => {
+    const s3Loader = new FileS3Loader();
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/index.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/index.json');
+    const resp = await productIndexPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/index.json')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const spreadsheetIndexFixture = JSON.parse(
+      await readFile(new URL('./fixtures/index/spreadsheet.json', import.meta.url), 'utf-8'),
+    );
+    const body = JSON.parse(resp.body);
+    assert.deepStrictEqual(body, spreadsheetIndexFixture);
+  });
+
   describe('toSpreadsheet', () => {
     it('returns a spreadsheet', () => {
       const spreadsheet = toSpreadsheet({

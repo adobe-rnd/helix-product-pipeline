@@ -212,6 +212,32 @@ describe('Product Merchant Feed Pipe Test', () => {
     assert.strictEqual(result.body, '');
   });
 
+  it('handles root-level merchant feed path', async () => {
+    const s3Loader = new FileS3Loader();
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/merchant-center-feed.xml',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/merchant-center-feed.xml');
+    const resp = await productMerchantFeedPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/merchant-center-feed.xml')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const { body } = resp;
+    const merchantFeedXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
+
+    assert.deepStrictEqual(body, merchantFeedXMLExpected);
+  });
+
   describe('toFeedXML', () => {
     it('returns a merchant feed xml', () => {
       const xml = toFeedXML(
