@@ -1,3 +1,10 @@
+# [1.10.0-next.8](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.7...v1.10.0-next.8) (2026-01-20)
+
+
+### Bug Fixes
+
+* render both description and authored content ([16e1b21](https://github.com/adobe-rnd/helix-product-pipeline/commit/16e1b2107f3c22a8f40e51214f8b112b8e36fdfb))
+
 # [1.10.0-next.7](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.6...v1.10.0-next.7) (2026-01-20)
 
 
