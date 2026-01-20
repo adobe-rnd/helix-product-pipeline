@@ -13,7 +13,7 @@ import { toString } from 'hast-util-to-string';
 import { visit } from 'unist-util-visit';
 
 /**
- * Adds missing `id` attributes to the headings
+ * Adds or updates `id` attributes on all headings to ensure uniqueness
  * @param {PipelineState} state
  */
 export default async function fixSections({ content }) {
@@ -21,11 +21,10 @@ export default async function fixSections({ content }) {
   visit(hast, (node) => {
     if (node.type === 'element' && ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(node.tagName)) {
       const { properties } = node;
-      if (!properties.id) {
-        const text = toString(node).trim();
-        if (text) {
-          properties.id = slugger.slug(text);
-        }
+      const text = toString(node).trim();
+      if (text) {
+        // Always regenerate ID to ensure uniqueness across combined content
+        properties.id = slugger.slug(text);
       }
     }
   });
