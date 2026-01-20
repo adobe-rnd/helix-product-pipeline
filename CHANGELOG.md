@@ -1,3 +1,12 @@
+# [1.10.0-next.7](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.6...v1.10.0-next.7) (2026-01-20)
+
+
+### Bug Fixes
+
+* increase coverage ([5c10e79](https://github.com/adobe-rnd/helix-product-pipeline/commit/5c10e7953a23d1db014f97a3981d337d5e0a8f70))
+* refactor index, sitemap and feed loading ([0fa5df5](https://github.com/adobe-rnd/helix-product-pipeline/commit/0fa5df515263232b5737951c0d46270546fd4d76))
+* restore coverage requirements ([b850788](https://github.com/adobe-rnd/helix-product-pipeline/commit/b850788cea56037ef48977c813358d539a1e82b2))
+
 # [1.10.0-next.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.5...v1.10.0-next.6) (2026-01-09)
 
 
