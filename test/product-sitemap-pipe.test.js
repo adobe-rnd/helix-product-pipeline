@@ -37,8 +37,7 @@ const DEFAULT_STATE = (opts = {}) => (new PipelineState({
   ...opts,
 }));
 
-// SKIPPED: Temporarily disabled
-describe.skip('Product Sitemap Pipe Test', () => {
+describe('Product Sitemap Pipe Test', () => {
   it('renders a sitemap xml', async () => {
     const s3Loader = new FileS3Loader();
 
@@ -85,7 +84,7 @@ describe.skip('Product Sitemap Pipe Test', () => {
 
   it('handles a 404', async () => {
     const s3Loader = new FileS3Loader();
-    s3Loader.rewrite('default.json', 'missing-file-404.json');
+    s3Loader.rewrite('index.json', 'missing-file-404.json');
 
     const state = DEFAULT_STATE({
       s3Loader,
@@ -98,7 +97,7 @@ describe.skip('Product Sitemap Pipe Test', () => {
       new PipelineRequest(new URL('https://acme.com/products2/sitemap.xml')),
     );
     assert.strictEqual(result.status, 404);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to load /products/sitemap.xml from product-bus: 404');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to load org/site/indices/products/index.json from product-bus: 404');
   });
 
   it('returns 404 for invalid path info', async () => {
@@ -258,16 +257,11 @@ describe.skip('Product Sitemap Pipe Test', () => {
 </urlset>`);
     });
 
-    it('resolves location from config if no url in product data', () => {
+    it('omits products without url or path', () => {
       const xml = toSitemapXML(
         {
           prodHost: 'https://www.example.com',
-          config: {
-            public: {},
-            route: {
-              matchedPatterns: ['/products/{{urlKey}}'],
-            },
-          },
+          config: {},
         },
         {
           foo: {
@@ -282,13 +276,42 @@ describe.skip('Product Sitemap Pipe Test', () => {
       );
       assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+</urlset>`);
+    });
+
+    it('constructs location from path when url is not provided', () => {
+      const xml = toSitemapXML(
+        {
+          prodHost: 'https://www.example.com',
+          config: {
+            public: {
+              productSitemapConfig: {
+                lastmod: 'YYYY-MM-DD',
+              },
+            },
+          },
+        },
+        {
+          foo: {
+            data: {
+              id: 'foo',
+              description: 'This is a description',
+              path: '/products/foo-product',
+              lastModified: '2021-04-30T03:47:18Z',
+            },
+          },
+        },
+      );
+      assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.example.com/products/foo-url-key</loc>
+    <loc>https://www.example.com/products/foo-product</loc>
+    <lastmod>2021-04-30</lastmod>
   </url>
 </urlset>`);
     });
 
-    it('allows setting an extension on urls, if url is not provided in product data', () => {
+    it('constructs location from path with extension when url is not provided', () => {
       const xml = toSitemapXML(
         {
           prodHost: 'https://www.example.com',
@@ -296,10 +319,8 @@ describe.skip('Product Sitemap Pipe Test', () => {
             public: {
               productSitemapConfig: {
                 extension: '.html',
+                lastmod: 'YYYY-MM-DD',
               },
-            },
-            route: {
-              matchedPatterns: ['/products/{{urlKey}}'],
             },
           },
         },
@@ -308,7 +329,7 @@ describe.skip('Product Sitemap Pipe Test', () => {
             data: {
               id: 'foo',
               description: 'This is a description',
-              urlKey: 'foo-url-key',
+              path: '/products/foo-product',
               lastModified: '2021-04-30T03:47:18Z',
             },
           },
@@ -317,18 +338,21 @@ describe.skip('Product Sitemap Pipe Test', () => {
       assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://www.example.com/products/foo-url-key.html</loc>
+    <loc>https://www.example.com/products/foo-product.html</loc>
+    <lastmod>2021-04-30</lastmod>
   </url>
 </urlset>`);
     });
 
-    it('omits products with no matching pattern and no url', () => {
+    it('adds https protocol to prodHost if not present', () => {
       const xml = toSitemapXML(
         {
-          prodHost: 'https://www.example.com',
+          prodHost: 'www.example.com',
           config: {
-            route: {
-              matchedPatterns: null, // should never actually happen
+            public: {
+              productSitemapConfig: {
+                lastmod: 'YYYY-MM-DD',
+              },
             },
           },
         },
@@ -337,7 +361,7 @@ describe.skip('Product Sitemap Pipe Test', () => {
             data: {
               id: 'foo',
               description: 'This is a description',
-              urlKey: 'foo-url-key',
+              path: '/products/foo-product',
               lastModified: '2021-04-30T03:47:18Z',
             },
           },
@@ -345,6 +369,10 @@ describe.skip('Product Sitemap Pipe Test', () => {
       );
       assert.deepStrictEqual(xml, `<?xml version="1.0" encoding="utf-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.example.com/products/foo-product</loc>
+    <lastmod>2021-04-30</lastmod>
+  </url>
 </urlset>`);
     });
   });

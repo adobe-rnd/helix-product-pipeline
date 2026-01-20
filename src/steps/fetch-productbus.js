@@ -24,7 +24,23 @@ export default async function fetchContent(state, req, res) {
 
   // Remove extension from path (.json or .xml)
   const path = info.path.replace(/\.json$/, '').replace(/\.xml$/, '');
-  const key = `${org}/${site}/catalog${path}.json`;
+
+  let key;
+
+  // Check if this is an index, sitemap
+  if (path.endsWith('/index') || path.endsWith('/sitemap')) {
+    // Extract rootPath (directory containing the index)
+    // e.g., /products/index -> rootPath = /products
+    const rootPath = path.replace(/\/(index|sitemap)$/, '') || '/';
+    key = `${org}/${site}/indices${rootPath}/index.json`;
+  } else if (path.endsWith('/merchant-center-feed')) {
+    // Extract rootPath for merchant feed
+    const rootPath = path.replace(/\/merchant-center-feed$/, '') || '/';
+    key = `${org}/${site}/indices${rootPath}/merchant-feed.json`;
+  } else {
+    // Regular product path
+    key = `${org}/${site}/catalog${path}.json`;
+  }
 
   const ret = await state.s3Loader.getObject(bucketId, key);
 

@@ -37,8 +37,7 @@ const DEFAULT_STATE = (opts = {}) => (new PipelineState({
   ...opts,
 }));
 
-// SKIPPED: Temporarily disabled
-describe.skip('Product Index Pipe Test', () => {
+describe('Product Index Pipe Test', () => {
   it('renders an index json in spreadsheet format (with urlKey based path)', async () => {
     const s3Loader = new FileS3Loader();
 
@@ -123,14 +122,18 @@ describe.skip('Product Index Pipe Test', () => {
   });
 
   it('handles a 404', async () => {
+    const s3Loader = new FileS3Loader();
+    s3Loader.rewrite('index.json', 'missing-file-404.json');
+
     const state = DEFAULT_STATE({
+      s3Loader,
       path: '/products/index.json',
     });
     state.info = getPathInfo('/products/index.json');
 
-    const result = await productIndexPipe(state, new PipelineRequest(new URL('https://acme.com/products/index.json?id=404')));
+    const result = await productIndexPipe(state, new PipelineRequest(new URL('https://acme.com/products/index.json')));
     assert.strictEqual(result.status, 404);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to load adobe/site/main/default/index/404.json from product-bus: 404');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to load org/site/indices/products/index.json from product-bus: 404');
   });
 
   it('returns 404 for invalid path info', async () => {
@@ -206,6 +209,33 @@ describe.skip('Product Index Pipe Test', () => {
     assert.strictEqual(result.error, 'Some non-critical error');
     // Should not have gone through the full pipeline (no JSON body, no cache headers)
     assert.strictEqual(result.body, '');
+  });
+
+  it('handles root-level index path', async () => {
+    const s3Loader = new FileS3Loader();
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/index.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/index.json');
+    const resp = await productIndexPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/index.json')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const spreadsheetIndexFixture = JSON.parse(
+      await readFile(new URL('./fixtures/index/spreadsheet.json', import.meta.url), 'utf-8'),
+    );
+    const body = JSON.parse(resp.body);
+    assert.deepStrictEqual(body, spreadsheetIndexFixture);
   });
 
   describe('toSpreadsheet', () => {
