@@ -1,0 +1,40 @@
+{
+  "sku": "BlitzMax 5000",
+  "urlKey": "blitzmax-5000",
+  "name": "BlitzMax 5000",
+  "type": "simple",
+  "title": "Blendify BlitzMax 5000",
+  "metaTitle": "Blendify BlitzMax 5000 Blender",
+  "metaDescription": "The BlitzMax 5000 is the ultimate blending powerhouse from Blendify. It combines high performance with a sleek design, making it ideal for smoothies, soups, and more.",
+  "gtin": "1234567890123",
+  "url": "https://www.blendify.com/us/en_us/shop/blitzmax-5000",
+  "images": [
+    { "url": "./media_a1b2c3d4e5f6789012345678901234567890abcd.png" },
+    { "url": "./media_b2c3d4e5f6789012345678901234567890abcdef.png" },
+    { "url": "./media_c3d4e5f6789012345678901234567890abcdef01.png" }
+  ],
+  "brand": "Blendify",
+  "availability": "InStock",
+  "price": {
+    "currency": "USD",
+    "regular": "399.95",
+    "final": "349.95"
+  },
+  "custom": {
+    "warranty": "5 Year Standard Warranty",
+    "collection": "BlitzMax Collection",
+    "resources": [
+      {
+        "name": "BlitzMax 5000 Manual",
+        "type": "pdf",
+        "url": "https://www.blendify.com/resources/blitzmax-5000-manual.pdf"
+      },
+      {
+        "name": "Setup Video",
+        "type": "youtube",
+        "url": "https://www.youtube.com/watch?v=123456"
+      }
+    ]
+  },
+  "variants": []
+}

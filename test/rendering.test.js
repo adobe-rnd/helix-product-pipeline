@@ -31,6 +31,7 @@ const { productHTMLPipe } = await esmock('../src/index.js', {
 const DEFAULT_CONFIG = {
   contentBusId: 'foo-id',
   owner: 'blendify',
+  org: 'blendify',
   repo: 'website',
   site: 'helix-pages',
   ref: 'main',
@@ -41,17 +42,6 @@ const DEFAULT_CONFIG = {
   },
   head: {
     html: '<link id="favicon" rel="icon" type="image/svg+xml" href="/icons/spark.svg">\n<meta name="viewport" content="width=device-width, initial-scale=1"/>\n<script src="/scripts.js" type="module"></script>\n<link rel="stylesheet" href="/styles.css"/>\n',
-  },
-  public: {
-    patterns: {
-      base: {
-        storeViewCode: 'default',
-        storeCode: 'main',
-      },
-      '/us/en_us/products/{{sku}}': {
-        pageType: 'product',
-      },
-    },
   },
 };
 
@@ -73,9 +63,9 @@ describe('Rendering', () => {
     const state = new PipelineState({
       log: console,
       s3Loader: loader,
-      org: 'adobe',
-      site: 'helix-pages',
-      ref: 'main',
+      org: config.org,
+      site: config.site,
+      ref: config.ref,
       partition,
       config,
       path: selector ? `${url.pathname}${selector}.html` : url.pathname,
@@ -111,7 +101,7 @@ describe('Rendering', () => {
     }
 
     const fetchMockGlobal = fetchMock.mockGlobal();
-    const productContentUrl = `https://${config.ref}--${config.site}--${config.owner}.aem.live${url.pathname}.plain.html`;
+    const productContentUrl = `https://${config.ref}--${config.site}--${config.org}.aem.live${url.pathname}.plain.html`;
     if (productContent) {
       const edgeHtml = await readFile(path.resolve(__testdir, 'fixtures', 'product', 'product-content.html'), 'utf-8');
       fetchMockGlobal.get(productContentUrl, {

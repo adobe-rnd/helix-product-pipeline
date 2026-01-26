@@ -45,24 +45,48 @@ function renderMedia(media) {
 }
 
 /**
+ * Rewrite image URLs in authored content to include /content-images/ prefix.
+ * This allows the aem.network to route these images back to aem.live instead of the product media bus.
+ * @param {string} html - HTML content containing image references
+ * @returns {string} HTML with rewritten image URLs
+ */
+export function rewriteContentImageUrls(html) {
+  return html.replace(/\/(media_[a-f0-9]+\.\w+)/g, '/content-images/$1');
+}
+
+/**
  * Render the product content.
  * @param {string} edge
  * @param {string} description
  * @returns {import('hast').Element | import('hast').Root}
  */
 function renderProductContent(edge, description) {
-  // If content exists in edge, use it, otherwise use description
-  if (edge) {
-    return (fromHtml(edge, { fragment: true }));
+  const parts = [];
+
+  // Add description first if it exists
+  if (description) {
+    const descriptionIsHTML = maybeHTML(description);
+    if (descriptionIsHTML) {
+      const descriptionFragment = fromHtml(description, { fragment: true });
+      parts.push(h('div', descriptionFragment.children));
+    } else {
+      parts.push(h('div', h('p', description)));
+    }
   }
 
-  if (!description) {
+  // Add edge content after if it exists
+  if (edge) {
+    const rewrittenEdge = rewriteContentImageUrls(edge);
+    const edgeFragment = fromHtml(rewrittenEdge, { fragment: true });
+    parts.push(...edgeFragment.children);
+  }
+
+  // Return undefined if nothing to render
+  if (parts.length === 0) {
     return undefined;
   }
 
-  const descriptionIsHTML = maybeHTML(description);
-  const descriptionNode = descriptionIsHTML ? fromHtml(description, { fragment: true }) : h('p', description);
-  return h('div', descriptionNode);
+  return { type: 'root', children: parts };
 }
 
 function variantDataAttrs(variant) {

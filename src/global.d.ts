@@ -22,17 +22,7 @@ declare global {
     document: Root;
   }
 
-  export interface PipelineProductRouteConfig {
-    params: Record<string, string>;
-    pageType: 'product' | string;
-    storeViewCode: string;
-    storeCode: string;
-    matchedPatterns: string[];
-    confMap: ConfigMap;
-  }
-
   export interface PipelineSiteConfig extends ImportedPipelineSiteConfig {
-    route: PipelineProductRouteConfig;
     public: PublicConfig;
     cdn?: {
       preview?: {
@@ -65,18 +55,6 @@ declare global {
   }
 
   export interface PublicConfig {
-    patterns: {
-      base: {
-        storeViewCode: string
-        storeCode: string
-      }
-      [pattern: string]: {
-        pageType?: string
-        storeViewCode?: string
-        storeCode?: string
-      }
-    }
-
     merchantFeedConfig?: {
       title?: string;
       description?: string;

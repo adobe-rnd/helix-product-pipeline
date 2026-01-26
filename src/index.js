@@ -9,9 +9,10 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-export * from './product-html-pipe.js';
-export * from './product-json-pipe.js';
-export * from './product-media-pipe.js';
+
+export { productJSONPipe } from './product-json-pipe.js';
+export { productHTMLPipe } from './product-html-pipe.js';
 export { productIndexPipe } from './product-index-pipe.js';
 export { productMerchantFeedPipe } from './product-merchant-feed-pipe.js';
 export { productSitemapPipe } from './product-sitemap-pipe.js';
+export { productMediaPipe } from './product-media-pipe.js';

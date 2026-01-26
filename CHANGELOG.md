@@ -1,3 +1,73 @@
+# [1.10.0-next.8](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.7...v1.10.0-next.8) (2026-01-20)
+
+
+### Bug Fixes
+
+* render both description and authored content ([16e1b21](https://github.com/adobe-rnd/helix-product-pipeline/commit/16e1b2107f3c22a8f40e51214f8b112b8e36fdfb))
+
+# [1.10.0-next.7](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.6...v1.10.0-next.7) (2026-01-20)
+
+
+### Bug Fixes
+
+* increase coverage ([5c10e79](https://github.com/adobe-rnd/helix-product-pipeline/commit/5c10e7953a23d1db014f97a3981d337d5e0a8f70))
+* refactor index, sitemap and feed loading ([0fa5df5](https://github.com/adobe-rnd/helix-product-pipeline/commit/0fa5df515263232b5737951c0d46270546fd4d76))
+* restore coverage requirements ([b850788](https://github.com/adobe-rnd/helix-product-pipeline/commit/b850788cea56037ef48977c813358d539a1e82b2))
+
+# [1.10.0-next.6](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.5...v1.10.0-next.6) (2026-01-09)
+
+
+### Bug Fixes
+
+* cleanup comments ([77b26fb](https://github.com/adobe-rnd/helix-product-pipeline/commit/77b26fb31dbae401e5e232a86f9131553ef72fda))
+* remove authored-images.html ([9a3c12c](https://github.com/adobe-rnd/helix-product-pipeline/commit/9a3c12ced4cf56ed5de32593bdb578a1dafff99f))
+* Rewrite image URLs in authored content with /content-images ([6465051](https://github.com/adobe-rnd/helix-product-pipeline/commit/64650513f2109253b9bbdfd55498911e59566180))
+* update regex ([cc9d04b](https://github.com/adobe-rnd/helix-product-pipeline/commit/cc9d04bc58b228276760fa5c89abcf123c631f26))
+
+# [1.10.0-next.5](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.4...v1.10.0-next.5) (2025-12-17)
+
+
+### Bug Fixes
+
+* media loading ([5d1eb8a](https://github.com/adobe-rnd/helix-product-pipeline/commit/5d1eb8ab3f45bd9c2c0f3f7d63faa7cbb009fadc))
+
+# [1.10.0-next.4](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.3...v1.10.0-next.4) (2025-12-17)
+
+
+### Bug Fixes
+
+* use org over owner ([6e5fc58](https://github.com/adobe-rnd/helix-product-pipeline/commit/6e5fc5801c7aba58d6280dbba7f3c5c455febb22))
+
+# [1.10.0-next.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.2...v1.10.0-next.3) (2025-12-15)
+
+
+### Bug Fixes
+
+* exports ([175d808](https://github.com/adobe-rnd/helix-product-pipeline/commit/175d808f5ae33f0d1f03a5e6c0d9b9388c59ea3e))
+
+# [1.10.0-next.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.10.0-next.1...v1.10.0-next.2) (2025-12-15)
+
+
+### Bug Fixes
+
+* update README.md ([e68aa71](https://github.com/adobe-rnd/helix-product-pipeline/commit/e68aa7176f5db35786f284b37b5af901e120a2c8))
+
+# [1.10.0-next.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.3...v1.10.0-next.1) (2025-12-15)
+
+
+### Bug Fixes
+
+* cleanup init ([09d2809](https://github.com/adobe-rnd/helix-product-pipeline/commit/09d28098ab0a10bd0d71da2ffe2bf0eb4ba6d78a))
+* lower codecov requirements ([363c2d1](https://github.com/adobe-rnd/helix-product-pipeline/commit/363c2d1b26160df01de7755ad745037654465928))
+* lower coverage ([61fd59e](https://github.com/adobe-rnd/helix-product-pipeline/commit/61fd59e88fdfc554f8118eb85bc26b309c660e63))
+* more cleanup ([0a9cf49](https://github.com/adobe-rnd/helix-product-pipeline/commit/0a9cf49b96c065bf346f2b1b0769d9d36deb738c))
+* types cleanup, add authored content key to 404 ([9029d3e](https://github.com/adobe-rnd/helix-product-pipeline/commit/9029d3e93af7046bdbe6dcd1a0c1aa6f62b5706f))
+
+
+### Features
+
+* path based storage, disable index, sitemap and feed ([fbbdf1f](https://github.com/adobe-rnd/helix-product-pipeline/commit/fbbdf1f8e7fbf7c3f97af7d08048c070ad058d04))
+
 ## [1.9.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.2...v1.9.3) (2025-11-25)
 
 

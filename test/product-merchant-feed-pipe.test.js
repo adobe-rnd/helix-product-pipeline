@@ -25,17 +25,6 @@ const DEFAULT_CONFIG = {
   owner: 'adobe',
   repo: 'helix-pages',
   ref: 'main',
-  public: {
-    patterns: {
-      base: {
-        storeViewCode: 'default',
-        storeCode: 'main',
-      },
-      '/products/{{urlKey}}': {
-        pageType: 'product',
-      },
-    },
-  },
 };
 
 const DEFAULT_STATE = (opts = {}) => (new PipelineState({
@@ -102,17 +91,6 @@ describe('Product Merchant Feed Pipe Test', () => {
       },
       config: {
         ...DEFAULT_CONFIG,
-        public: {
-          patterns: {
-            base: {
-              storeViewCode: 'default',
-              storeCode: 'main',
-            },
-            '/products/{{sku}}': {
-              pageType: 'product',
-            },
-          },
-        },
       },
     });
     state.info = getPathInfo('/products/merchant-center-feed.xml');
@@ -143,7 +121,7 @@ describe('Product Merchant Feed Pipe Test', () => {
 
   it('handles a 404', async () => {
     const s3Loader = new FileS3Loader();
-    s3Loader.rewrite('default.json', 'missing-file-404.json');
+    s3Loader.rewrite('merchant-feed.json', 'missing-file-404.json');
 
     const state = DEFAULT_STATE({
       s3Loader,
@@ -156,7 +134,7 @@ describe('Product Merchant Feed Pipe Test', () => {
       new PipelineRequest(new URL('https://acme.com/products2/merchant-center-feed.xml')),
     );
     assert.strictEqual(result.status, 404);
-    assert.strictEqual(result.headers.get('x-error'), 'failed to load /products/merchant-center-feed.xml from product-bus: 404');
+    assert.strictEqual(result.headers.get('x-error'), 'failed to load org/site/indices/products/merchant-feed.json from product-bus: 404');
   });
 
   it('returns 404 for invalid path info', async () => {
@@ -232,6 +210,32 @@ describe('Product Merchant Feed Pipe Test', () => {
     assert.strictEqual(result.error, 'Some non-critical error');
     // Should not have gone through the full pipeline (no JSON body, no cache headers)
     assert.strictEqual(result.body, '');
+  });
+
+  it('handles root-level merchant feed path', async () => {
+    const s3Loader = new FileS3Loader();
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/merchant-center-feed.xml',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/merchant-center-feed.xml');
+    const resp = await productMerchantFeedPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/merchant-center-feed.xml')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const { body } = resp;
+    const merchantFeedXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
+
+    assert.deepStrictEqual(body, merchantFeedXMLExpected);
   });
 
   describe('toFeedXML', () => {

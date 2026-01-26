@@ -27,17 +27,6 @@ const DEFAULT_CONFIG = {
   owner: 'adobe',
   repo: 'helix-pages',
   ref: 'main',
-  public: {
-    patterns: {
-      base: {
-        storeViewCode: 'default',
-        storeCode: 'main',
-      },
-      '/products/{{sku}}': {
-        pageType: 'product',
-      },
-    },
-  },
 };
 
 const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState({
@@ -133,8 +122,68 @@ describe('Product HTML Pipe Test', () => {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
-      'surrogate-key': 'aVjSNe6DuUvP6Qt0 _H4KMAHPxerU_zHx E2NdXMQ8Jp-cg0zr mkywV26m8w1sg6tA main--repoless-site--org mRN24kMQcclw-dMQ',
+      'surrogate-key': 'WTrfsmEbgzyUOR4j main--repoless-site--org mRN24kMQcclw-dMQ',
     });
+  });
+
+  it('rewrites image URLs in edge content with /content-images/ prefix', async () => {
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Mock the fetch call for edge content that contains media_ images
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/authored-images.plain.html', {
+      body: `
+      <div>
+        <h2>Product Features</h2>
+        <picture>
+          <source srcset="./images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.avif?width=1200" type="image/avif">
+          <img src="./images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.jpg?width=1200" alt="Product">
+        </picture>
+        <p>This is the product description with an image.</p>
+        <img src="./gallery/media_9876543210fedcba9876543210fedcba98765432.png" alt="Detail">
+      </div>
+    `,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/authored-images',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/authored-images');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/authored-images')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+
+    // Verify that the image URLs were rewritten with /content-images/
+    assert.ok(
+      resp.body.includes('./images/content-images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.avif?width=1200'),
+      'Source srcset should have /content-images/ prefix',
+    );
+    assert.ok(
+      resp.body.includes('./images/content-images/media_1a2b3c4d5e6f7890abcdef1234567890abcdef12.jpg?width=1200'),
+      'Img src should have /content-images/ prefix',
+    );
+    assert.ok(
+      resp.body.includes('./gallery/content-images/media_9876543210fedcba9876543210fedcba98765432.png'),
+      'Second img src should have /content-images/ prefix',
+    );
+
+    // Verify edge content was included
+    assert.ok(resp.body.includes('Product Features'), 'Should contain "Product Features" from edge content');
   });
 
   it('renders a configurable product html with CDN cache control headers', async () => {
@@ -165,8 +214,10 @@ describe('Product HTML Pipe Test', () => {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
-      'surrogate-key': 'VS5-46Z_DsIjIydC juOVlP_wU3xIZXph aa9iB4ZoKa28Ulqx gZ8sZQGPdZ1uFask main--site--org mRN24kMQcclw-dMQ',
+      'surrogate-key': 'PQRh0Ll8tmPyJpcP main--site--org mRN24kMQcclw-dMQ',
     });
+
+    fetchMock.unmockGlobal();
   });
 
   it('renders a simple product html', async () => {
@@ -194,7 +245,7 @@ describe('Product HTML Pipe Test', () => {
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
-      'cache-tag': 'VS5-46Z_DsIjIydC,juOVlP_wU3xIZXph,aa9iB4ZoKa28Ulqx,gZ8sZQGPdZ1uFask,main--site--org,XI4_5DVAssKv-Mlu',
+      'cache-tag': '1WGcEtArU5-0KpdD,main--site--org,XI4_5DVAssKv-Mlu',
       'cdn-cache-control': 'max-age=300, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
@@ -205,7 +256,7 @@ describe('Product HTML Pipe Test', () => {
     const dirname = path.dirname(fileURLToPath(import.meta.url));
     const fetchMockGlobal = fetchMock.mockGlobal();
     const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
-    fetchMockGlobal.get('https://main--site--adobe.aem.live/404.html', {
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', {
       body: html404,
       headers: {
         'cache-control': 'max-age=7200, must-revalidate',
@@ -238,9 +289,9 @@ describe('Product HTML Pipe Test', () => {
       'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Wed, 30 Apr 2025 03:47:18 GMT',
-      'cache-tag': 'VS5-46Z_DsIjIydC,juOVlP_wU3xIZXph,U4c6bN3DRwO8mnxl,3x-TYEuoLJlR0JRs,main--site--org,main--site--org_404',
+      'cache-tag': '9Bhm36MntXqXr3kA,main--site--org,main--site--org_404,uOhB41fFzP0Al-SD',
       'cdn-cache-control': 'max-age=300, must-revalidate',
-      'x-error': 'failed to load /products/product-404.json from product-bus: 404',
+      'x-error': 'failed to load org/site/catalog/products/product-404.json from product-bus: 404',
     });
 
     const resBody = resp.body;

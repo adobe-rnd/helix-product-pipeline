@@ -19,7 +19,7 @@ export class FileS3Loader {
   constructor() {
     Object.assign(this, {
       dirs: {
-        'adobe-commerce-catalog': path.resolve(__testdir, 'fixtures', 'product'),
+        'helix-product-bus': path.resolve(__testdir, 'fixtures', 'product'),
       },
       statusCodeOverrides: {},
       rewrites: [],
@@ -54,6 +54,7 @@ export class FileS3Loader {
   }
 
   async getObject(bucketId, key) {
+    // eslint-disable-next-line no-console
     console.log('getObject', bucketId, key);
     const dir = this.dirs[bucketId];
     if (!dir) {

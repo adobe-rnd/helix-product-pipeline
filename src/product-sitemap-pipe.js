@@ -42,16 +42,20 @@ const optionalEntry = (key, value) => {
  * @returns {string}
  */
 const resolveLocation = (state, data, extension) => {
+  // If product has explicit canonical URL, use it
   if (data.url && typeof data.url === 'string') {
     return data.url;
   }
 
-  // if no url is defined, use the pattern from config & product's urlKey/sku
-  const [pattern] = state.config.route?.matchedPatterns ?? [];
-  if (!pattern) {
-    return null;
+  // Otherwise construct URL from product's path
+  if (data.path) {
+    const { prodHost } = state;
+    const host = /^https?:\/\//.test(prodHost) ? prodHost : `https://${prodHost}`;
+    return `${host}${data.path}${extension}`;
   }
-  return `${state.prodHost}${pattern.replace('{{urlKey}}', data.urlKey).replace('{{sku}}', data.sku)}${extension}`;
+
+  // Products without url or path cannot be included in sitemap
+  return null;
 };
 
 /**

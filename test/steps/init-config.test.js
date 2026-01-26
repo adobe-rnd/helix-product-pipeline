@@ -18,21 +18,15 @@ describe('init-config', () => {
   describe('replaceParams function (tested through initConfig)', () => {
     it('should replace all parameter placeholders with correct values', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'main',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: 'https://$ref--$site--$org.example.com' },
-            live: { host: 'https://$owner.$org.$site.com' },
+            live: { host: 'https://$org.$site.com' },
           },
         },
       };
@@ -48,24 +42,18 @@ describe('init-config', () => {
       );
       assert.strictEqual(
         state.liveHost,
-        'https://testowner.testorg.testsite.com',
+        'https://testorg.testsite.com',
       );
     });
 
     it('should return empty string when input string is null', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: null },
             live: { host: undefined },
@@ -84,18 +72,12 @@ describe('init-config', () => {
 
     it('should return empty string when input string is empty', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: '' },
             live: { host: '' },
@@ -114,18 +96,12 @@ describe('init-config', () => {
 
     it('should handle strings with no parameter placeholders', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: 'https://static.example.com' },
             live: { host: 'https://cdn.example.com' },
@@ -144,18 +120,12 @@ describe('init-config', () => {
 
     it('should handle partial parameter replacements', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: 'https://$ref.example.com' },
             live: { host: 'https://$org.$site.com' },
@@ -174,18 +144,12 @@ describe('init-config', () => {
 
     it('should handle multiple occurrences of the same parameter', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: 'https://$ref.$ref.example.com' },
             live: { host: 'https://$org.$org.$site.com' },
@@ -203,155 +167,15 @@ describe('init-config', () => {
     });
   });
 
-  describe('findOrderedMatches function (tested through initConfig)', () => {
-    it('should find and order pattern matches correctly', async () => {
-      const state = {
-        owner: 'testowner',
-        org: 'testorg',
-        site: 'testsite',
-        repo: 'testrepo',
-        ref: 'testref',
-        info: { path: '/products/123' },
-        config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-              '/products/*': { productConfig: 'product' },
-              '/products/{{id}}': { productDetailConfig: 'productDetail' },
-            },
-          },
-          cdn: {
-            preview: { host: 'https://preview.example.com' },
-            live: { host: 'https://live.example.com' },
-          },
-        },
-      };
-
-      const req = { headers: { get: () => 'original-host.com' } };
-      const res = {};
-
-      await initConfig(state, req, res);
-
-      assert.deepStrictEqual(state.config.route.matchedPatterns, ['/products/*', '/products/{{id}}']);
-    });
-  });
-
-  describe('extractPathParams function (tested through initConfig)', () => {
-    it('should extract parameters from patterns with placeholders', async () => {
-      const state = {
-        owner: 'testowner',
-        org: 'testorg',
-        site: 'testsite',
-        repo: 'testrepo',
-        ref: 'testref',
-        info: { path: '/products/123' },
-        config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-              '/products/{{sku}}': {
-                type: 'product',
-              },
-            },
-          },
-          cdn: {
-            preview: { host: 'https://preview.example.com' },
-            live: { host: 'https://live.example.com' },
-          },
-        },
-      };
-
-      const req = { headers: { get: () => 'original-host.com' } };
-      const res = {};
-
-      await initConfig(state, req, res);
-
-      assert.deepStrictEqual(state.config.route.params, { sku: '123' });
-    });
-
-    it('should extract multiple parameters from complex patterns', async () => {
-      const state = {
-        owner: 'testowner',
-        org: 'testorg',
-        site: 'testsite',
-        repo: 'testrepo',
-        ref: 'testref',
-        info: { path: '/category/product/product-url-key/456' },
-        config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-              '/category/product/{{urlKey}}/{{sku}}': {
-                type: 'product',
-              },
-            },
-          },
-          cdn: {
-            preview: { host: 'https://preview.example.com' },
-            live: { host: 'https://live.example.com' },
-          },
-        },
-      };
-
-      const req = { headers: { get: () => 'original-host.com' } };
-      const res = {};
-
-      await initConfig(state, req, res);
-
-      assert.deepStrictEqual(state.config.route.params, {
-        urlKey: 'product-url-key',
-        sku: '456',
-      });
-    });
-
-    it('should handle no match', async () => {
-      const state = {
-        owner: 'testowner',
-        org: 'testorg',
-        site: 'testsite',
-        repo: 'testrepo',
-        ref: 'testref',
-        info: { path: '/category' },
-        config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-              '/category/product': {
-                type: 'product',
-              },
-            },
-          },
-          cdn: {
-            preview: { host: 'https://preview.example.com' },
-            live: { host: 'https://live.example.com' },
-          },
-        },
-      };
-
-      const req = { headers: { get: () => 'original-host.com' } };
-      const res = {};
-
-      await initConfig(state, req, res);
-
-      assert.deepStrictEqual(state.config.route.params, {});
-    });
-  });
-
   describe('initConfig main function', () => {
     it('should set prodHost from config when available', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: 'https://preview.example.com' },
             live: { host: 'https://live.example.com' },
@@ -370,18 +194,12 @@ describe('init-config', () => {
 
     it('should fallback to x-forwarded-host when prod host not configured', async () => {
       const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
         config: {
-          public: {
-            patterns: {
-              base: { someConfig: 'base' },
-            },
-          },
           cdn: {
             preview: { host: 'https://preview.example.com' },
             live: { host: 'https://live.example.com' },
@@ -399,58 +217,36 @@ describe('init-config', () => {
       assert.strictEqual(state.prodHost, 'original-host.com');
     });
 
-    it('should merge base config with pattern-specific config', async () => {
+    it('should handle missing cdn config gracefully', async () => {
       const state = {
-        owner: 'testowner',
-        org: 'testorg',
-        site: 'testsite',
-        repo: 'testrepo',
-        ref: 'testref',
-        info: { path: '/products/123' },
-        config: {
-          public: {
-            patterns: {
-              base: {
-                baseConfig: 'base',
-                sharedConfig: 'shared',
-              },
-              '/products/{{id}}': {
-                productConfig: 'product',
-                sharedConfig: 'overridden',
-              },
-            },
-          },
-          cdn: {
-            preview: { host: 'https://preview.example.com' },
-            live: { host: 'https://live.example.com' },
-          },
-        },
-      };
-
-      const req = { headers: { get: () => 'original-host.com' } };
-      const res = {};
-
-      await initConfig(state, req, res);
-
-      assert.strictEqual(state.config.route.baseConfig, 'base');
-      assert.strictEqual(state.config.route.productConfig, 'product');
-      assert.strictEqual(state.config.route.sharedConfig, 'overridden');
-    });
-
-    it('should handle missing base config gracefully', async () => {
-      const state = {
-        owner: 'testowner',
         org: 'testorg',
         site: 'testsite',
         repo: 'testrepo',
         ref: 'testref',
         info: { path: '/test/path' },
+        config: {},
+      };
+
+      const req = { headers: { get: () => 'original-host.com' } };
+      const res = {};
+
+      await initConfig(state, req, res);
+
+      assert.strictEqual(state.previewHost, '');
+      assert.strictEqual(state.liveHost, '');
+      assert.strictEqual(state.prodHost, 'original-host.com');
+    });
+
+    it('should record lastModified from config', async () => {
+      const state = {
+        org: 'testorg',
+        site: 'testsite',
+        repo: 'testrepo',
+        ref: 'testref',
+        info: { path: '/test/path' },
+        log: console,
         config: {
-          public: {
-            patterns: {
-              '/test/*': { testConfig: 'test' },
-            },
-          },
+          lastModified: 'Wed, 22 Oct 2025 03:47:18 GMT',
           cdn: {
             preview: { host: 'https://preview.example.com' },
             live: { host: 'https://live.example.com' },
@@ -459,12 +255,11 @@ describe('init-config', () => {
       };
 
       const req = { headers: { get: () => 'original-host.com' } };
-      const res = {};
+      const res = { lastModifiedSources: {} };
 
       await initConfig(state, req, res);
 
-      assert.strictEqual(state.config.route.testConfig, 'test');
-      assert.deepStrictEqual(state.config.route.params, {});
+      assert.strictEqual(res.lastModifiedSources.config.date, 'Wed, 22 Oct 2025 03:47:18 GMT');
     });
   });
 });

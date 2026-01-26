@@ -13,18 +13,18 @@
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 
 /**
- * Loads the content from either the content-bus or code-bus and stores it in `state.content`
+ * Loads the content from either the content-bus and stores it in `state.content.edge`
  * @param {PipelineState} state
  * @param {PipelineResponse} res
  * @returns {Promise<void>}
  */
 export default async function fetchEdgeContent(state, res) {
   const {
-    info, owner, site, ref, log,
+    info, org, site, ref, log,
   } = state;
   const { originalPath } = info;
 
-  const contentUrl = `https://${ref}--${site}--${owner}.aem.live${originalPath}.plain.html`;
+  const contentUrl = `https://${ref}--${site}--${org}.aem.live${originalPath}.plain.html`;
   try {
     const contentRes = await fetch(contentUrl);
     if (contentRes.status === 200) {
