@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Override Product Meta Title</title>
+    <link rel="canonical" href="https://www.example.com/us/en_us/shop/override-product">
+    <meta name="description" content="This description should be ignored because jsonld is provided.">
+    <meta property="og:title" content="Override Product Meta Title">
+    <meta property="og:description" content="This description should be ignored because jsonld is provided.">
+    <meta property="og:url" content="https://www.example.com/us/en_us/shop/override-product">
+    <meta property="og:image" content="https://www.blendify.com/us/en_us/products/media_a1b2c3d4e5f6789012345678901234567890abcd.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Override Product Meta Title">
+    <meta name="twitter:description" content="This description should be ignored because jsonld is provided.">
+    <meta name="twitter:image" content="https://www.blendify.com/us/en_us/products/media_a1b2c3d4e5f6789012345678901234567890abcd.png">
+    <meta name="sku" content="OVERRIDE-5000">
+    <meta name="type" content="simple">
+    <link id="favicon" rel="icon" type="image/svg+xml" href="/icons/spark.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="/scripts.js" type="module"></script>
+    <link rel="stylesheet" href="/styles.css">
+    <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "Custom Override Product Name",
+  "sku": "CUSTOM-OVERRIDE-SKU",
+  "description": "This is a completely custom JSON-LD description from the Product Bus",
+  "gtin": "9999999999999",
+  "brand": {
+    "@type": "Brand",
+    "name": "CustomBrand"
+  },
+  "image": [
+    "https://cdn.example.com/custom-image-1.jpg",
+    "https://cdn.example.com/custom-image-2.jpg"
+  ],
+  "offers": {
+    "@type": "Offer",
+    "url": "https://www.example.com/custom-offer-url",
+    "priceCurrency": "USD",
+    "price": "129.99",
+    "availability": "https://schema.org/InStock",
+    "seller": {
+      "@type": "Organization",
+      "name": "Custom Seller Inc"
+    }
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "4.8",
+    "reviewCount": "256"
+  }
+}
+    </script>
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <h1 id="override-product">Override Product</h1>
+        <p>$149.99 (<del>$199.99</del>)</p>
+        <p>
+          <picture>
+            <source type="image/webp" srcset="./media_a1b2c3d4e5f6789012345678901234567890abcd.png?width=2000&#x26;format=webply&#x26;optimize=medium" media="(min-width: 600px)">
+            <source type="image/webp" srcset="./media_a1b2c3d4e5f6789012345678901234567890abcd.png?width=750&#x26;format=webply&#x26;optimize=medium">
+            <source type="image/png" srcset="./media_a1b2c3d4e5f6789012345678901234567890abcd.png?width=2000&#x26;format=png&#x26;optimize=medium" media="(min-width: 600px)">
+            <img loading="lazy" alt="" src="./media_a1b2c3d4e5f6789012345678901234567890abcd.png?width=750&#x26;format=png&#x26;optimize=medium">
+          </picture>
+        </p>
+      </div>
+      <div>
+        <h3 id="features">Features</h3>
+        <p>These are the features of the product.</p>
+        <h3 id="what-comes-in-the-box">What comes in the box</h3>
+        <ul>
+          <li>Thing 1</li>
+          <li>Thing 2</li>
+          <li>Thing 3</li>
+          <li>Thing 4</li>
+        </ul>
+      </div>
+      <div>
+        <h3 id="product-specifications"><strong>Product Specifications</strong></h3>
+        <ul>
+          <li>
+            <p><strong>Series:</strong>Product Series</p>
+          </li>
+          <li>
+            <p><strong>Compatibility:</strong> Product Compatibility Feature</p>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h3 id="year-full-warranty"><strong>10-Year Full Warranty</strong></h3>
+        <p>We stand behind the quality of our machines with full warranties, covering parts, performance, labor, and two-way shipping at no cost to you.<a href="https://www.commercesite.com/us/en_us/shop/10-year-warranty/"> Read the Warranty.</a></p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>

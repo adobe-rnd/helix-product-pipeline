@@ -65,7 +65,14 @@ function renderOffer(state, variant, simple = false) {
   };
 }
 
-function convertToJsonLD(state, product) {
+export function convertToJsonLD(state, product) {
+  // If the product has a jsonld property, use it directly instead of generating
+  if (product.jsonld) {
+    return typeof product.jsonld === 'string'
+      ? product.jsonld
+      : JSON.stringify(product.jsonld, null, 2);
+  }
+
   const {
     sku,
     metaTitle,
