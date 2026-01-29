@@ -1,3 +1,10 @@
+## [2.0.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.0.1...v2.0.2) (2026-01-29)
+
+
+### Bug Fixes
+
+* allow generated jsonld to be overridden ([47f0e92](https://github.com/adobe-rnd/helix-product-pipeline/commit/47f0e9230c6c2d47588ff4815addbecc8d3b4379))
+
 ## [2.0.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.0.0...v2.0.1) (2026-01-29)
 
 
