@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+import { PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 import { setProduct404CacheHeaders } from './set-cache-headers.js';
 
@@ -23,7 +24,17 @@ export default async function fetch404(state, req, res) {
   const {
     org, site, ref,
   } = state;
-  const ret = await fetch(`https://${ref}--${site}--${org}.aem.live/404.html`);
+
+  /** @type {Record<string, string>} */
+  const headers = {};
+  const authorization = req.headers.get('authorization');
+  if (authorization) {
+    headers.authorization = authorization;
+  }
+  const ret = await fetch(`https://${ref}--${site}--${org}.aem.live/404.html`, { headers });
+  if (ret.status === 401) {
+    throw new PipelineStatusError(401, 'unauthorized');
+  }
   if (ret.status === 200) {
     // override last-modified if source-last-modified is set
     const lastModified = extractLastModified(ret.headers);

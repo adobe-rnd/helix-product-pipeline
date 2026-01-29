@@ -10,15 +10,17 @@
  * governing permissions and limitations under the License.
  */
 
+import { PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 
 /**
  * Loads the content from either the content-bus and stores it in `state.content.edge`
  * @param {PipelineState} state
+ * @param {PipelineRequest} req
  * @param {PipelineResponse} res
  * @returns {Promise<void>}
  */
-export default async function fetchEdgeContent(state, res) {
+export default async function fetchEdgeContent(state, req, res) {
   const {
     info, org, site, ref, log,
   } = state;
@@ -26,7 +28,16 @@ export default async function fetchEdgeContent(state, res) {
 
   const contentUrl = `https://${ref}--${site}--${org}.aem.live${originalPath}.plain.html`;
   try {
-    const contentRes = await fetch(contentUrl);
+    /** @type {Record<string, string>} */
+    const headers = {};
+    const authorization = req.headers.get('authorization');
+    if (authorization) {
+      headers.authorization = authorization;
+    }
+    const contentRes = await fetch(contentUrl, { headers });
+    if (contentRes.status === 401) {
+      throw new PipelineStatusError(401, 'unauthorized');
+    }
     if (contentRes.status === 200) {
       state.content.edge = await contentRes.text();
 
@@ -39,6 +50,9 @@ export default async function fetchEdgeContent(state, res) {
       log.debug(`Edge content returned ${contentRes.status} for ${contentUrl}`);
     }
   } catch (e) {
+    if (e instanceof PipelineStatusError) {
+      throw e;
+    }
     log.debug(`Failed to fetch edge content from ${contentUrl}: ${e.message}`);
   }
 }

@@ -25,6 +25,7 @@ import renderHead from './steps/render-head.js';
 import tohtml from './steps/stringify-response.js';
 import fetch404 from './steps/fetch-404.js';
 import { setProductCacheHeaders } from './steps/set-cache-headers.js';
+import { getUnauthorizedBody } from './utils/http-response.js';
 
 export async function productHTMLPipe(state, req) {
   const { log } = state;
@@ -73,7 +74,7 @@ export async function productHTMLPipe(state, req) {
     await html(state);
     await renderHead(state);
 
-    await fetchEdgeContent(state, res);
+    await fetchEdgeContent(state, req, res);
     await renderBody(state, req, res);
     await renderJsonld(state, res);
     await addHeadingIds(state);
@@ -89,6 +90,10 @@ export async function productHTMLPipe(state, req) {
       res.status = e.code;
     } else {
       res.status = 500;
+    }
+
+    if (res.status === 401) {
+      res.body = getUnauthorizedBody();
     }
 
     /* c8 ignore next */
