@@ -209,5 +209,9 @@ describe('Rendering', () => {
     it('renders with no product content', async () => {
       await testRender('no-product-content', 'html', 200, 'live', false);
     });
+
+    it('uses jsonld override from product instead of generating', async () => {
+      await testRender('jsonld-override', 'html', 200);
+    });
   });
 });

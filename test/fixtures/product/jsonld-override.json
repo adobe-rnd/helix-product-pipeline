@@ -1,0 +1,53 @@
+{
+  "sku": "OVERRIDE-5000",
+  "urlKey": "override-product",
+  "name": "Override Product",
+  "type": "simple",
+  "title": "Override Product Title",
+  "metaTitle": "Override Product Meta Title",
+  "metaDescription": "This description should be ignored because jsonld is provided.",
+  "url": "https://www.example.com/us/en_us/shop/override-product",
+  "images": [
+    { "url": "./media_a1b2c3d4e5f6789012345678901234567890abcd.png" }
+  ],
+  "brand": "OriginalBrand",
+  "availability": "InStock",
+  "price": {
+    "currency": "USD",
+    "regular": "199.99",
+    "final": "149.99"
+  },
+  "variants": [],
+  "jsonld": {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": "Custom Override Product Name",
+    "sku": "CUSTOM-OVERRIDE-SKU",
+    "description": "This is a completely custom JSON-LD description from the Product Bus",
+    "gtin": "9999999999999",
+    "brand": {
+      "@type": "Brand",
+      "name": "CustomBrand"
+    },
+    "image": [
+      "https://cdn.example.com/custom-image-1.jpg",
+      "https://cdn.example.com/custom-image-2.jpg"
+    ],
+    "offers": {
+      "@type": "Offer",
+      "url": "https://www.example.com/custom-offer-url",
+      "priceCurrency": "USD",
+      "price": "129.99",
+      "availability": "https://schema.org/InStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "Custom Seller Inc"
+      }
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "256"
+    }
+  }
+}
