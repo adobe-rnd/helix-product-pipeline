@@ -455,6 +455,75 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
+  it('returns 401 when edge content fetch returns 401', async () => {
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Mock the fetch call for edge content to return 401
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-simple.plain.html', {
+      status: 401,
+      body: 'Unauthorized',
+      headers: { 'content-type': 'text/plain' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-simple',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-simple');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
+    );
+
+    assert.strictEqual(resp.status, 401);
+    assert.strictEqual(resp.headers.get('x-error'), 'unauthorized');
+    fetchMock.unmockGlobal();
+  });
+
+  it('returns 401 when 404 fetch returns 401', async () => {
+    // Clear any existing mocks and set up fresh
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Mock the 404 fetch to return 401
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', {
+      status: 401,
+      body: 'Unauthorized',
+      headers: { 'content-type': 'text/plain' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404.html')),
+    );
+
+    assert.strictEqual(resp.status, 401);
+    assert.strictEqual(resp.headers.get('x-error'), 'unauthorized');
+    fetchMock.unmockGlobal();
+  });
+
   it('reports a 502 during content fetch failure', async () => {
     // Mock the html step to throw an exception
     const { productHTMLPipe: mockedHTMLPipe } = await esmock('../src/index.js', {
