@@ -73,7 +73,7 @@ export async function productHTMLPipe(state, req) {
     await html(state);
     await renderHead(state);
 
-    await fetchEdgeContent(state, res);
+    await fetchEdgeContent(state, req, res);
     await renderBody(state, req, res);
     await renderJsonld(state, res);
     await addHeadingIds(state);

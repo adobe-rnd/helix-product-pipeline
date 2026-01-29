@@ -368,6 +368,93 @@ describe('Product HTML Pipe Test', () => {
     assert.strictEqual(resp.headers.get('x-error'), 'no response document');
   });
 
+  it('forwards authorization header to edge content fetch', async () => {
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Mock the fetch call for edge content
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-configurable.plain.html', (url, opts) => {
+      // Verify that authorization header was forwarded with 'token ' prefix
+      assert.strictEqual(opts.headers.authorization, 'token my-auth-token');
+      return {
+        body: '<div><p>Edge content</p></div>',
+        headers: {
+          'content-type': 'text/html',
+          'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+        },
+      };
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable'), {
+        headers: {
+          authorization: 'my-auth-token',
+        },
+      }),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    fetchMock.unmockGlobal();
+  });
+
+  it('forwards authorization header to 404 fetch', async () => {
+    const dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
+
+    // Mock the 404 fetch and verify authorization header
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', (url, opts) => {
+      // Verify that authorization header was forwarded with 'token ' prefix
+      assert.strictEqual(opts.headers.authorization, 'token my-auth-token');
+      return {
+        body: html404,
+        headers: {
+          'cache-control': 'max-age=7200, must-revalidate',
+          'Content-Type': 'text/html; charset=utf-8',
+          'Last-Modified': 'Fri, 30 Apr 2025 03:47:18 GMT',
+        },
+      };
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404.html'), {
+        headers: {
+          authorization: 'my-auth-token',
+        },
+      }),
+    );
+
+    assert.strictEqual(resp.status, 404);
+    fetchMock.unmockGlobal();
+  });
+
   it('reports a 502 during content fetch failure', async () => {
     // Mock the html step to throw an exception
     const { productHTMLPipe: mockedHTMLPipe } = await esmock('../src/index.js', {
