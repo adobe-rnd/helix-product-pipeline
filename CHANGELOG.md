@@ -1,3 +1,13 @@
+## [2.0.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.0.0...v2.0.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* assume authorization header value includes `token` ([20886f8](https://github.com/adobe-rnd/helix-product-pipeline/commit/20886f8224e4ca7a946eb2d927d6f625ec3fe3dc))
+* pass authorization headers to edge ([8640b6d](https://github.com/adobe-rnd/helix-product-pipeline/commit/8640b6d5ce22e31dd3701fd8197eef70efc780ae))
+* respect site authentication ([28a05ce](https://github.com/adobe-rnd/helix-product-pipeline/commit/28a05ce23e084035b8b4459f8ed37790798520c7))
+* return 401 body ([5bad55b](https://github.com/adobe-rnd/helix-product-pipeline/commit/5bad55b8a09bc6d538ae1e6787e6f413a9f5613a))
+
 # [2.0.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v1.9.3...v2.0.0) (2026-01-26)
 
 
