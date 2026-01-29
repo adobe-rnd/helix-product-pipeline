@@ -24,10 +24,12 @@ export default async function fetch404(state, req, res) {
   const {
     org, site, ref,
   } = state;
+
+  /** @type {Record<string, string>} */
   const headers = {};
   const authorization = req.headers.get('authorization');
   if (authorization) {
-    headers.authorization = `token ${authorization}`;
+    headers.authorization = authorization;
   }
   const ret = await fetch(`https://${ref}--${site}--${org}.aem.live/404.html`, { headers });
   if (ret.status === 401) {

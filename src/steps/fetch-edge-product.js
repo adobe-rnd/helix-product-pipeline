@@ -32,7 +32,7 @@ export default async function fetchEdgeContent(state, req, res) {
     const headers = {};
     const authorization = req.headers.get('authorization');
     if (authorization) {
-      headers.authorization = `token ${authorization}`;
+      headers.authorization = authorization;
     }
     const contentRes = await fetch(contentUrl, { headers });
     if (contentRes.status === 401) {
