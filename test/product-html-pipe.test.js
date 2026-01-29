@@ -21,6 +21,7 @@ import path from 'path';
 import { FileS3Loader } from './FileS3Loader.js';
 import { productHTMLPipe } from '../src/index.js';
 import { getPathInfo } from '../src/utils/path.js';
+import { getUnauthorizedBody } from '../src/utils/http-response.js';
 
 const DEFAULT_CONFIG = {
   contentBusId: 'foo-id',
@@ -485,6 +486,7 @@ describe('Product HTML Pipe Test', () => {
 
     assert.strictEqual(resp.status, 401);
     assert.strictEqual(resp.headers.get('x-error'), 'unauthorized');
+    assert.strictEqual(resp.body, getUnauthorizedBody());
     fetchMock.unmockGlobal();
   });
 
@@ -521,6 +523,7 @@ describe('Product HTML Pipe Test', () => {
 
     assert.strictEqual(resp.status, 401);
     assert.strictEqual(resp.headers.get('x-error'), 'unauthorized');
+    assert.strictEqual(resp.body, getUnauthorizedBody());
     fetchMock.unmockGlobal();
   });
 
