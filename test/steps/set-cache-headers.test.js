@@ -13,7 +13,7 @@
 /* eslint-env mocha */
 import assert from 'assert';
 import { PipelineRequest, PipelineResponse } from '@adobe/helix-html-pipeline';
-import { setCachingHeaders, isMediaRequest, setProductCacheHeaders } from '../../src/steps/set-cache-headers.js';
+import { setCachingHeaders, setProductCacheHeaders } from '../../src/steps/set-cache-headers.js';
 
 describe('setCachingHeaders', () => {
   const createRequest = (url, headers = {}) => {
@@ -205,28 +205,6 @@ describe('setCachingHeaders', () => {
 
       assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
     });
-
-    it('sets 2592000s TTL for successful media requests', () => {
-      const req = createRequest('https://example.com/media_1234567890abcdef1234567890abcdef12345678.jpg', {
-        'x-byo-cdn-type': 'fastly',
-      });
-      const resp = createResponse(200);
-      const cacheKeys = [];
-
-      setCachingHeaders(req, resp, cacheKeys);
-
-      assert.strictEqual(resp.headers.get('cache-control'), 'max-age=2592000, must-revalidate');
-    });
-
-    it('sets 3600s TTL for failed media requests', () => {
-      const req = createRequest('https://example.com/media_1234567890abcdef1234567890abcdef12345678.jpg');
-      const resp = createResponse(404);
-      const cacheKeys = [];
-
-      setCachingHeaders(req, resp, cacheKeys);
-
-      assert.strictEqual(resp.headers.get('cache-control'), 'max-age=3600, must-revalidate');
-    });
   });
 
   describe('CDN TTL calculation', () => {
@@ -252,30 +230,6 @@ describe('setCachingHeaders', () => {
       setCachingHeaders(req, resp, cacheKeys);
 
       assert.strictEqual(resp.headers.get('cdn-cache-control'), 'max-age=0, must-revalidate');
-    });
-
-    it('sets 2592000s TTL for successful media requests', () => {
-      const req = createRequest('https://example.com/media_1234567890abcdef1234567890abcdef12345678.jpg', {
-        'x-byo-cdn-type': 'cloudflare',
-      });
-      const resp = createResponse(200);
-      const cacheKeys = [];
-
-      setCachingHeaders(req, resp, cacheKeys);
-
-      assert.strictEqual(resp.headers.get('cdn-cache-control'), 'max-age=2592000, must-revalidate');
-    });
-
-    it('sets 3600s TTL for failed media requests', () => {
-      const req = createRequest('https://example.com/media_1234567890abcdef1234567890abcdef12345678.jpg', {
-        'x-byo-cdn-type': 'cloudflare',
-      });
-      const resp = createResponse(404);
-      const cacheKeys = [];
-
-      setCachingHeaders(req, resp, cacheKeys);
-
-      assert.strictEqual(resp.headers.get('cdn-cache-control'), 'max-age=3600, must-revalidate');
     });
 
     it('sets 300s TTL for regular requests without push invalidation', () => {
@@ -491,38 +445,6 @@ describe('setCachingHeaders', () => {
 
       assert.strictEqual(resp.headers.get('cache-tag'), 'key1');
     });
-  });
-});
-
-describe('isMediaRequest', () => {
-  it('returns true for valid media URLs', () => {
-    const url = new URL('https://example.com/media_1234567890abcdef1234567890abcdef12345678.jpg');
-    assert.strictEqual(isMediaRequest(url), true);
-  });
-
-  it('returns true for media URLs with additional path segments', () => {
-    const url = new URL('https://example.com/media_1234567890abcdef1234567890abcdef12345678/thumbnails/small.jpg');
-    assert.strictEqual(isMediaRequest(url), true);
-  });
-
-  it('returns true for media URLs with different extensions', () => {
-    const url = new URL('https://example.com/media_1234567890abcdef1234567890abcdef12345678.png');
-    assert.strictEqual(isMediaRequest(url), true);
-  });
-
-  it('returns false for non-media URLs', () => {
-    const url = new URL('https://example.com/test.html');
-    assert.strictEqual(isMediaRequest(url), false);
-  });
-
-  it('returns false for URLs with short hash', () => {
-    const url = new URL('https://example.com/media_1234567890abcdef.jpg');
-    assert.strictEqual(isMediaRequest(url), false);
-  });
-
-  it('returns false for URLs without hash', () => {
-    const url = new URL('https://example.com/media.jpg');
-    assert.strictEqual(isMediaRequest(url), false);
   });
 });
 
