@@ -107,7 +107,7 @@ describe('Product JSON Pipe Test', () => {
       'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-      'cache-tag': 'UI-O1qYltIMee0dw,main--site--org,3nfMHLtnsFZ5Q_2g',
+      'cache-tag': 'UI-O1qYltIMee0dw,main--site--org,3nfMHLtnsFZ5Q_2g,foo-id_metadata,main--site--org_head,foo-id',
       'cdn-cache-control': 'max-age=300, must-revalidate',
     });
   });

@@ -47,7 +47,7 @@
   "dependencies": {
     "@adobe/helix-html-pipeline": "6.27.9",
     "@adobe/helix-shared-utils": "3.0.2",
-    "@dylandepass/helix-product-shared": "1.3.2",
+    "@dylandepass/helix-product-shared": "1.5.2",
     "dayjs": "1.11.19",
     "github-slugger": "2.0.0",
     "hast-util-from-html": "^2.0.3",

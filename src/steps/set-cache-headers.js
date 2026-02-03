@@ -13,7 +13,12 @@
 /* eslint-disable camelcase */
 
 import {
-  computeProductPathKey, computeSiteKey, compute404Key, computeMediaKeys, computeAuthoredContentKey,
+  computeProductPathKey,
+  computeSiteKey,
+  compute404Key,
+  computeMediaKeys,
+  computeAuthoredContentKey,
+  computeProductKeys,
 } from '@dylandepass/helix-product-shared';
 
 export const isMediaRequest = (url) => /\/media_[0-9a-f]{40,}[/a-zA-Z0-9_-]*\.[0-9a-z]+$/.test(url.pathname);
@@ -164,12 +169,8 @@ export async function setProductCacheHeaders(state, req, resp) {
     org, site, contentBusId, info,
   } = state;
 
-  const productKeys = [
-    await computeProductPathKey(org, site, info.path),
-    await computeSiteKey(org, site),
-  ];
-  const authoredContentKey = await computeAuthoredContentKey(contentBusId, info.originalPath);
-  setCachingHeaders(req, resp, [...productKeys, authoredContentKey]);
+  const productKeys = await computeProductKeys(org, site, info.path, contentBusId);
+  setCachingHeaders(req, resp, productKeys);
 }
 
 /**

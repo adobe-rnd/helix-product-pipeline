@@ -26,7 +26,7 @@ export default async function fetchEdgeContent(state, req, res) {
   } = state;
   const { originalPath } = info;
 
-  const contentUrl = `https://${ref}--${site}--${org}.aem.live${originalPath}.plain.html`;
+  const contentUrl = `https://${ref}--${site}--${org}.aem.live${originalPath}`;
   try {
     /** @type {Record<string, string>} */
     const headers = {};

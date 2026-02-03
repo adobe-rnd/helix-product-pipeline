@@ -34,6 +34,7 @@ Helix Product Pipeline is the shared rendering engine that powers both `helix-pr
 
 - Fetches product data from Product Bus storage
 - Optionally merges with authored content from Edge Delivery Services
+- Extracts metadata from authored content head and merges into product head
 - Generates responsive picture elements with multiple breakpoints (600px, 750px/2000px)
 - Creates schema.org JSON-LD structured data for rich search results
 - Adds heading IDs for navigation and anchor links
@@ -50,12 +51,13 @@ The HTML pipeline executes these processing steps in sequence:
 4. **make-html** - Create initial HTML structure
 5. **render-head** - Generate HTML head with meta tags
 6. **fetch-edge-product** - Optionally fetch authored content from Edge Delivery
-7. **render-body** - Render product content, images, and variants
-8. **render-jsonld** - Generate schema.org JSON-LD structured data
-9. **add-heading-ids** - Add IDs to headings for anchor navigation
-10. **create-pictures** - Generate responsive picture elements
-11. **stringify-response** - Serialize to HTML string
-12. **set-cache-headers** - Set CDN and browser cache headers with surrogate keys
+7. **extract-authored-metadata** - Extract metadata from authored content and merge into product head
+8. **render-body** - Render product content, images, and variants
+9. **render-jsonld** - Generate schema.org JSON-LD structured data
+10. **add-heading-ids** - Add IDs to headings for anchor navigation
+11. **create-pictures** - Generate responsive picture elements
+12. **stringify-response** - Serialize to HTML string
+13. **set-cache-headers** - Set CDN and browser cache headers with surrogate keys
 
 ### CDN Support
 
