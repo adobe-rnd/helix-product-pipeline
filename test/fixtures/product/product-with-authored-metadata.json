@@ -1,0 +1,20 @@
+{
+  "sku": "TestProduct-001",
+  "urlKey": "test-product",
+  "name": "Test Product",
+  "type": "simple",
+  "metaTitle": "Test Product Title",
+  "metaDescription": "This is the default product description from the product bus.",
+  "url": "https://www.blendify.com/us/en_us/shop/test-product",
+  "images": [
+    { "url": "./media_testproduct123456789012345678901234567890ab.png" }
+  ],
+  "brand": "TestBrand",
+  "availability": "InStock",
+  "price": {
+    "currency": "USD",
+    "regular": "99.99",
+    "final": "79.99"
+  },
+  "variants": []
+}

@@ -26,6 +26,7 @@ import tohtml from './steps/stringify-response.js';
 import fetch404 from './steps/fetch-404.js';
 import { setProductCacheHeaders } from './steps/set-cache-headers.js';
 import { getUnauthorizedBody } from './utils/http-response.js';
+import extractAuthoredMetadata from './steps/extract-authored-metadata.js';
 
 export async function productHTMLPipe(state, req) {
   const { log } = state;
@@ -72,9 +73,11 @@ export async function productHTMLPipe(state, req) {
 
     state.timer?.update('render');
     await html(state);
-    await renderHead(state);
 
     await fetchEdgeContent(state, req, res);
+    await extractAuthoredMetadata(state);
+
+    await renderHead(state);
     await renderBody(state, req, res);
     await renderJsonld(state, res);
     await addHeadingIds(state);

@@ -45,22 +45,54 @@ function renderMedia(media) {
 }
 
 /**
- * Rewrite image URLs in authored content to include /content-images/ prefix.
- * This allows the aem.network to route these images back to aem.live instead of the product media bus.
- * @param {string} html - HTML content containing image references
- * @returns {string} HTML with rewritten image URLs
+ * Rewrite a single URL to include /content-images/ prefix for media files.
+ * @param {string} url - The URL to potentially rewrite
+ * @returns {string} The rewritten URL
  */
-export function rewriteContentImageUrls(html) {
-  return html.replace(/\/(media_[a-f0-9]+\.\w+)/g, '/content-images/$1');
+function rewriteMediaUrl(url) {
+  /* c8 ignore next */
+  if (!url) return url;
+  return url.replace(/\/(media_[a-f0-9]+\.\w+)/g, '/content-images/$1');
+}
+
+/**
+ * Recursively rewrite image URLs in HAST nodes to include /content-images/ prefix.
+ * This allows the aem.network to route these images back to aem.live instead of the product media bus.
+ * @param {import('hast').Root|import('hast').Element} node - HAST node to process
+ */
+export function rewriteContentImageUrls(node) {
+  /* c8 ignore next */
+  if (!node) return;
+
+  // Rewrite src and srcset attributes on img and source elements
+  if (node.type === 'element' && node.properties) {
+    if (node.tagName === 'img' || node.tagName === 'source') {
+      if (node.properties.src && typeof node.properties.src === 'string') {
+        node.properties.src = rewriteMediaUrl(node.properties.src);
+      }
+      if (node.properties.srcSet && typeof node.properties.srcSet === 'string') {
+        node.properties.srcSet = rewriteMediaUrl(node.properties.srcSet);
+      }
+    }
+  }
+
+  // Recursively process children
+  if (node.children) {
+    for (const child of node.children) {
+      if (child.type === 'element') {
+        rewriteContentImageUrls(child);
+      }
+    }
+  }
 }
 
 /**
  * Render the product content.
- * @param {string} edge
- * @param {string} description
+ * @param {import('hast').Root} edgeHast - HAST nodes from authored content
+ * @param {string} description - Product description (may be HTML or plain text)
  * @returns {import('hast').Element | import('hast').Root}
  */
-function renderProductContent(edge, description) {
+function renderProductContent(edgeHast, description) {
   const parts = [];
 
   // Add description first if it exists
@@ -74,11 +106,10 @@ function renderProductContent(edge, description) {
     }
   }
 
-  // Add edge content after if it exists
-  if (edge) {
-    const rewrittenEdge = rewriteContentImageUrls(edge);
-    const edgeFragment = fromHtml(rewrittenEdge, { fragment: true });
-    parts.push(...edgeFragment.children);
+  // Add edge content after if it exists (already HAST, just rewrite URLs)
+  if (edgeHast) {
+    rewriteContentImageUrls(edgeHast);
+    parts.push(...edgeHast.children);
   }
 
   // Return undefined if nothing to render
@@ -110,7 +141,7 @@ function variantDataAttrs(variant) {
  */
 export default async function render(state, req, res) {
   const { content } = state;
-  const { hast, edge } = content;
+  const { hast, edgeHast } = content;
 
   const {
     name,
@@ -120,7 +151,7 @@ export default async function render(state, req, res) {
     variants = [],
   } = content.data;
 
-  const productContent = renderProductContent(edge, description);
+  const productContent = renderProductContent(edgeHast, description);
 
   const main = select('main', hast);
   main.children = [

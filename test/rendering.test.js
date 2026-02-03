@@ -101,7 +101,8 @@ describe('Rendering', () => {
     }
 
     const fetchMockGlobal = fetchMock.mockGlobal();
-    const productContentUrl = `https://${config.ref}--${config.site}--${config.org}.aem.live${url.pathname}.plain.html`;
+    // Extensionless URL to get full HTML document with metadata in head
+    const productContentUrl = `https://${config.ref}--${config.site}--${config.org}.aem.live${url.pathname}`;
     if (productContent) {
       const edgeHtml = await readFile(path.resolve(__testdir, 'fixtures', 'product', 'product-content.html'), 'utf-8');
       fetchMockGlobal.get(productContentUrl, {
