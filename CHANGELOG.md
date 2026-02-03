@@ -1,3 +1,16 @@
+# [2.1.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.0.2...v2.1.0) (2026-02-03)
+
+
+### Bug Fixes
+
+* support metadata from edge ([8a9c032](https://github.com/adobe-rnd/helix-product-pipeline/commit/8a9c032f2b5e55449a4677e4ce6f4adb62d9c9a2))
+* update tests ([f0cb051](https://github.com/adobe-rnd/helix-product-pipeline/commit/f0cb051da917b2b5c3d56e460f2c9b9284da9a0c))
+
+
+### Features
+
+* extract metadata from authored edge content and optimize cache keys ([0be7f2b](https://github.com/adobe-rnd/helix-product-pipeline/commit/0be7f2b90424216f3a29d8fd536ac19407281947))
+
 ## [2.0.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.0.1...v2.0.2) (2026-01-29)
 
 
