@@ -578,7 +578,7 @@ describe('setProductCacheHeaders', () => {
     // Should have set cache headers (we can verify by checking that cache-control was set)
     assert.ok(resp.headers.get('cache-control'));
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
-    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK,content-bus-id_metadata,main--test-site--test-org_head,content-bus-id');
   });
 
   it('should fallback to sku and urlKey from config.route.params when content.data is not available', async () => {
@@ -613,7 +613,7 @@ describe('setProductCacheHeaders', () => {
     // Should have set cache headers
     assert.ok(resp.headers.get('cache-control'));
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
-    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK,content-bus-id_metadata,main--test-site--test-org_head,content-bus-id');
   });
 
   it('should fallback to config.route.params when content.data is null', async () => {
@@ -648,7 +648,7 @@ describe('setProductCacheHeaders', () => {
     // Should have set cache headers
     assert.ok(resp.headers.get('cache-control'));
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
-    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('cache-tag'), 'G56lYRBKFiJX2i-A,main--test-site--test-org,Id9xWdjCxe493biK,content-bus-id_metadata,main--test-site--test-org_head,content-bus-id');
   });
 
   it('should work with different CDN types', async () => {
@@ -682,6 +682,6 @@ describe('setProductCacheHeaders', () => {
 
     // Should have set Fastly-specific headers
     assert.strictEqual(resp.headers.get('surrogate-control'), 'max-age=300, stale-while-revalidate=0');
-    assert.strictEqual(resp.headers.get('surrogate-key'), 'G56lYRBKFiJX2i-A main--test-site--test-org Id9xWdjCxe493biK');
+    assert.strictEqual(resp.headers.get('surrogate-key'), 'G56lYRBKFiJX2i-A main--test-site--test-org Id9xWdjCxe493biK content-bus-id_metadata main--test-site--test-org_head content-bus-id');
   });
 });

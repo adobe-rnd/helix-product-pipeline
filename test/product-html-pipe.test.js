@@ -132,7 +132,7 @@ describe('Product HTML Pipe Test', () => {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
-      'surrogate-key': 'WTrfsmEbgzyUOR4j main--repoless-site--org mRN24kMQcclw-dMQ',
+      'surrogate-key': 'WTrfsmEbgzyUOR4j main--repoless-site--org mRN24kMQcclw-dMQ foo-id_metadata main--repoless-site--org_head foo-id',
     });
     fetchMock.unmockGlobal();
   });
@@ -236,7 +236,7 @@ describe('Product HTML Pipe Test', () => {
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
       'surrogate-control': 'max-age=300, stale-while-revalidate=0',
-      'surrogate-key': 'PQRh0Ll8tmPyJpcP main--site--org mRN24kMQcclw-dMQ',
+      'surrogate-key': 'PQRh0Ll8tmPyJpcP main--site--org mRN24kMQcclw-dMQ foo-id_metadata main--site--org_head foo-id',
     });
 
     fetchMock.unmockGlobal();
@@ -271,7 +271,7 @@ describe('Product HTML Pipe Test', () => {
     assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
-      'cache-tag': '1WGcEtArU5-0KpdD,main--site--org,XI4_5DVAssKv-Mlu',
+      'cache-tag': '1WGcEtArU5-0KpdD,main--site--org,XI4_5DVAssKv-Mlu,foo-id_metadata,main--site--org_head,foo-id',
       'cdn-cache-control': 'max-age=300, must-revalidate',
       'content-type': 'text/html; charset=utf-8',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
