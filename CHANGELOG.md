@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.1.0...v2.2.0) (2026-02-04)
+
+
+### Features
+
+* Remove media pipe and move to helix-product-pipeline-worker ([645d2f5](https://github.com/adobe-rnd/helix-product-pipeline/commit/645d2f5850f0b4f5abfe25e6330c68e31508d812))
+
 # [2.1.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.0.2...v2.1.0) (2026-02-03)
 
 
