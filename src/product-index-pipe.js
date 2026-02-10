@@ -17,22 +17,33 @@ import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders } from './steps/set-cache-headers.js';
-import { getIncludes } from './steps/utils.js';
+import { getIncludes, getPaginationParams } from './steps/utils.js';
 
 /**
- * Returns index as spreadsheet
+ * Returns index as spreadsheet with pagination support (matching EDS pattern)
  * @param {SharedTypes.StoredIndex} index
  * @param {Record<string, boolean>} includes
+ * @param {{ hasParams?: boolean, limit?: number, offset?: number }} [pagination={}]
+ *   - Pagination options
  * @returns {{
 *   ':type': 'sheet',
+*   total: number,
+*   offset: number,
+*   limit: number,
 *   columns: string[],
 *   data: Record<string, string>[]
 * }}
 */
-export function toSpreadsheet(index, includes) {
+export function toSpreadsheet(index, includes, pagination = {}) {
+  const {
+    limit = pagination.hasParams ? 1000 : Infinity,
+    offset = 0,
+  } = pagination;
+
   const columns = new Set(['sku']);
 
   const products = Object.entries(index)
+    .sort(([a], [b]) => a.localeCompare(b))
     .filter(([_, entry]) => includes.all || !entry.filters?.noindex || includes.noindex)
     .reduce((acc, [sluggedSku, entry]) => {
       const product = entry.data;
@@ -80,10 +91,18 @@ export function toSpreadsheet(index, includes) {
       return acc;
     }, []);
 
+  // Apply pagination (matching EDS json-filter.js pattern)
+  const total = products.length;
+  const len = Math.min(limit, total - offset);
+  const paginatedData = products.slice(offset, offset + len);
+
   return {
     ':type': 'sheet',
+    total,
+    offset,
+    limit: paginatedData.length,
     columns: Array.from(columns),
-    data: products,
+    data: paginatedData,
   };
 }
 
@@ -135,7 +154,9 @@ export async function productIndexPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = JSON.stringify(toSpreadsheet(state.content.data, getIncludes(req)), null, 2);
+    const pagination = getPaginationParams(req);
+    const spreadsheet = toSpreadsheet(state.content.data, getIncludes(req), pagination);
+    res.body = JSON.stringify(spreadsheet, null, 2);
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */

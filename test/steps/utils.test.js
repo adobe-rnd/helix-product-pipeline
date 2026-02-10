@@ -18,6 +18,7 @@ import {
   maybeHTML,
   limitWords,
   getIncludes,
+  getPaginationParams,
 } from '../../src/steps/utils.js';
 
 describe('Get Original Host', () => {
@@ -325,5 +326,72 @@ describe('Get Includes', () => {
   it('returns an object with true for each include', () => {
     const req = new PipelineRequest(new URL('https://example.com?include=foo&include=all'));
     assert.deepStrictEqual(getIncludes(req), { foo: true, all: true });
+  });
+});
+
+describe('Get Pagination Params', () => {
+  it('returns empty object when no pagination params present', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json'));
+    assert.deepStrictEqual(getPaginationParams(req), {});
+  });
+
+  it('parses limit query param', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?limit=100'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true, limit: 100 });
+  });
+
+  it('parses offset query param', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?offset=50'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true, offset: 50 });
+  });
+
+  it('parses both limit and offset query params', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?limit=100&offset=200'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true, limit: 100, offset: 200 });
+  });
+
+  it('sets hasParams for invalid limit (non-numeric)', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?limit=abc'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true });
+  });
+
+  it('sets hasParams for invalid offset (non-numeric)', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?offset=xyz'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true });
+  });
+
+  it('sets hasParams for negative limit', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?limit=-10'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true });
+  });
+
+  it('sets hasParams for negative offset', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?offset=-5'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true });
+  });
+
+  it('handles zero limit', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?limit=0'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true, limit: 0 });
+  });
+
+  it('handles zero offset', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?offset=0'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true, offset: 0 });
+  });
+
+  it('handles floating point numbers (floors them)', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?limit=10.7&offset=5.3'));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true, limit: 10, offset: 5 });
+  });
+
+  it('sets hasParams for empty limit value', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?limit='));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true });
+  });
+
+  it('sets hasParams for empty offset value', () => {
+    const req = new PipelineRequest(new URL('https://example.com/index.json?offset='));
+    assert.deepStrictEqual(getPaginationParams(req), { hasParams: true });
   });
 });

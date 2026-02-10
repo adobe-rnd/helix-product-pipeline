@@ -1,5 +1,8 @@
 {
   ":type": "sheet",
+  "total": 88,
+  "offset": 0,
+  "limit": 88,
   "columns": [
     "sku",
     "path",
@@ -16,327 +19,54 @@
   ],
   "data": [
     {
-      "sku": "vbndax5ks",
-      "path": "/ascent-x5-smartprep-kitchen-system",
-      "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
-      "urlKey": "ascent-x5-smartprep-kitchen-system",
-      "title": "Ascent® X5 SmartPrep™ Kitchen System",
-      "price": "949.95",
-      "image": "./media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg",
+      "sku": "5-speed-immersion-blender",
+      "path": "/5-speed-immersion-blender",
+      "url": "https://www.example.com/5-speed-immersion-blender",
+      "urlKey": "5-speed-immersion-blender",
+      "title": "5-Speed Immersion Blender",
+      "price": "169.95",
+      "image": "./media_e462565d4fe5c0b436207995a7512a8550f360fd.jpg",
       "description": "",
-      "series": "Ascent X Series",
-      "colors": "Brushed Stainless Metal Finish,Black",
-      "variantSkus": "073495-04-VB,074104-04-VB"
+      "series": "Immersion",
+      "colors": "Black,White",
+      "variantSkus": "067991,074051"
     },
     {
-      "parentSku": "vbndax5ks",
-      "sku": "073495-04-VB",
-      "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
-      "title": "Ascent X5-Brushed Stainless Metal Finish",
-      "price": "949.95",
-      "image": "./media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg"
+      "parentSku": "5-speed-immersion-blender",
+      "sku": "067991",
+      "url": "https://www.example.com/5-speed-immersion-blender",
+      "title": "Vitamix Immersion Blender-Black",
+      "price": "169.95",
+      "image": "./media_bffe56dc2da48744128a4babed392e2e3b44b423.png"
     },
     {
-      "parentSku": "vbndax5ks",
-      "sku": "074104-04-VB",
-      "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
-      "title": "Ascent X5-Graphite Metal Finish",
-      "price": "949.95",
-      "image": "./media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png"
+      "parentSku": "5-speed-immersion-blender",
+      "sku": "074051",
+      "url": "https://www.example.com/5-speed-immersion-blender",
+      "title": "Vitamix Immersion Blender-White",
+      "price": "169.95",
+      "image": "./media_fd209a85703900becf33e13e7d6a348b00123379.png"
     },
     {
-      "sku": "x2-kitchen-system",
-      "path": "/ascent-x2-smartprep-kitchen-system",
-      "url": "https://www.example.com/ascent-x2-smartprep-kitchen-system",
-      "urlKey": "ascent-x2-smartprep-kitchen-system",
-      "title": "Ascent® X2 SmartPrep Kitchen System",
-      "price": "749.95",
-      "colors": "Shadow Black",
-      "image": "./media_42814a23e6b2d867123d19097af62a27234991ab.jpg",
+      "sku": "5-speed-immersion-blender-3-piece-bundle",
+      "path": "/5-speed-immersion-blender-3-piece-bundle",
+      "url": "https://www.example.com/5-speed-immersion-blender-3-piece-bundle",
+      "urlKey": "5-speed-immersion-blender-3-piece-bundle",
+      "title": "5-Speed Immersion Blender 3-Piece Bundle",
+      "price": "189.95",
+      "image": "./media_e462565d4fe5c0b436207995a7512a8550f360fd.png",
       "description": "",
-      "series": "Ascent X Series",
-      "variantSkus": "075710-100"
+      "series": "Immersion",
+      "colors": "Black",
+      "variantSkus": "071238"
     },
     {
-      "parentSku": "x2-kitchen-system",
-      "sku": "075710-100",
-      "url": "https://www.example.com/ascent-x2-smartprep-kitchen-system",
-      "title": "Ascent® X2 SmartPrep Kitchen System-Shadow Black",
-      "price": "749.95",
-      "image": "./media_42814a23e6b2d867123d19097af62a27234991ab.jpg"
-    },
-    {
-      "sku": "ascent-x5",
-      "path": "/ascent-x5",
-      "url": "https://www.example.com/ascent-x5",
-      "urlKey": "ascent-x5",
-      "title": "Ascent® X5",
-      "price": "749.95",
-      "colors": "Brushed Stainless Metal Finish,Graphite Metal Finish",
-      "image": "./media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png",
-      "description": "",
-      "series": "Ascent X Series",
-      "variantSkus": "073495-04,074104-04"
-    },
-    {
-      "parentSku": "ascent-x5",
-      "sku": "073495-04",
-      "url": "https://www.example.com/ascent-x5",
-      "title": "Ascent X5-Brushed Stainless Metal Finish",
-      "price": "749.95",
-      "image": "./media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg"
-    },
-    {
-      "parentSku": "ascent-x5",
-      "sku": "074104-04",
-      "url": "https://www.example.com/ascent-x5",
-      "title": "Ascent X5-Graphite Metal Finish",
-      "price": "749.95",
-      "image": "./media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png"
-    },
-    {
-      "sku": "ascent-x3",
-      "path": "/ascent-x3",
-      "url": "https://www.example.com/ascent-x3",
-      "urlKey": "ascent-x3",
-      "title": "Ascent® X3",
-      "price": "649.95",
-      "colors": "Shadow Black,Polar White",
-      "image": "./media_2c49c87d765cc2cf6445df14f9051f5cfea7fb3c.png",
-      "description": "",
-      "series": "Ascent X Series",
-      "variantSkus": "073493,074097"
-    },
-    {
-      "parentSku": "ascent-x3",
-      "sku": "073493",
-      "url": "https://www.example.com/ascent-x3",
-      "title": "Ascent X3-Shadow Black",
-      "price": "649.95",
-      "image": "./media_15c2801b61b5e1736ff828154da0bfbfc637cd4e.jpg"
-    },
-    {
-      "parentSku": "ascent-x3",
-      "sku": "074097",
-      "url": "https://www.example.com/ascent-x3",
-      "title": "Ascent X3-Polar White",
-      "price": "649.95",
-      "image": "./media_fdd5312b15e741890074232b7ca5567d9ddae532.jpg"
-    },
-    {
-      "sku": "ascent-x2",
-      "path": "/ascent-x2",
-      "url": "https://www.example.com/ascent-x2",
-      "urlKey": "ascent-x2",
-      "title": "Ascent® X2",
-      "price": "549.95",
-      "colors": "Shadow Black,Polar White,Nano Gray,Midnight Blue",
-      "image": "./media_f7d6a3efad20803d329c07665bc0b8c07e08671a.png",
-      "description": "",
-      "series": "Ascent X Series",
-      "variantSkus": "073492-04,074094-04,074095-04,074096-04"
-    },
-    {
-      "parentSku": "ascent-x2",
-      "sku": "073492-04",
-      "url": "https://www.example.com/ascent-x2",
-      "title": "Ascent X2-Shadow Black",
-      "price": "549.95",
-      "image": "./media_bc62e9d86264b33e2600b8aa889cc49e9f249289.jpg"
-    },
-    {
-      "parentSku": "ascent-x2",
-      "sku": "074094-04",
-      "url": "https://www.example.com/ascent-x2",
-      "title": "Ascent X2-Polar White",
-      "price": "549.95",
-      "image": "./media_413e9a9e8bd489edc5f383138d82004769470b6f.jpg"
-    },
-    {
-      "parentSku": "ascent-x2",
-      "sku": "074095-04",
-      "url": "https://www.example.com/ascent-x2",
-      "title": "Ascent X2- Nano Gray",
-      "price": "549.95",
-      "image": "./media_424a2d7c1a6acc023603016958343809df5da517.jpg"
-    },
-    {
-      "parentSku": "ascent-x2",
-      "sku": "074096-04",
-      "url": "https://www.example.com/ascent-x2",
-      "title": "Ascent X2-Midnight Blue",
-      "price": "549.95",
-      "image": "./media_7c4ea652378a9560b28e767dab1ebee177e114f8.jpg"
-    },
-    {
-      "sku": "vbnd5200lb",
-      "path": "/5200-legacy-bundle",
-      "url": "https://www.example.com/5200-legacy-bundle",
-      "urlKey": "5200-legacy-bundle",
-      "title": "5200 Legacy Bundle",
-      "price": "649.95",
-      "colors": "Black,White,Red",
-      "image": "./media_7d951fc054b4643b15d0d15b69ee94c773a60916.jpg",
-      "description": "",
-      "variantSkus": "001372-1093-VB,001371-1092-VB,001392-1138-VB"
-    },
-    {
-      "parentSku": "vbnd5200lb",
-      "sku": "001372-1093-VB",
-      "url": "https://www.example.com/5200-legacy-bundle",
-      "title": "5200 Standard - Getting Started",
-      "price": "649.95",
-      "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg"
-    },
-    {
-      "parentSku": "vbnd5200lb",
-      "sku": "001371-1092-VB",
-      "url": "https://www.example.com/5200-legacy-bundle",
-      "title": "5200 Standard - Getting Started White",
-      "price": "649.95",
-      "image": "./media_64c4c80da4be5f6927530dd69d04a6e41e24039e.jpg"
-    },
-    {
-      "parentSku": "vbnd5200lb",
-      "sku": "001392-1138-VB",
-      "url": "https://www.example.com/5200-legacy-bundle",
-      "title": "5200 Standard - Getting Started Red",
-      "price": "649.95",
-      "image": "./media_afb408cb9a5dd7812327b21f3d1265818a2c2c53.jpg"
-    },
-    {
-      "sku": "propel750",
-      "path": "/propel-series-750",
-      "url": "https://www.example.com/propel-series-750",
-      "urlKey": "propel-series-750",
-      "title": "Propel 750",
-      "price": "629.95",
-      "colors": "Black,Red,White,Slate",
-      "image": "./media_a379c4ba76e36ca8dfd5d20e50f67a03cc4cd7b4.jpg",
-      "description": "",
-      "variantSkus": "071395,073294,073295,073296"
-    },
-    {
-      "parentSku": "propel750",
-      "sku": "071395",
-      "url": "https://www.example.com/propel-series-750",
-      "title": "Propel Series 750 Black",
-      "price": "629.95",
-      "image": "./media_da2da61a3412c3f8ed311a10ce1d30147f7673e0.jpg"
-    },
-    {
-      "parentSku": "propel750",
-      "sku": "073294",
-      "url": "https://www.example.com/propel-series-750",
-      "title": "Propel Series 750 Red",
-      "price": "629.95",
-      "image": "./media_4e9ffc439f66cc5e662721dd501d506e0b86dcfa.png"
-    },
-    {
-      "parentSku": "propel750",
-      "sku": "073295",
-      "url": "https://www.example.com/propel-series-750",
-      "title": "Propel Series 750 White",
-      "price": "629.95",
-      "image": "./media_462badead7c64b4ac3d890e2353c3353fa76dbec.png"
-    },
-    {
-      "parentSku": "propel750",
-      "sku": "073296",
-      "url": "https://www.example.com/propel-series-750",
-      "title": "Propel Series 750 Slate",
-      "price": "629.95",
-      "image": "./media_289ac0dd71906308849bf789920c2e7414b303cf.png"
-    },
-    {
-      "sku": "propel510",
-      "path": "/propel-series-510",
-      "url": "https://www.example.com/propel-series-510",
-      "urlKey": "propel-series-510",
-      "title": "Propel 510",
-      "price": "499.95",
-      "colors": "Black,Red,White,Slate",
-      "image": "./media_dd371dba39ab4d82cc275a300747506f9af083cc.jpg",
-      "description": "",
-      "variantSkus": "071394,073291,073292,073293"
-    },
-    {
-      "parentSku": "propel510",
-      "url": "https://www.example.com/propel-series-510",
-      "sku": "071394",
-      "title": "Propel Series 510 - Black",
-      "price": "499.95"
-    },
-    {
-      "parentSku": "propel510",
-      "url": "https://www.example.com/propel-series-510",
-      "sku": "073291",
-      "title": "Propel Series 510 - Red",
-      "price": "499.95",
-      "image": "./media_6b91bd8f1ec90f0d75e085323b4837373ee7742c.png"
-    },
-    {
-      "parentSku": "propel510",
-      "url": "https://www.example.com/propel-series-510",
-      "sku": "073292",
-      "title": "Propel Series 510 - White",
-      "price": "499.95",
-      "image": "./media_236c6c9a5b3edaf055dd84f447c9d4894b643f83.png"
-    },
-    {
-      "parentSku": "propel510",
-      "url": "https://www.example.com/propel-series-510",
-      "sku": "073293",
-      "title": "Propel Series 510 - Slate",
-      "price": "499.95",
-      "image": "./media_760d2307ac66ab8cc9b96030d52bfd57c848e686.png"
-    },
-    {
-      "sku": "vbndibcb",
-      "path": "/5-speed-immersion-blender-complete-bundle",
-      "url": "https://www.example.com/5-speed-immersion-blender-complete-bundle",
-      "urlKey": "5-speed-immersion-blender-complete-bundle",
-      "title": "5-Speed Immersion Blender Complete Bundle",
-      "price": "269.95",
-      "image": "./media_a06fc6262385bc24ef356a95f7516717969be6b5.jpg",
-      "description": "",
-      "series": "Immersion"
-    },
-    {
-      "sku": "vbnde310",
-      "path": "/e310-and-pca-bundle",
-      "url": "https://www.example.com/e310-and-pca-bundle",
-      "urlKey": "e310-and-pca-bundle",
-      "title": "E310 + Personal Cup Adapter",
-      "price": "499.95",
-      "colors": "Black,Red,Slate",
-      "image": "./media_91e13e23df6a86dc165b258726dc061fb3a30427.png",
-      "description": "",
-      "series": "Explorian Series",
-      "variantSkus": "065971-VB,066071-VB,065755-VB"
-    },
-    {
-      "parentSku": "vbnde310",
-      "sku": "065971-VB",
-      "url": "https://www.example.com/e310-and-pca-bundle",
-      "title": "E310 Black",
-      "price": "499.95"
-    },
-    {
-      "parentSku": "vbnde310",
-      "sku": "066071-VB",
-      "url": "https://www.example.com/e310-and-pca-bundle",
-      "title": "E310 Red",
-      "price": "499.95",
-      "image": "./media_b5c889e055c690555d34d09fd6ac1880371f87eb.jpg"
-    },
-    {
-      "parentSku": "vbnde310",
-      "sku": "065755-VB",
-      "url": "https://www.example.com/e310-and-pca-bundle",
-      "title": "E310 Slate",
-      "price": "499.95",
-      "image": "./media_b4070b91e8066da94cb7b79bd38f9bdbec1faf09.jpg"
+      "parentSku": "5-speed-immersion-blender-3-piece-bundle",
+      "sku": "071238",
+      "url": "https://www.example.com/5-speed-immersion-blender-3-piece-bundle",
+      "title": "5-Speed Immersion Blender 3-Piece Bundle-Black",
+      "price": "189.95",
+      "image": "./media_8a82902bdc81f389fe13e9ceaf7c60984fcb06f5.jpg"
     },
     {
       "sku": "5-speed-immersion-blender-4-piece-deluxe-bundle",
@@ -345,9 +75,9 @@
       "urlKey": "5-piece-deluxe-immersion-blender-bundle",
       "title": "5-Speed Immersion Blender 4-Piece Deluxe Bundle",
       "price": "259.95",
-      "colors": "Black,Red,White",
       "image": "./media_1d6e626b671d68ca698e975223bd5d46ff0200d5.png",
       "description": "4-Piece Deluxe Immersion Blender Bundle ",
+      "colors": "Black,Red,White",
       "variantSkus": "071239,073791,073792"
     },
     {
@@ -375,192 +105,16 @@
       "image": "./media_87e27c4d4fb78252924d8d730191bbdecb37edcd.jpg"
     },
     {
-      "sku": "vbndp750",
-      "path": "/propel-750-classic-bundle",
-      "url": "https://www.example.com/propel-750-classic-bundle",
-      "urlKey": "propel-750-classic-bundle",
-      "title": "Propel 750 Classic Bundle",
-      "price": "699.95",
-      "colors": "Black,Red,White,Slate",
-      "image": "./media_a23f38b19963cb654697ab73b10ce843c5d92b67.jpg",
-      "description": "",
-      "series": "Propel Series",
-      "variantSkus": "071395-VB,073294-VB,073295-VB,073296-VB"
-    },
-    {
-      "parentSku": "vbndp750",
-      "sku": "071395-VB",
-      "url": "https://www.example.com/propel-750-classic-bundle",
-      "title": "Propel Series 750 Black",
-      "price": "699.95",
-      "image": "./media_da2da61a3412c3f8ed311a10ce1d30147f7673e0.jpg"
-    },
-    {
-      "parentSku": "vbndp750",
-      "sku": "073294-VB",
-      "url": "https://www.example.com/propel-750-classic-bundle",
-      "title": "Propel Series 750 Red",
-      "price": "699.95",
-      "image": "./media_4e9ffc439f66cc5e662721dd501d506e0b86dcfa.png"
-    },
-    {
-      "parentSku": "vbndp750",
-      "sku": "073295-VB",
-      "url": "https://www.example.com/propel-750-classic-bundle",
-      "title": "Propel Series 750 White",
-      "price": "699.95",
-      "image": "./media_462badead7c64b4ac3d890e2353c3353fa76dbec.png"
-    },
-    {
-      "parentSku": "vbndp750",
-      "sku": "073296-VB",
-      "url": "https://www.example.com/propel-750-classic-bundle",
-      "title": "Propel Series 750 Slate",
-      "price": "699.95",
-      "image": "./media_289ac0dd71906308849bf789920c2e7414b303cf.png"
-    },
-    {
-      "sku": "5-speed-immersion-blender",
-      "path": "/5-speed-immersion-blender",
-      "url": "https://www.example.com/5-speed-immersion-blender",
-      "urlKey": "5-speed-immersion-blender",
-      "title": "5-Speed Immersion Blender",
-      "price": "169.95",
-      "colors": "Black,White",
-      "image": "./media_e462565d4fe5c0b436207995a7512a8550f360fd.jpg",
-      "description": "",
-      "series": "Immersion",
-      "variantSkus": "067991,074051"
-    },
-    {
-      "parentSku": "5-speed-immersion-blender",
-      "sku": "067991",
-      "url": "https://www.example.com/5-speed-immersion-blender",
-      "title": "Vitamix Immersion Blender-Black",
-      "price": "169.95",
-      "image": "./media_bffe56dc2da48744128a4babed392e2e3b44b423.png"
-    },
-    {
-      "parentSku": "5-speed-immersion-blender",
-      "sku": "074051",
-      "url": "https://www.example.com/5-speed-immersion-blender",
-      "title": "Vitamix Immersion Blender-White",
-      "price": "169.95",
-      "image": "./media_fd209a85703900becf33e13e7d6a348b00123379.png"
-    },
-    {
-      "sku": "ascent-x4",
-      "path": "/ascent-x4",
-      "url": "https://www.example.com/ascent-x4",
-      "urlKey": "ascent-x4",
-      "title": "Ascent® X4",
-      "price": "699.95",
-      "colors": "Brushed Stainless Metal Finish,Black Stainless Metal Finish,Graphite Metal Finish,Polar White",
-      "image": "./media_8bddd55210bdb666146ce6fa5a414d78f746c9a7.png",
-      "description": "",
-      "series": "Ascent X Series",
-      "variantSkus": "073494-04,074100-04,074101-04,074102-04"
-    },
-    {
-      "parentSku": "ascent-x4",
-      "sku": "073494-04",
-      "url": "https://www.example.com/ascent-x4",
-      "title": "Ascent X4-Brushed Stainless Metal Finish",
-      "price": "699.95",
-      "image": "./media_d277e72e9c7730679dc59fc6d5df8758728ac1d3.jpg"
-    },
-    {
-      "parentSku": "ascent-x4",
-      "sku": "074100-04",
-      "url": "https://www.example.com/ascent-x4",
-      "title": "Ascent X4-Black Stainless Metal Finish",
-      "price": "699.95",
-      "image": "./media_585faa6a718633cc9cbe1f4d280acce15fecf842.jpg"
-    },
-    {
-      "parentSku": "ascent-x4",
-      "sku": "074101-04",
-      "url": "https://www.example.com/ascent-x4",
-      "title": "Ascent X4-Graphite Metal Finish",
-      "price": "699.95",
-      "image": "./media_171f830dfba33ae5e80c0cb58014b2ab0a3d6a40.jpg"
-    },
-    {
-      "parentSku": "ascent-x4",
-      "sku": "074102-04",
-      "url": "https://www.example.com/ascent-x4",
-      "title": "Ascent X4-Polar White",
-      "price": "699.95",
-      "image": "./media_eb0db244655306781fc24e21dd40a4c7ded43f55.png"
-    },
-    {
-      "sku": "e310",
-      "path": "/e310",
-      "url": "https://www.example.com/e310",
-      "urlKey": "e310",
-      "title": "E310",
-      "price": "379.95",
-      "colors": "Black,Red,Slate",
-      "image": "./media_6892d8aa6dee6d15d6fca585526990a6aecf864f.jpg",
-      "description": "",
-      "series": "Explorian Series",
-      "variantSkus": "065971,066071,065755"
-    },
-    {
-      "parentSku": "e310",
-      "sku": "065971",
-      "url": "https://www.example.com/e310",
-      "title": "E310 Black",
-      "price": "379.95"
-    },
-    {
-      "parentSku": "e310",
-      "sku": "066071",
-      "url": "https://www.example.com/e310",
-      "title": "E310 Red",
-      "price": "379.95",
-      "image": "./media_b5c889e055c690555d34d09fd6ac1880371f87eb.jpg"
-    },
-    {
-      "parentSku": "e310",
-      "sku": "065755",
-      "url": "https://www.example.com/e310",
-      "title": "E310 Slate",
-      "price": "379.95",
-      "image": "./media_b4070b91e8066da94cb7b79bd38f9bdbec1faf09.jpg"
-    },
-    {
-      "sku": "5-speed-immersion-blender-3-piece-bundle",
-      "path": "/5-speed-immersion-blender-3-piece-bundle",
-      "url": "https://www.example.com/5-speed-immersion-blender-3-piece-bundle",
-      "urlKey": "5-speed-immersion-blender-3-piece-bundle",
-      "title": "5-Speed Immersion Blender 3-Piece Bundle",
-      "price": "189.95",
-      "colors": "Black",
-      "image": "./media_e462565d4fe5c0b436207995a7512a8550f360fd.png",
-      "description": "",
-      "series": "Immersion",
-      "variantSkus": "071238"
-    },
-    {
-      "parentSku": "5-speed-immersion-blender-3-piece-bundle",
-      "sku": "071238",
-      "url": "https://www.example.com/5-speed-immersion-blender-3-piece-bundle",
-      "title": "5-Speed Immersion Blender 3-Piece Bundle-Black",
-      "price": "189.95",
-      "image": "./media_8a82902bdc81f389fe13e9ceaf7c60984fcb06f5.jpg"
-    },
-    {
       "sku": "a2300",
       "path": "/a2300",
       "url": "https://www.example.com/a2300",
       "urlKey": "a2300",
       "title": "A2300",
       "price": "399.95",
-      "colors": "Black,Red,White,Slate",
       "image": "./media_13f34abcff863c53e25028911749e9a9d1d6f1c4.jpg",
       "description": "",
       "series": "Ascent Series",
+      "colors": "Black,Red,White,Slate",
       "variantSkus": "061006,062047,062049,062326"
     },
     {
@@ -596,81 +150,180 @@
       "image": "./media_388262d85b810d60aae9aacf4acf19c3f4d3f3b3.jpg"
     },
     {
-      "sku": "certified-reconditioned-explorian-series",
-      "path": "/certified-reconditioned-explorian",
-      "url": "https://www.example.com/certified-reconditioned-explorian",
-      "urlKey": "certified-reconditioned-explorian",
-      "title": "Certified Reconditioned Explorian™ Series",
+      "sku": "ascent-x2",
+      "path": "/ascent-x2",
+      "url": "https://www.example.com/ascent-x2",
+      "urlKey": "ascent-x2",
+      "title": "Ascent® X2",
+      "price": "549.95",
+      "image": "./media_f7d6a3efad20803d329c07665bc0b8c07e08671a.png",
+      "description": "",
+      "series": "Ascent X Series",
+      "colors": "Shadow Black,Polar White,Nano Gray,Midnight Blue",
+      "variantSkus": "073492-04,074094-04,074095-04,074096-04"
+    },
+    {
+      "parentSku": "ascent-x2",
+      "sku": "073492-04",
+      "url": "https://www.example.com/ascent-x2",
+      "title": "Ascent X2-Shadow Black",
+      "price": "549.95",
+      "image": "./media_bc62e9d86264b33e2600b8aa889cc49e9f249289.jpg"
+    },
+    {
+      "parentSku": "ascent-x2",
+      "sku": "074094-04",
+      "url": "https://www.example.com/ascent-x2",
+      "title": "Ascent X2-Polar White",
+      "price": "549.95",
+      "image": "./media_413e9a9e8bd489edc5f383138d82004769470b6f.jpg"
+    },
+    {
+      "parentSku": "ascent-x2",
+      "sku": "074095-04",
+      "url": "https://www.example.com/ascent-x2",
+      "title": "Ascent X2- Nano Gray",
+      "price": "549.95",
+      "image": "./media_424a2d7c1a6acc023603016958343809df5da517.jpg"
+    },
+    {
+      "parentSku": "ascent-x2",
+      "sku": "074096-04",
+      "url": "https://www.example.com/ascent-x2",
+      "title": "Ascent X2-Midnight Blue",
+      "price": "549.95",
+      "image": "./media_7c4ea652378a9560b28e767dab1ebee177e114f8.jpg"
+    },
+    {
+      "sku": "ascent-x3",
+      "path": "/ascent-x3",
+      "url": "https://www.example.com/ascent-x3",
+      "urlKey": "ascent-x3",
+      "title": "Ascent® X3",
+      "price": "649.95",
+      "image": "./media_2c49c87d765cc2cf6445df14f9051f5cfea7fb3c.png",
+      "description": "",
+      "series": "Ascent X Series",
+      "colors": "Shadow Black,Polar White",
+      "variantSkus": "073493,074097"
+    },
+    {
+      "parentSku": "ascent-x3",
+      "sku": "073493",
+      "url": "https://www.example.com/ascent-x3",
+      "title": "Ascent X3-Shadow Black",
+      "price": "649.95",
+      "image": "./media_15c2801b61b5e1736ff828154da0bfbfc637cd4e.jpg"
+    },
+    {
+      "parentSku": "ascent-x3",
+      "sku": "074097",
+      "url": "https://www.example.com/ascent-x3",
+      "title": "Ascent X3-Polar White",
+      "price": "649.95",
+      "image": "./media_fdd5312b15e741890074232b7ca5567d9ddae532.jpg"
+    },
+    {
+      "sku": "ascent-x4",
+      "path": "/ascent-x4",
+      "url": "https://www.example.com/ascent-x4",
+      "urlKey": "ascent-x4",
+      "title": "Ascent® X4",
+      "price": "699.95",
+      "image": "./media_8bddd55210bdb666146ce6fa5a414d78f746c9a7.png",
+      "description": "",
+      "series": "Ascent X Series",
+      "colors": "Brushed Stainless Metal Finish,Black Stainless Metal Finish,Graphite Metal Finish,Polar White",
+      "variantSkus": "073494-04,074100-04,074101-04,074102-04"
+    },
+    {
+      "parentSku": "ascent-x4",
+      "sku": "073494-04",
+      "url": "https://www.example.com/ascent-x4",
+      "title": "Ascent X4-Brushed Stainless Metal Finish",
+      "price": "699.95",
+      "image": "./media_d277e72e9c7730679dc59fc6d5df8758728ac1d3.jpg"
+    },
+    {
+      "parentSku": "ascent-x4",
+      "sku": "074100-04",
+      "url": "https://www.example.com/ascent-x4",
+      "title": "Ascent X4-Black Stainless Metal Finish",
+      "price": "699.95",
+      "image": "./media_585faa6a718633cc9cbe1f4d280acce15fecf842.jpg"
+    },
+    {
+      "parentSku": "ascent-x4",
+      "sku": "074101-04",
+      "url": "https://www.example.com/ascent-x4",
+      "title": "Ascent X4-Graphite Metal Finish",
+      "price": "699.95",
+      "image": "./media_171f830dfba33ae5e80c0cb58014b2ab0a3d6a40.jpg"
+    },
+    {
+      "parentSku": "ascent-x4",
+      "sku": "074102-04",
+      "url": "https://www.example.com/ascent-x4",
+      "title": "Ascent X4-Polar White",
+      "price": "699.95",
+      "image": "./media_eb0db244655306781fc24e21dd40a4c7ded43f55.png"
+    },
+    {
+      "sku": "ascent-x5",
+      "path": "/ascent-x5",
+      "url": "https://www.example.com/ascent-x5",
+      "urlKey": "ascent-x5",
+      "title": "Ascent® X5",
+      "price": "749.95",
+      "image": "./media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png",
+      "description": "",
+      "series": "Ascent X Series",
+      "colors": "Brushed Stainless Metal Finish,Graphite Metal Finish",
+      "variantSkus": "073495-04,074104-04"
+    },
+    {
+      "parentSku": "ascent-x5",
+      "sku": "073495-04",
+      "url": "https://www.example.com/ascent-x5",
+      "title": "Ascent X5-Brushed Stainless Metal Finish",
+      "price": "749.95",
+      "image": "./media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg"
+    },
+    {
+      "parentSku": "ascent-x5",
+      "sku": "074104-04",
+      "url": "https://www.example.com/ascent-x5",
+      "title": "Ascent X5-Graphite Metal Finish",
+      "price": "749.95",
+      "image": "./media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png"
+    },
+    {
+      "sku": "certified-reconditioned-5300",
+      "path": "/certified-reconditioned-5300",
+      "url": "https://www.example.com/certified-reconditioned-5300",
+      "urlKey": "certified-reconditioned-5300",
+      "title": "Certified Reconditioned 5300",
       "price": "269.95",
+      "image": "./media_ae1e6523742b57432897737fa7f2b1a6abeafd9e.jpg",
+      "description": "",
       "colors": "Black,Red",
-      "image": "./media_f78714bc941f32219cd63190db257670439af20a.jpg",
-      "description": "",
-      "variantSkus": "065542,065543"
+      "variantSkus": "058544,058545"
     },
     {
-      "parentSku": "certified-reconditioned-explorian-series",
-      "sku": "065542",
-      "url": "https://www.example.com/certified-reconditioned-explorian",
-      "title": "Certified Reconditioned Explorian Series Black",
+      "parentSku": "certified-reconditioned-5300",
+      "sku": "058544",
+      "url": "https://www.example.com/certified-reconditioned-5300",
+      "title": "Certified Reconditioned 5300 Black",
       "price": "269.95",
-      "image": "./media_408d41561b90b337412062fa74af7d3080f9e158.jpg"
+      "image": "./media_ae1e6523742b57432897737fa7f2b1a6abeafd9e.jpg"
     },
     {
-      "parentSku": "certified-reconditioned-explorian-series",
-      "sku": "065543",
-      "url": "https://www.example.com/certified-reconditioned-explorian",
-      "title": "Certified Reconditioned Explorian Series Red",
+      "parentSku": "certified-reconditioned-5300",
+      "sku": "058545",
+      "url": "https://www.example.com/certified-reconditioned-5300",
+      "title": "Certified Reconditioned 5300  Red",
       "price": "269.95",
-      "image": "./media_ac88dc6c27b6adb4fbe342c639735c83b6688a35.jpg"
-    },
-    {
-      "sku": "certified-reconditioned-standard",
-      "path": "/certified-reconditioned-standard",
-      "url": "https://www.example.com/certified-reconditioned-standard",
-      "urlKey": "certified-reconditioned-standard",
-      "title": "Certified Reconditioned Standard",
-      "price": "349.95",
-      "colors": "Black",
-      "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg",
-      "description": "",
-      "variantSkus": "001811"
-    },
-    {
-      "parentSku": "certified-reconditioned-standard",
-      "sku": "001811",
-      "url": "https://www.example.com/certified-reconditioned-standard",
-      "title": "Certified Reconditioned Standard Black",
-      "price": "349.95",
-      "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg"
-    },
-    {
-      "sku": "certified-reconditioned-explorian-with-programs",
-      "path": "/certified-reconditioned-explorian-with-programs",
-      "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
-      "urlKey": "certified-reconditioned-explorian-with-programs",
-      "title": "Certified Reconditioned Explorian with Programs",
-      "price": "279.95",
-      "colors": "Black,Slate",
-      "image": "./media_62fbd51d66bbc590122c5350d81563babd81caff.png",
-      "description": "",
-      "series": "Explorian Series",
-      "variantSkus": "072611,072612"
-    },
-    {
-      "parentSku": "certified-reconditioned-explorian-with-programs",
-      "sku": "072611",
-      "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
-      "title": "Certified Reconditioned Explorian with Programs-Black",
-      "price": "279.95",
-      "image": "./media_d0eaed3e681e355e67c38d02b2eb6b41a3398917.png"
-    },
-    {
-      "parentSku": "certified-reconditioned-explorian-with-programs",
-      "sku": "072612",
-      "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
-      "title": "Certified Reconditioned Explorian with Programs-Slate",
-      "price": "279.95",
-      "image": "./media_a496f32fb66c9c3e5419e0b1309c5990841ddc38.png"
+      "image": "./media_fb97ecf636a7c5b0ab9fb8092e33a91ce071e383.jpg"
     },
     {
       "sku": "certified-reconditioned-a2500",
@@ -679,9 +332,9 @@
       "urlKey": "certified-reconditioned-a2500",
       "title": "Certified Reconditioned A2500",
       "price": "349.95",
-      "colors": "Black,Red,White,Slate",
       "image": "./media_b0c62316e4e7d579b54ffcf58e0e047a1e14d922.jpg",
       "description": "",
+      "colors": "Black,Red,White,Slate",
       "variantSkus": "065942,065943,065945,065944"
     },
     {
@@ -723,10 +376,10 @@
       "urlKey": "certified-reconditioned-a3500",
       "title": "Certified Reconditioned A3500",
       "price": "449.95",
-      "colors": "Brushed Stainless Metal Finish,White,Black Stainless Metal Finish,Graphite Metal Finish",
       "image": "./media_d67c6773e0c25870633ce63971b4b87449151ff9.jpg",
       "description": "",
       "series": "Ascent Series",
+      "colors": "Brushed Stainless Metal Finish,White,Black Stainless Metal Finish,Graphite Metal Finish",
       "variantSkus": "065946,066911,065948,065949"
     },
     {
@@ -762,15 +415,72 @@
       "image": "./media_33c52f77dbdf939e89a40c893e0d224f780ca9ac.jpg"
     },
     {
+      "sku": "certified-reconditioned-explorian-series",
+      "path": "/certified-reconditioned-explorian",
+      "url": "https://www.example.com/certified-reconditioned-explorian",
+      "urlKey": "certified-reconditioned-explorian",
+      "title": "Certified Reconditioned Explorian™ Series",
+      "price": "269.95",
+      "image": "./media_f78714bc941f32219cd63190db257670439af20a.jpg",
+      "description": "",
+      "colors": "Black,Red",
+      "variantSkus": "065542,065543"
+    },
+    {
+      "parentSku": "certified-reconditioned-explorian-series",
+      "sku": "065542",
+      "url": "https://www.example.com/certified-reconditioned-explorian",
+      "title": "Certified Reconditioned Explorian Series Black",
+      "price": "269.95",
+      "image": "./media_408d41561b90b337412062fa74af7d3080f9e158.jpg"
+    },
+    {
+      "parentSku": "certified-reconditioned-explorian-series",
+      "sku": "065543",
+      "url": "https://www.example.com/certified-reconditioned-explorian",
+      "title": "Certified Reconditioned Explorian Series Red",
+      "price": "269.95",
+      "image": "./media_ac88dc6c27b6adb4fbe342c639735c83b6688a35.jpg"
+    },
+    {
+      "sku": "certified-reconditioned-explorian-with-programs",
+      "path": "/certified-reconditioned-explorian-with-programs",
+      "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
+      "urlKey": "certified-reconditioned-explorian-with-programs",
+      "title": "Certified Reconditioned Explorian with Programs",
+      "price": "279.95",
+      "image": "./media_62fbd51d66bbc590122c5350d81563babd81caff.png",
+      "description": "",
+      "series": "Explorian Series",
+      "colors": "Black,Slate",
+      "variantSkus": "072611,072612"
+    },
+    {
+      "parentSku": "certified-reconditioned-explorian-with-programs",
+      "sku": "072611",
+      "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
+      "title": "Certified Reconditioned Explorian with Programs-Black",
+      "price": "279.95",
+      "image": "./media_d0eaed3e681e355e67c38d02b2eb6b41a3398917.png"
+    },
+    {
+      "parentSku": "certified-reconditioned-explorian-with-programs",
+      "sku": "072612",
+      "url": "https://www.example.com/certified-reconditioned-explorian-with-programs",
+      "title": "Certified Reconditioned Explorian with Programs-Slate",
+      "price": "279.95",
+      "image": "./media_a496f32fb66c9c3e5419e0b1309c5990841ddc38.png"
+    },
+    {
       "sku": "certified-reconditioned-propel-750",
       "path": "/certified-reconditioned-propel-750",
       "url": "https://www.example.com/certified-reconditioned-propel-750",
       "urlKey": "certified-reconditioned-propel-750",
       "title": "Certified Reconditioned Propel 750",
       "price": "399.95",
-      "colors": "Black",
       "image": "./media_3c2bd80cbeededcb3bb3f4cd57c82ce7a8c3c353.png",
       "description": "",
+      "colors": "Black",
       "variantSkus": "074592"
     },
     {
@@ -782,16 +492,337 @@
       "image": "./media_7e94e5e540bdf401636579281016f4c1509571d8.png"
     },
     {
+      "sku": "certified-reconditioned-standard",
+      "path": "/certified-reconditioned-standard",
+      "url": "https://www.example.com/certified-reconditioned-standard",
+      "urlKey": "certified-reconditioned-standard",
+      "title": "Certified Reconditioned Standard",
+      "price": "349.95",
+      "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg",
+      "description": "",
+      "colors": "Black",
+      "variantSkus": "001811"
+    },
+    {
+      "parentSku": "certified-reconditioned-standard",
+      "sku": "001811",
+      "url": "https://www.example.com/certified-reconditioned-standard",
+      "title": "Certified Reconditioned Standard Black",
+      "price": "349.95",
+      "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg"
+    },
+    {
+      "sku": "e310",
+      "path": "/e310",
+      "url": "https://www.example.com/e310",
+      "urlKey": "e310",
+      "title": "E310",
+      "price": "379.95",
+      "image": "./media_6892d8aa6dee6d15d6fca585526990a6aecf864f.jpg",
+      "description": "",
+      "series": "Explorian Series",
+      "colors": "Black,Red,Slate",
+      "variantSkus": "065971,066071,065755"
+    },
+    {
+      "parentSku": "e310",
+      "sku": "065971",
+      "url": "https://www.example.com/e310",
+      "title": "E310 Black",
+      "price": "379.95"
+    },
+    {
+      "parentSku": "e310",
+      "sku": "066071",
+      "url": "https://www.example.com/e310",
+      "title": "E310 Red",
+      "price": "379.95",
+      "image": "./media_b5c889e055c690555d34d09fd6ac1880371f87eb.jpg"
+    },
+    {
+      "parentSku": "e310",
+      "sku": "065755",
+      "url": "https://www.example.com/e310",
+      "title": "E310 Slate",
+      "price": "379.95",
+      "image": "./media_b4070b91e8066da94cb7b79bd38f9bdbec1faf09.jpg"
+    },
+    {
+      "sku": "propel510",
+      "path": "/propel-series-510",
+      "url": "https://www.example.com/propel-series-510",
+      "urlKey": "propel-series-510",
+      "title": "Propel 510",
+      "price": "499.95",
+      "image": "./media_dd371dba39ab4d82cc275a300747506f9af083cc.jpg",
+      "description": "",
+      "colors": "Black,Red,White,Slate",
+      "variantSkus": "071394,073291,073292,073293"
+    },
+    {
+      "parentSku": "propel510",
+      "sku": "071394",
+      "url": "https://www.example.com/propel-series-510",
+      "title": "Propel Series 510 - Black",
+      "price": "499.95"
+    },
+    {
+      "parentSku": "propel510",
+      "sku": "073291",
+      "url": "https://www.example.com/propel-series-510",
+      "title": "Propel Series 510 - Red",
+      "price": "499.95",
+      "image": "./media_6b91bd8f1ec90f0d75e085323b4837373ee7742c.png"
+    },
+    {
+      "parentSku": "propel510",
+      "sku": "073292",
+      "url": "https://www.example.com/propel-series-510",
+      "title": "Propel Series 510 - White",
+      "price": "499.95",
+      "image": "./media_236c6c9a5b3edaf055dd84f447c9d4894b643f83.png"
+    },
+    {
+      "parentSku": "propel510",
+      "sku": "073293",
+      "url": "https://www.example.com/propel-series-510",
+      "title": "Propel Series 510 - Slate",
+      "price": "499.95",
+      "image": "./media_760d2307ac66ab8cc9b96030d52bfd57c848e686.png"
+    },
+    {
+      "sku": "propel750",
+      "path": "/propel-series-750",
+      "url": "https://www.example.com/propel-series-750",
+      "urlKey": "propel-series-750",
+      "title": "Propel 750",
+      "price": "629.95",
+      "image": "./media_a379c4ba76e36ca8dfd5d20e50f67a03cc4cd7b4.jpg",
+      "description": "",
+      "colors": "Black,Red,White,Slate",
+      "variantSkus": "071395,073294,073295,073296"
+    },
+    {
+      "parentSku": "propel750",
+      "sku": "071395",
+      "url": "https://www.example.com/propel-series-750",
+      "title": "Propel Series 750 Black",
+      "price": "629.95",
+      "image": "./media_da2da61a3412c3f8ed311a10ce1d30147f7673e0.jpg"
+    },
+    {
+      "parentSku": "propel750",
+      "sku": "073294",
+      "url": "https://www.example.com/propel-series-750",
+      "title": "Propel Series 750 Red",
+      "price": "629.95",
+      "image": "./media_4e9ffc439f66cc5e662721dd501d506e0b86dcfa.png"
+    },
+    {
+      "parentSku": "propel750",
+      "sku": "073295",
+      "url": "https://www.example.com/propel-series-750",
+      "title": "Propel Series 750 White",
+      "price": "629.95",
+      "image": "./media_462badead7c64b4ac3d890e2353c3353fa76dbec.png"
+    },
+    {
+      "parentSku": "propel750",
+      "sku": "073296",
+      "url": "https://www.example.com/propel-series-750",
+      "title": "Propel Series 750 Slate",
+      "price": "629.95",
+      "image": "./media_289ac0dd71906308849bf789920c2e7414b303cf.png"
+    },
+    {
+      "sku": "vbnd5200lb",
+      "path": "/5200-legacy-bundle",
+      "url": "https://www.example.com/5200-legacy-bundle",
+      "urlKey": "5200-legacy-bundle",
+      "title": "5200 Legacy Bundle",
+      "price": "649.95",
+      "image": "./media_7d951fc054b4643b15d0d15b69ee94c773a60916.jpg",
+      "description": "",
+      "colors": "Black,White,Red",
+      "variantSkus": "001372-1093-VB,001371-1092-VB,001392-1138-VB"
+    },
+    {
+      "parentSku": "vbnd5200lb",
+      "sku": "001372-1093-VB",
+      "url": "https://www.example.com/5200-legacy-bundle",
+      "title": "5200 Standard - Getting Started",
+      "price": "649.95",
+      "image": "./media_0185f10238249fd92247bd8dc1eca67e851612cc.jpg"
+    },
+    {
+      "parentSku": "vbnd5200lb",
+      "sku": "001371-1092-VB",
+      "url": "https://www.example.com/5200-legacy-bundle",
+      "title": "5200 Standard - Getting Started White",
+      "price": "649.95",
+      "image": "./media_64c4c80da4be5f6927530dd69d04a6e41e24039e.jpg"
+    },
+    {
+      "parentSku": "vbnd5200lb",
+      "sku": "001392-1138-VB",
+      "url": "https://www.example.com/5200-legacy-bundle",
+      "title": "5200 Standard - Getting Started Red",
+      "price": "649.95",
+      "image": "./media_afb408cb9a5dd7812327b21f3d1265818a2c2c53.jpg"
+    },
+    {
+      "sku": "vbndax5ks",
+      "path": "/ascent-x5-smartprep-kitchen-system",
+      "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
+      "urlKey": "ascent-x5-smartprep-kitchen-system",
+      "title": "Ascent® X5 SmartPrep™ Kitchen System",
+      "price": "949.95",
+      "image": "./media_20b43ff4abb1e54666eb0fa736b1343ac894a794.jpg",
+      "description": "",
+      "series": "Ascent X Series",
+      "colors": "Brushed Stainless Metal Finish,Black",
+      "variantSkus": "073495-04-VB,074104-04-VB"
+    },
+    {
+      "parentSku": "vbndax5ks",
+      "sku": "073495-04-VB",
+      "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
+      "title": "Ascent X5-Brushed Stainless Metal Finish",
+      "price": "949.95",
+      "image": "./media_a7274c9d79252baba87664333cf9400a9e9e7035.jpg"
+    },
+    {
+      "parentSku": "vbndax5ks",
+      "sku": "074104-04-VB",
+      "url": "https://www.example.com/ascent-x5-smartprep-kitchen-system",
+      "title": "Ascent X5-Graphite Metal Finish",
+      "price": "949.95",
+      "image": "./media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png"
+    },
+    {
+      "sku": "vbnde310",
+      "path": "/e310-and-pca-bundle",
+      "url": "https://www.example.com/e310-and-pca-bundle",
+      "urlKey": "e310-and-pca-bundle",
+      "title": "E310 + Personal Cup Adapter",
+      "price": "499.95",
+      "image": "./media_91e13e23df6a86dc165b258726dc061fb3a30427.png",
+      "description": "",
+      "series": "Explorian Series",
+      "colors": "Black,Red,Slate",
+      "variantSkus": "065971-VB,066071-VB,065755-VB"
+    },
+    {
+      "parentSku": "vbnde310",
+      "sku": "065971-VB",
+      "url": "https://www.example.com/e310-and-pca-bundle",
+      "title": "E310 Black",
+      "price": "499.95"
+    },
+    {
+      "parentSku": "vbnde310",
+      "sku": "066071-VB",
+      "url": "https://www.example.com/e310-and-pca-bundle",
+      "title": "E310 Red",
+      "price": "499.95",
+      "image": "./media_b5c889e055c690555d34d09fd6ac1880371f87eb.jpg"
+    },
+    {
+      "parentSku": "vbnde310",
+      "sku": "065755-VB",
+      "url": "https://www.example.com/e310-and-pca-bundle",
+      "title": "E310 Slate",
+      "price": "499.95",
+      "image": "./media_b4070b91e8066da94cb7b79bd38f9bdbec1faf09.jpg"
+    },
+    {
+      "sku": "vbndibcb",
+      "path": "/5-speed-immersion-blender-complete-bundle",
+      "url": "https://www.example.com/5-speed-immersion-blender-complete-bundle",
+      "urlKey": "5-speed-immersion-blender-complete-bundle",
+      "title": "5-Speed Immersion Blender Complete Bundle",
+      "price": "269.95",
+      "image": "./media_a06fc6262385bc24ef356a95f7516717969be6b5.jpg",
+      "description": "",
+      "series": "Immersion"
+    },
+    {
+      "sku": "vbndp750",
+      "path": "/propel-750-classic-bundle",
+      "url": "https://www.example.com/propel-750-classic-bundle",
+      "urlKey": "propel-750-classic-bundle",
+      "title": "Propel 750 Classic Bundle",
+      "price": "699.95",
+      "image": "./media_a23f38b19963cb654697ab73b10ce843c5d92b67.jpg",
+      "description": "",
+      "series": "Propel Series",
+      "colors": "Black,Red,White,Slate",
+      "variantSkus": "071395-VB,073294-VB,073295-VB,073296-VB"
+    },
+    {
+      "parentSku": "vbndp750",
+      "sku": "071395-VB",
+      "url": "https://www.example.com/propel-750-classic-bundle",
+      "title": "Propel Series 750 Black",
+      "price": "699.95",
+      "image": "./media_da2da61a3412c3f8ed311a10ce1d30147f7673e0.jpg"
+    },
+    {
+      "parentSku": "vbndp750",
+      "sku": "073294-VB",
+      "url": "https://www.example.com/propel-750-classic-bundle",
+      "title": "Propel Series 750 Red",
+      "price": "699.95",
+      "image": "./media_4e9ffc439f66cc5e662721dd501d506e0b86dcfa.png"
+    },
+    {
+      "parentSku": "vbndp750",
+      "sku": "073295-VB",
+      "url": "https://www.example.com/propel-750-classic-bundle",
+      "title": "Propel Series 750 White",
+      "price": "699.95",
+      "image": "./media_462badead7c64b4ac3d890e2353c3353fa76dbec.png"
+    },
+    {
+      "parentSku": "vbndp750",
+      "sku": "073296-VB",
+      "url": "https://www.example.com/propel-750-classic-bundle",
+      "title": "Propel Series 750 Slate",
+      "price": "699.95",
+      "image": "./media_289ac0dd71906308849bf789920c2e7414b303cf.png"
+    },
+    {
+      "sku": "x2-kitchen-system",
+      "path": "/ascent-x2-smartprep-kitchen-system",
+      "url": "https://www.example.com/ascent-x2-smartprep-kitchen-system",
+      "urlKey": "ascent-x2-smartprep-kitchen-system",
+      "title": "Ascent® X2 SmartPrep Kitchen System",
+      "price": "749.95",
+      "image": "./media_42814a23e6b2d867123d19097af62a27234991ab.jpg",
+      "description": "",
+      "series": "Ascent X Series",
+      "colors": "Shadow Black",
+      "variantSkus": "075710-100"
+    },
+    {
+      "parentSku": "x2-kitchen-system",
+      "sku": "075710-100",
+      "url": "https://www.example.com/ascent-x2-smartprep-kitchen-system",
+      "title": "Ascent® X2 SmartPrep Kitchen System-Shadow Black",
+      "price": "749.95",
+      "image": "./media_42814a23e6b2d867123d19097af62a27234991ab.jpg"
+    },
+    {
       "sku": "x4-kitchen-system",
       "path": "/ascent-x4-gourmet-smartprep-kitchen-system",
       "url": "https://www.example.com/ascent-x4-gourmet-smartprep-kitchen-system",
       "urlKey": "ascent-x4-gourmet-smartprep-kitchen-system",
       "title": "Ascent® X4 Gourmet SmartPrep Kitchen System",
       "price": "899.95",
-      "colors": "Polar White",
       "image": "./media_708933f81662a2efc1b3891a450414e6a2adb34a.png",
       "description": "",
       "series": "Ascent X Series",
+      "colors": "Polar White",
       "variantSkus": "075708-100"
     },
     {
@@ -801,34 +832,6 @@
       "title": "Ascent® X4 Gourmet SmartPrep Kitchen System-Polar White",
       "price": "899.95",
       "image": "./media_9d1e9401bd788b2df6d8a5c79a710cca2eac16f3.jpg"
-    },
-    {
-      "sku": "certified-reconditioned-5300",
-      "path": "/certified-reconditioned-5300",
-      "url": "https://www.example.com/certified-reconditioned-5300",
-      "urlKey": "certified-reconditioned-5300",
-      "title": "Certified Reconditioned 5300",
-      "price": "269.95",
-      "colors": "Black,Red",
-      "image": "./media_ae1e6523742b57432897737fa7f2b1a6abeafd9e.jpg",
-      "description": "",
-      "variantSkus": "058544,058545"
-    },
-    {
-      "parentSku": "certified-reconditioned-5300",
-      "sku": "058544",
-      "url": "https://www.example.com/certified-reconditioned-5300",
-      "title": "Certified Reconditioned 5300 Black",
-      "price": "269.95",
-      "image": "./media_ae1e6523742b57432897737fa7f2b1a6abeafd9e.jpg"
-    },
-    {
-      "parentSku": "certified-reconditioned-5300",
-      "sku": "058545",
-      "url": "https://www.example.com/certified-reconditioned-5300",
-      "title": "Certified Reconditioned 5300  Red",
-      "price": "269.95",
-      "image": "./media_fb97ecf636a7c5b0ab9fb8092e33a91ce071e383.jpg"
     }
   ]
 }
