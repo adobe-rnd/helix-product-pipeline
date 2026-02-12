@@ -238,6 +238,68 @@ describe('Product Index Pipe Test', () => {
     assert.deepStrictEqual(body, spreadsheetIndexFixture);
   });
 
+  it('applies limit query param to paginate results', async () => {
+    const s3Loader = new FileS3Loader();
+
+    s3Loader.statusCodeOverrides = {
+      index: 200,
+    };
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/index.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/index.json');
+    const resp = await productIndexPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/index.json?limit=5')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const body = JSON.parse(resp.body);
+    assert.strictEqual(body.total, 88);
+    assert.strictEqual(body.offset, 0);
+    assert.strictEqual(body.limit, 5);
+    assert.strictEqual(body.data.length, 5);
+  });
+
+  it('applies offset query param to paginate results', async () => {
+    const s3Loader = new FileS3Loader();
+
+    s3Loader.statusCodeOverrides = {
+      index: 200,
+    };
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/index.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/index.json');
+    const resp = await productIndexPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/index.json?limit=10&offset=80')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const body = JSON.parse(resp.body);
+    assert.strictEqual(body.total, 88);
+    assert.strictEqual(body.offset, 80);
+    assert.strictEqual(body.limit, 8); // only 8 items remain after offset 80
+    assert.strictEqual(body.data.length, 8);
+  });
+
   describe('toSpreadsheet', () => {
     it('returns a spreadsheet', () => {
       const spreadsheet = toSpreadsheet({
@@ -308,19 +370,48 @@ describe('Product Index Pipe Test', () => {
       }, {});
       assert.deepStrictEqual(spreadsheet, {
         ':type': 'sheet',
+        total: 8,
+        offset: 0,
+        limit: 8,
         columns: [
           'sku',
           'urlKey',
           'title',
           'price',
+          'colors',
           'image',
           'description',
           'series',
-          'colors',
           'parentSku',
           'variantSkus',
         ],
         data: [
+          {
+            sku: 'ascent-x5',
+            urlKey: 'ascent-x5',
+            title: 'Ascent® X5',
+            price: '749.95',
+            colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
+            image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
+            description: '',
+            series: 'Ascent X Series',
+            variants: undefined,
+            variantSkus: '073495-04,074104-04',
+          },
+          {
+            parentSku: 'ascent-x5',
+            sku: '073495-04',
+            title: 'Ascent X5-Brushed Stainless Metal Finish',
+            price: '749.95',
+            image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
+          },
+          {
+            parentSku: 'ascent-x5',
+            sku: '074104-04',
+            title: 'Ascent® X5-Graphite Metal Finish',
+            price: '749.95',
+            image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
+          },
           {
             sku: 'vbndax5ks',
             urlKey: 'ascent-x5-smartprep-kitchen-system',
@@ -366,32 +457,6 @@ describe('Product Index Pipe Test', () => {
             price: '749.95',
             image: './media_42814a23e6b2d867123d19097af62a27234991ab.jpg',
           },
-          {
-            sku: 'ascent-x5',
-            urlKey: 'ascent-x5',
-            title: 'Ascent® X5',
-            price: '749.95',
-            colors: 'Brushed Stainless Metal Finish,Graphite Metal Finish',
-            image: './media_7bacc89abbcd1d51e8395fd123cdd3c5d5a3d057.png',
-            description: '',
-            series: 'Ascent X Series',
-            variants: undefined,
-            variantSkus: '073495-04,074104-04',
-          },
-          {
-            parentSku: 'ascent-x5',
-            sku: '073495-04',
-            title: 'Ascent X5-Brushed Stainless Metal Finish',
-            price: '749.95',
-            image: './media_caee0cae83d8cb8fba9d445b91c91574c4a05e34.jpg',
-          },
-          {
-            parentSku: 'ascent-x5',
-            sku: '074104-04',
-            title: 'Ascent® X5-Graphite Metal Finish',
-            price: '749.95',
-            image: './media_2e1b9f1b8aeb6c9c53a8dc1726d56c40604f5b39.png',
-          },
         ],
       });
     });
@@ -410,6 +475,9 @@ describe('Product Index Pipe Test', () => {
       }, { all: true });
       assert.deepStrictEqual(spreadsheet, {
         ':type': 'sheet',
+        total: 1,
+        offset: 0,
+        limit: 1,
         columns: [
           'sku',
           'urlKey',
@@ -440,6 +508,9 @@ describe('Product Index Pipe Test', () => {
       }, { noindex: true });
       assert.deepStrictEqual(spreadsheet, {
         ':type': 'sheet',
+        total: 1,
+        offset: 0,
+        limit: 1,
         columns: [
           'sku',
           'urlKey',
@@ -470,11 +541,148 @@ describe('Product Index Pipe Test', () => {
       }, { foo: true });
       assert.deepStrictEqual(spreadsheet, {
         ':type': 'sheet',
+        total: 0,
+        offset: 0,
+        limit: 0,
         columns: [
           'sku',
         ],
         data: [],
       });
+    });
+  });
+
+  describe('pagination (limit/offset)', () => {
+    const createTestIndex = (count) => {
+      const index = {};
+      for (let i = 0; i < count; i += 1) {
+        index[`product-${i}`] = {
+          data: {
+            sku: `SKU-${i}`,
+            title: `Product ${i}`,
+            price: `${100 + i}.00`,
+          },
+        };
+      }
+      return index;
+    };
+
+    it('returns total, offset, limit, columns, and data in response', () => {
+      const index = createTestIndex(5);
+      const spreadsheet = toSpreadsheet(index, {}, { limit: 10, offset: 0 });
+
+      assert.strictEqual(spreadsheet[':type'], 'sheet');
+      assert.strictEqual(spreadsheet.total, 5);
+      assert.strictEqual(spreadsheet.offset, 0);
+      assert.strictEqual(spreadsheet.limit, 5);
+      assert.ok(Array.isArray(spreadsheet.columns));
+      assert.ok(Array.isArray(spreadsheet.data));
+      assert.strictEqual(spreadsheet.data.length, 5);
+    });
+
+    it('limits results to specified limit', () => {
+      const index = createTestIndex(10);
+      const spreadsheet = toSpreadsheet(index, {}, { hasParams: true, limit: 3, offset: 0 });
+
+      assert.strictEqual(spreadsheet.total, 10);
+      assert.strictEqual(spreadsheet.limit, 3);
+      assert.strictEqual(spreadsheet.data.length, 3);
+    });
+
+    it('applies offset to skip items', () => {
+      const index = createTestIndex(10);
+      const spreadsheet = toSpreadsheet(index, {}, { hasParams: true, limit: 3, offset: 5 });
+
+      assert.strictEqual(spreadsheet.total, 10);
+      assert.strictEqual(spreadsheet.offset, 5);
+      assert.strictEqual(spreadsheet.limit, 3);
+      assert.strictEqual(spreadsheet.data.length, 3);
+    });
+
+    it('handles offset near end of data', () => {
+      const index = createTestIndex(10);
+      const spreadsheet = toSpreadsheet(index, {}, { hasParams: true, limit: 5, offset: 8 });
+
+      assert.strictEqual(spreadsheet.total, 10);
+      assert.strictEqual(spreadsheet.offset, 8);
+      assert.strictEqual(spreadsheet.limit, 2); // only 2 items remaining
+      assert.strictEqual(spreadsheet.data.length, 2);
+    });
+
+    it('returns empty data when offset exceeds total', () => {
+      const index = createTestIndex(5);
+      const spreadsheet = toSpreadsheet(index, {}, { hasParams: true, limit: 10, offset: 100 });
+
+      assert.strictEqual(spreadsheet.total, 5);
+      assert.strictEqual(spreadsheet.offset, 100);
+      assert.strictEqual(spreadsheet.limit, 0);
+      assert.strictEqual(spreadsheet.data.length, 0);
+    });
+
+    it('defaults limit to 1000 when only offset specified', () => {
+      const index = createTestIndex(5);
+      const spreadsheet = toSpreadsheet(index, {}, { hasParams: true, offset: 0 });
+
+      assert.strictEqual(spreadsheet.limit, 5); // min(1000, 5)
+    });
+
+    it('defaults offset to 0 when only limit specified', () => {
+      const index = createTestIndex(5);
+      const spreadsheet = toSpreadsheet(index, {}, { hasParams: true, limit: 2 });
+
+      assert.strictEqual(spreadsheet.offset, 0);
+    });
+
+    it('returns all items when pagination object is empty (no cap)', () => {
+      const index = createTestIndex(5);
+      const spreadsheet = toSpreadsheet(index, {}, {});
+
+      assert.strictEqual(spreadsheet.total, 5);
+      assert.strictEqual(spreadsheet.offset, 0);
+      assert.strictEqual(spreadsheet.limit, 5);
+    });
+
+    it('caps at 1000 when hasParams is true but values are invalid', () => {
+      const index = createTestIndex(5);
+      // Simulates ?limit=abc — hasParams true but no valid limit/offset
+      const spreadsheet = toSpreadsheet(index, {}, { hasParams: true });
+
+      assert.strictEqual(spreadsheet.total, 5);
+      assert.strictEqual(spreadsheet.limit, 5); // min(1000, 5)
+    });
+
+    it('maintains backward compatibility without pagination param', () => {
+      // When no pagination param is provided, should still work
+      const index = createTestIndex(3);
+      const spreadsheet = toSpreadsheet(index, {});
+
+      assert.strictEqual(spreadsheet[':type'], 'sheet');
+      assert.ok(Array.isArray(spreadsheet.columns));
+      assert.ok(Array.isArray(spreadsheet.data));
+      assert.strictEqual(spreadsheet.data.length, 3);
+      // Should include pagination metadata even without explicit params
+      assert.strictEqual(spreadsheet.total, 3);
+      assert.strictEqual(spreadsheet.offset, 0);
+      assert.strictEqual(spreadsheet.limit, 3);
+    });
+
+    it('returns products sorted by key for deterministic pagination', () => {
+      // Keys inserted in non-alphabetical order
+      const index = {
+        'zebra-product': { data: { title: 'Zebra' } },
+        'apple-product': { data: { title: 'Apple' } },
+        'mango-product': { data: { title: 'Mango' } },
+        'banana-product': { data: { title: 'Banana' } },
+      };
+
+      const page1 = toSpreadsheet(index, {}, { hasParams: true, limit: 2, offset: 0 });
+      const page2 = toSpreadsheet(index, {}, { hasParams: true, limit: 2, offset: 2 });
+
+      // Should be sorted by key: apple, banana, mango, zebra
+      assert.strictEqual(page1.data[0].sku, 'apple-product');
+      assert.strictEqual(page1.data[1].sku, 'banana-product');
+      assert.strictEqual(page2.data[0].sku, 'mango-product');
+      assert.strictEqual(page2.data[1].sku, 'zebra-product');
     });
   });
 });

@@ -125,3 +125,36 @@ export function getIncludes(req) {
   }
   return includes;
 }
+
+/**
+ * Get pagination params from request URL.
+ * @param {PipelineRequest} req
+ * @returns {{ hasParams?: boolean, limit?: number, offset?: number }}
+ */
+export function getPaginationParams(req) {
+  const { searchParams } = req.url;
+  const hasParams = searchParams.has('limit') || searchParams.has('offset');
+  if (!hasParams) {
+    return {};
+  }
+
+  const result = { hasParams: true };
+
+  const limitStr = searchParams.get('limit');
+  if (limitStr !== null) {
+    const limit = parseInt(limitStr, 10);
+    if (!Number.isNaN(limit) && limit >= 0) {
+      result.limit = limit;
+    }
+  }
+
+  const offsetStr = searchParams.get('offset');
+  if (offsetStr !== null) {
+    const offset = parseInt(offsetStr, 10);
+    if (!Number.isNaN(offset) && offset >= 0) {
+      result.offset = offset;
+    }
+  }
+
+  return result;
+}
