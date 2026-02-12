@@ -127,7 +127,7 @@ export function getIncludes(req) {
 }
 
 /**
- * Get pagination params from request URL (matching EDS pattern)
+ * Get pagination params from request URL.
  * @param {PipelineRequest} req
  * @returns {{ hasParams?: boolean, limit?: number, offset?: number }}
  */

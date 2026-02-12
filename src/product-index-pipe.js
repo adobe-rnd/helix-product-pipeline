@@ -20,7 +20,7 @@ import { set404CacheHeaders } from './steps/set-cache-headers.js';
 import { getIncludes, getPaginationParams } from './steps/utils.js';
 
 /**
- * Returns index as spreadsheet with pagination support (matching EDS pattern)
+ * Returns index as spreadsheet with pagination support.
  * @param {SharedTypes.StoredIndex} index
  * @param {Record<string, boolean>} includes
  * @param {{ hasParams?: boolean, limit?: number, offset?: number }} [pagination={}]
@@ -91,7 +91,6 @@ export function toSpreadsheet(index, includes, pagination = {}) {
       return acc;
     }, []);
 
-  // Apply pagination (matching EDS json-filter.js pattern)
   const total = products.length;
   const len = Math.min(limit, total - offset);
   const paginatedData = products.slice(offset, offset + len);
