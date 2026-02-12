@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.2.0...v2.3.0) (2026-02-12)
+
+
+### Features
+
+* add limit/offset pagination and deterministic sort to product index ([#71](https://github.com/adobe-rnd/helix-product-pipeline/issues/71)) ([28499dd](https://github.com/adobe-rnd/helix-product-pipeline/commit/28499dd2140c830ed46ecec03bad4cee1fdd1ba5))
+
 # [2.2.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.1.0...v2.2.0) (2026-02-04)
 
 
