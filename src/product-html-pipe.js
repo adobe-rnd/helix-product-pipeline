@@ -16,6 +16,7 @@ import addHeadingIds from './steps/add-heading-ids.js';
 import { getPathInfo, validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
+import transformImages from './steps/transform-images.js';
 import fetchEdgeContent from './steps/fetch-edge-product.js';
 import { setLastModified } from './utils/last-modified.js';
 import html from './steps/make-html.js';
@@ -55,6 +56,7 @@ export async function productHTMLPipe(state, req) {
 
     state.timer?.update('content-fetch');
     await fetchProductBusContent(state, req, res);
+    await transformImages(state);
     if (res.status === 404) {
       await fetch404(state, req, res);
     }

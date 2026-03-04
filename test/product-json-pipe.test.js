@@ -232,6 +232,43 @@ describe('Product JSON Pipe Test', () => {
     assert.strictEqual(resp.status, 200);
   });
 
+  it('calls transform-images step after product fetch', async () => {
+    let called = false;
+    const { productJSONPipe: pipe } = await esmock('../src/product-json-pipe.js', {
+      '../src/steps/transform-images.js': {
+        default: async () => {
+          called = true;
+        },
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    s3Loader.statusCodeOverrides = {
+      'product-configurable': 200,
+    };
+    s3Loader.headers('product-configurable', 'sku', 'product-configurable');
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable.json');
+
+    const resp = await pipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    assert.strictEqual(called, true);
+  });
+
   it('handles state with timer but no update method correctly', async () => {
     const s3Loader = new FileS3Loader();
     s3Loader.statusCodeOverrides = {

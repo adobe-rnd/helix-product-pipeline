@@ -55,9 +55,7 @@ export function createOptimizedPicture(src, alt = '', title = undefined) {
     height = props.get('height');
   }
 
-  // Extract filename and check if it starts with 'media_'
-  const filename = pathname.substring(pathname.lastIndexOf('/') + 1);
-  const isMediaBusFile = filename.startsWith('media_');
+  const isMediaBusFile = pathname.includes('/media_');
 
   // If not a media file, return a simple picture with just an img tag (no optimization)
   if (!isMediaBusFile) {

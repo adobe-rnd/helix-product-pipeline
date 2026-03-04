@@ -15,6 +15,7 @@ import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
+import transformImages from './steps/transform-images.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders, setProductCacheHeaders } from './steps/set-cache-headers.js';
 
@@ -53,6 +54,7 @@ export async function productJSONPipe(state, req) {
 
     state.timer?.update('content-fetch');
     await fetchProductBusContent(state, req, res);
+    await transformImages(state);
     if (res.error) {
       if (res.status < 400) {
         return res;
