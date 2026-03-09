@@ -56,6 +56,12 @@
       }
     ]
   },
+  "internal": {
+    "images": [
+      { "url": "https://origin.example.com/product/images/original-a.png" },
+      { "url": "https://origin.example.com/product/images/original-b.png" }
+    ]
+  },
   "variants": [
     {
       "sku": "5000-BLK",

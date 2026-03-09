@@ -65,7 +65,8 @@ export async function productJSONPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = JSON.stringify(state.content.data, null, 2);
+    const { internal: _, ...productData } = state.content.data;
+    res.body = JSON.stringify(productData, null, 2);
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       status: e instanceof PipelineStatusError ? e.code : 500,

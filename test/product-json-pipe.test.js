@@ -112,6 +112,37 @@ describe('Product JSON Pipe Test', () => {
     });
   });
 
+  it('strips the internal property from the json response', async () => {
+    const s3Loader = new FileS3Loader();
+
+    s3Loader.statusCodeOverrides = {
+      'product-configurable': 200,
+    };
+
+    s3Loader.headers('product-configurable', 'sku', 'product-configurable');
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-configurable.json',
+      partition: 'live',
+      timer: {
+        update: () => { },
+      },
+    });
+    state.info = getPathInfo('/products/product-configurable.json');
+    const resp = await productJSONPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-configurable.json')),
+    );
+    assert.strictEqual(resp.status, 200);
+
+    const body = JSON.parse(resp.body);
+    assert.strictEqual(body.internal, undefined, 'internal property must not be exposed');
+    assert.ok(body.name, 'product name should still be present');
+  });
+
   it('sends 400 for non json path', async () => {
     const state = DEFAULT_STATE({
       path: '/blog/article',
