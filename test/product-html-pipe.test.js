@@ -92,6 +92,34 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
+  it('transforms image URLs with filename in rendered HTML', async () => {
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-with-image-filename', { status: 404 });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-with-image-filename',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-with-image-filename');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-with-image-filename')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    assert.ok(
+      resp.body.includes('./media_a1b2c3d4e5f6789012345678901234567890abcd/test-product-image.png'),
+      'Rendered HTML should contain the filename-appended image URL',
+    );
+    fetchMock.unmockGlobal();
+  });
+
   it('renders a configurable product html from repoless site', async () => {
     const fetchMockGlobal = fetchMock.mockGlobal();
     // Mock edge content fetch to return 404 (no authored content)

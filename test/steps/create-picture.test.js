@@ -12,7 +12,7 @@
 
 /* eslint-env mocha */
 import assert from 'assert';
-import { constructImageUrl } from '../../src/steps/create-pictures.js';
+import { constructImageUrl, createOptimizedPicture } from '../../src/steps/create-pictures.js';
 
 describe('constructImageUrl', () => {
   const baseState = {
@@ -107,5 +107,20 @@ describe('constructImageUrl', () => {
     };
     const result = constructImageUrl(state, './images/products/featured/test.jpg');
     assert.strictEqual(result, 'https://main--helix-pages--adobe.aem.network/images/products/featured/test.jpg');
+  });
+});
+
+describe('createOptimizedPicture', () => {
+  it('creates optimized sources for media hash URL with filename segment', () => {
+    const picture = createOptimizedPicture(
+      './media_13f34abcff863c53e25028911749e9a9d1d6f1c4/blue-ceramic-mug.jpg',
+      'A blue mug',
+      'A blue mug',
+    );
+
+    assert.strictEqual(picture.tagName, 'picture');
+    assert.ok(Array.isArray(picture.children));
+    assert.ok(picture.children.length > 1, 'expected optimized source elements');
+    assert.strictEqual(picture.children[0].tagName, 'source');
   });
 });

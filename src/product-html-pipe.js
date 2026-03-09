@@ -16,6 +16,7 @@ import addHeadingIds from './steps/add-heading-ids.js';
 import { getPathInfo, validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
+import transformImages from './steps/transform-images.js';
 import fetchEdgeContent from './steps/fetch-edge-product.js';
 import { setLastModified } from './utils/last-modified.js';
 import html from './steps/make-html.js';
@@ -71,6 +72,7 @@ export async function productHTMLPipe(state, req) {
       return res;
     }
 
+    transformImages(state);
     state.timer?.update('render');
     await html(state);
 

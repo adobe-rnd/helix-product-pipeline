@@ -232,6 +232,32 @@ describe('Product JSON Pipe Test', () => {
     assert.strictEqual(resp.status, 200);
   });
 
+  it('transforms image URLs with filename in JSON output', async () => {
+    const s3Loader = new FileS3Loader();
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-with-image-filename.json',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-with-image-filename.json');
+
+    const resp = await productJSONPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-with-image-filename.json')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const body = JSON.parse(resp.body);
+    assert.strictEqual(
+      body.images[0].url,
+      './media_a1b2c3d4e5f6789012345678901234567890abcd/test-product-image.png',
+    );
+  });
+
   it('handles state with timer but no update method correctly', async () => {
     const s3Loader = new FileS3Loader();
     s3Loader.statusCodeOverrides = {

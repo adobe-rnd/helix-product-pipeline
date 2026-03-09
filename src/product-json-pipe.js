@@ -15,6 +15,7 @@ import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
+import transformImages from './steps/transform-images.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders, setProductCacheHeaders } from './steps/set-cache-headers.js';
 
@@ -59,6 +60,8 @@ export async function productJSONPipe(state, req) {
       }
       throw new PipelineStatusError(res.status, res.error);
     }
+
+    transformImages(state);
 
     // set surrogate keys
     await setProductCacheHeaders(state, req, res);
