@@ -56,7 +56,6 @@ export async function productHTMLPipe(state, req) {
 
     state.timer?.update('content-fetch');
     await fetchProductBusContent(state, req, res);
-    await transformImages(state);
     if (res.status === 404) {
       await fetch404(state, req, res);
     }
@@ -73,6 +72,7 @@ export async function productHTMLPipe(state, req) {
       return res;
     }
 
+    transformImages(state);
     state.timer?.update('render');
     await html(state);
 

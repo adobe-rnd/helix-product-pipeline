@@ -19,7 +19,7 @@ function transformImage(image) {
   image.url = appendFilenameToMediaUrl(image.url, image.filename);
 }
 
-export default async function transformImages(state) {
+export default function transformImages(state) {
   const data = state?.content?.data;
   if (!data || typeof data !== 'object') {
     return;

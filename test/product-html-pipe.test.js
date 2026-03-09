@@ -92,38 +92,32 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
-  it('calls transform-images step after product fetch', async () => {
-    let called = false;
+  it('transforms image URLs with filename in rendered HTML', async () => {
     const fetchMockGlobal = fetchMock.mockGlobal();
-    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-configurable', { status: 404 });
-
-    const { productHTMLPipe: pipe } = await esmock('../src/product-html-pipe.js', {
-      '../src/steps/transform-images.js': {
-        default: async () => {
-          called = true;
-        },
-      },
-    });
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-with-image-filename', { status: 404 });
 
     const s3Loader = new FileS3Loader();
     const state = DEFAULT_STATE(DEFAULT_CONFIG, {
       log: console,
       s3Loader,
       ref: 'main',
-      path: '/products/product-configurable',
+      path: '/products/product-with-image-filename',
       partition: 'live',
-      timer: {
-        update: () => { },
-      },
+      timer: { update: () => {} },
     });
-    state.info = getPathInfo('/products/product-configurable');
-    const resp = await pipe(
+    state.info = getPathInfo('/products/product-with-image-filename');
+
+    const resp = await productHTMLPipe(
       state,
-      new PipelineRequest(new URL('https://acme.com/products/product-configurable')),
+      new PipelineRequest(new URL('https://acme.com/products/product-with-image-filename')),
     );
 
     assert.strictEqual(resp.status, 200);
-    assert.strictEqual(called, true);
+    // Assert the image URL in the HTML contains the filename segment
+    assert.ok(
+      resp.body.includes('./media_a1b2c3d4e5f6789012345678901234567890abcd/test-product-image.png'),
+      'Rendered HTML should contain the filename-appended image URL',
+    );
     fetchMock.unmockGlobal();
   });
 

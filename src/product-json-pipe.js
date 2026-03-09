@@ -54,13 +54,14 @@ export async function productJSONPipe(state, req) {
 
     state.timer?.update('content-fetch');
     await fetchProductBusContent(state, req, res);
-    await transformImages(state);
     if (res.error) {
       if (res.status < 400) {
         return res;
       }
       throw new PipelineStatusError(res.status, res.error);
     }
+
+    transformImages(state);
 
     // set surrogate keys
     await setProductCacheHeaders(state, req, res);

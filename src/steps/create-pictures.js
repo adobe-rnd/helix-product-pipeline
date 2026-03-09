@@ -55,7 +55,7 @@ export function createOptimizedPicture(src, alt = '', title = undefined) {
     height = props.get('height');
   }
 
-  const isMediaBusFile = pathname.includes('/media_');
+  const isMediaBusFile = /\/media_[a-f0-9]+[./]/i.test(pathname);
 
   // If not a media file, return a simple picture with just an img tag (no optimization)
   if (!isMediaBusFile) {

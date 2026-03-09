@@ -33,7 +33,7 @@ describe('transform-images', () => {
         },
       };
 
-      await transformImages(state);
+      transformImages(state);
 
       assert.strictEqual(
         state.content.data.images[0].url,
@@ -56,7 +56,7 @@ describe('transform-images', () => {
         },
       };
 
-      await transformImages(state);
+      transformImages(state);
 
       assert.strictEqual(
         state.content.data.images[0].url,
@@ -76,7 +76,7 @@ describe('transform-images', () => {
         },
       };
 
-      await transformImages(state);
+      transformImages(state);
 
       assert.strictEqual(state.content.data.images[0].url, 'https://example.com/photo.jpg');
     });
@@ -94,7 +94,7 @@ describe('transform-images', () => {
         },
       };
 
-      await transformImages(state);
+      transformImages(state);
 
       assert.strictEqual(
         state.content.data.images[2].url,
@@ -111,30 +111,30 @@ describe('transform-images', () => {
         },
       };
 
-      await transformImages(state);
+      transformImages(state);
       assert.strictEqual(state.content.data.variants[0].name, 'variant-1');
     });
   });
 
   describe('defensive edge cases', () => {
     it('handles undefined state', async () => {
-      await transformImages(undefined);
+      transformImages(undefined);
     });
 
     it('handles state with no content', async () => {
-      await transformImages({});
+      transformImages({});
     });
 
     it('handles state with no data', async () => {
-      await transformImages({ content: {} });
+      transformImages({ content: {} });
     });
 
     it('handles state with null data', async () => {
-      await transformImages({ content: { data: null } });
+      transformImages({ content: { data: null } });
     });
 
     it('handles state with non-object data', async () => {
-      await transformImages({ content: { data: 'string' } });
+      transformImages({ content: { data: 'string' } });
     });
   });
 });
