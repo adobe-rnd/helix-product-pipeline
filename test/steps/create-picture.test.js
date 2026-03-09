@@ -120,7 +120,6 @@ describe('createOptimizedPicture', () => {
 
     assert.strictEqual(picture.tagName, 'picture');
     assert.ok(Array.isArray(picture.children));
-    // Two webp sources + two native sources + one fallback img
     assert.ok(picture.children.length > 1, 'expected optimized source elements');
     assert.strictEqual(picture.children[0].tagName, 'source');
   });

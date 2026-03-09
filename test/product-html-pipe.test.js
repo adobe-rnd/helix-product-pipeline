@@ -113,7 +113,6 @@ describe('Product HTML Pipe Test', () => {
     );
 
     assert.strictEqual(resp.status, 200);
-    // Assert the image URL in the HTML contains the filename segment
     assert.ok(
       resp.body.includes('./media_a1b2c3d4e5f6789012345678901234567890abcd/test-product-image.png'),
       'Rendered HTML should contain the filename-appended image URL',
