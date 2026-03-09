@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.3.0...v2.4.0) (2026-03-09)
+
+
+### Features
+
+* append optional image filenames in HTML and JSON pipeline output ([#72](https://github.com/adobe-rnd/helix-product-pipeline/issues/72)) ([c87e79c](https://github.com/adobe-rnd/helix-product-pipeline/commit/c87e79c9d74cf045135fd3b8049e7c31e1c9e175))
+
 # [2.3.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.2.0...v2.3.0) (2026-02-12)
 
 
