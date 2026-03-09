@@ -14,7 +14,7 @@ import assert from 'assert';
 import transformImages from '../../src/steps/transform-images.js';
 
 describe('transform-images', () => {
-  describe('product data shape', () => {
+  describe('image URL transformation', () => {
     it('transforms top-level and variant images using filename field', async () => {
       const state = {
         content: {
