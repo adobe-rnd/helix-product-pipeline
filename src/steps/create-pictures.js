@@ -55,7 +55,9 @@ export function createOptimizedPicture(src, alt = '', title = undefined) {
     height = props.get('height');
   }
 
-  const isMediaBusFile = /\/media_[a-f0-9]+[./]/i.test(pathname);
+  // Matches media bus URLs: /media_{sha1hash}.ext or /media_{sha1hash}/filename.ext
+  // Always root-level; hex hash distinguishes from non-media paths like /media_kit/logo.png
+  const isMediaBusFile = /^\/media_[a-f0-9]+(?:\/[^/]+)?\.[a-z0-9]+$/i.test(pathname);
 
   // If not a media file, return a simple picture with just an img tag (no optimization)
   if (!isMediaBusFile) {
