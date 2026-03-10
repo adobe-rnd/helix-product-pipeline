@@ -833,6 +833,150 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
+  it('renders hreflang metadata as link tags in head', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/hreflang', { status: 404 });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/hreflang',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/hreflang');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/hreflang')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+
+    // standard hreflang entries emit as <link rel="alternate"> tags
+    assert.ok(
+      resp.body.includes('<link rel="alternate" hreflang="x-default" href="https://www.blendify.com/products/blitzmax-5000">'),
+      'Should have x-default hreflang link tag',
+    );
+    assert.ok(
+      resp.body.includes('<link rel="alternate" hreflang="en-us" href="https://www.blendify.com/us/en_us/shop/blitzmax-5000">'),
+      'Should have en-us hreflang link tag',
+    );
+    assert.ok(
+      resp.body.includes('<link rel="alternate" hreflang="de" href="https://www.blendify.com/de/de/shop/blitzmax-5000">'),
+      'Should have de hreflang link tag',
+    );
+
+    // underscore in locale is replaced with hyphen and lowercased (hreflang-fr_FR → fr-fr)
+    assert.ok(
+      resp.body.includes('<link rel="alternate" hreflang="fr-fr" href="https://www.blendify.com/fr/fr/shop/blitzmax-5000">'),
+      'Should normalize underscore locale separator to hyphen',
+    );
+
+    // prefix detection is case-insensitive (HREFLANG-en-au → en-au)
+    assert.ok(
+      resp.body.includes('<link rel="alternate" hreflang="en-au" href="https://www.blendify.com/au/en/shop/blitzmax-5000">'),
+      'Should detect hreflang prefix case-insensitively',
+    );
+
+    // hreflang- with no locale suffix is silently skipped
+    assert.ok(
+      !resp.body.includes('skip-empty-locale'),
+      'Should skip hreflang- entry with empty locale suffix',
+    );
+
+    // hreflang-it with empty URL is silently skipped
+    assert.ok(
+      !resp.body.includes('hreflang="it"'),
+      'Should skip hreflang entry with empty URL',
+    );
+
+    // hreflang-* entries must NOT also appear as <meta> tags
+    assert.ok(
+      !resp.body.includes('<meta name="hreflang'),
+      'hreflang entries must not be emitted as meta tags',
+    );
+
+    // non-hreflang metadata should still be emitted as <meta> tags
+    assert.ok(
+      resp.body.includes('<meta name="robots" content="noindex">'),
+      'Non-hreflang metadata should still emit as meta tags',
+    );
+
+    fetchMock.unmockGlobal();
+  });
+
+  it('ignores hreflang-* meta tags from authored content', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Authored content with hreflang-* meta tags in head — these should be ignored
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-simple', {
+      body: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test</title>
+    <meta name="hreflang-de" content="https://example.com/de/product">
+    <meta name="hreflang-fr-FR" content="https://example.com/fr/product">
+    <meta name="author" content="Test Author">
+  </head>
+  <body>
+    <main><div><p>Content</p></div></main>
+  </body>
+</html>`,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-simple',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-simple');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+
+    // hreflang-* from authored content must be ignored entirely
+    assert.ok(
+      !resp.body.includes('hreflang-de'),
+      'hreflang-de from authored content must not appear in output',
+    );
+    assert.ok(
+      !resp.body.includes('hreflang-fr'),
+      'hreflang-fr-FR from authored content must not appear in output',
+    );
+    assert.ok(
+      !resp.body.includes('example.com/de/product') && !resp.body.includes('example.com/fr/product'),
+      'hreflang URLs from authored content must not appear in output',
+    );
+
+    // Non-hreflang authored metadata should still pass through
+    assert.ok(
+      resp.body.includes('<meta name="author" content="Test Author">'),
+      'Non-hreflang authored metadata should still be extracted',
+    );
+
+    fetchMock.unmockGlobal();
+  });
+
   it('handles authored content with meta tags without name value', async () => {
     // Clear any existing mocks and set up fresh
     fetchMock.unmockGlobal();
