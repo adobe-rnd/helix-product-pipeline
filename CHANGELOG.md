@@ -1,3 +1,15 @@
+# [2.5.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.4.0...v2.5.0) (2026-03-11)
+
+
+### Bug Fixes
+
+* remove hreflang ignored prefix ([5f3de79](https://github.com/adobe-rnd/helix-product-pipeline/commit/5f3de79cad5299bf5c4855df191bc1a8819c0ffa))
+
+
+### Features
+
+* hreflang in metadata support ([b240da6](https://github.com/adobe-rnd/helix-product-pipeline/commit/b240da6fb731d2c4912f284704ddb84f44b46316))
+
 # [2.4.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.3.0...v2.4.0) (2026-03-09)
 
 
