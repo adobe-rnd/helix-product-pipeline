@@ -114,6 +114,7 @@ export function limitWords(text, maxWords = 25) {
  * Filters can be included using:
  * 1. the `include={filter-name}` query param
  * 2. the `sheet=filter-{filter-name}` query param
+ * 3. the `sheet=all` query param (special case for all filters)
  *
  * For either case, the value `all` is a special case that includes all filters.
  *
@@ -135,12 +136,14 @@ export function getIncludes(req) {
 
   const sheetStrs = req.url.searchParams.getAll('sheet');
   for (const str of sheetStrs) {
-    if (!str.startsWith('filter-')) {
-      continue;
-    }
-    const filterName = str.slice('filter-'.length).trim();
-    if (filterName) {
-      includes[filterName] = true;
+    const trimmed = str.trim();
+    if (trimmed === 'all') {
+      includes.all = true;
+    } else if (trimmed.startsWith('filter-')) {
+      const filterName = trimmed.slice('filter-'.length).trim();
+      if (filterName) {
+        includes[filterName] = true;
+      }
     }
   }
 

@@ -397,8 +397,18 @@ describe('Get Includes', () => {
     assert.deepStrictEqual(getIncludes(req), { foo: true, bar: true });
   });
 
+  it('parses sheet=all as special case', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=all'));
+    assert.deepStrictEqual(getIncludes(req), { all: true });
+  });
+
   it('parses sheet=filter-all', () => {
     const req = new PipelineRequest(new URL('https://example.com?sheet=filter-all'));
+    assert.deepStrictEqual(getIncludes(req), { all: true });
+  });
+
+  it('parses sheet=all with whitespace', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=%20all%20'));
     assert.deepStrictEqual(getIncludes(req), { all: true });
   });
 
@@ -407,7 +417,7 @@ describe('Get Includes', () => {
     assert.deepStrictEqual(getIncludes(req), { noindex: true });
   });
 
-  it('ignores sheet values without filter- prefix', () => {
+  it('ignores sheet values without filter- prefix and not all', () => {
     const req = new PipelineRequest(new URL('https://example.com?sheet=products'));
     assert.deepStrictEqual(getIncludes(req), {});
   });
@@ -425,6 +435,11 @@ describe('Get Includes', () => {
   it('ignores non-filter sheets while parsing filter sheets', () => {
     const req = new PipelineRequest(new URL('https://example.com?sheet=products&sheet=filter-foo'));
     assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  it('parses sheet=all alongside filter sheets', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=all&sheet=filter-foo'));
+    assert.deepStrictEqual(getIncludes(req), { all: true, foo: true });
   });
 
   // --- combined include and sheet ---
@@ -448,6 +463,11 @@ describe('Get Includes', () => {
     assert.deepStrictEqual(getIncludes(req), {
       foo: true, bar: true, baz: true, all: true,
     });
+  });
+
+  it('handles complex combination with sheet=all shorthand', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo&sheet=all&sheet=filter-bar&sheet=products'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true, all: true, bar: true });
   });
 });
 
