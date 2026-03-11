@@ -24,9 +24,8 @@ const IGNORED_META_NAMES = new Set([
 /**
  * Prefixes for meta tag names to ignore.
  * og: and twitter: prefixes are standard social meta tags.
- * hreflang- entries are handled exclusively via product metadata, not authored content.
  */
-const IGNORED_META_PREFIXES = ['og:', 'twitter:', 'hreflang-'];
+const IGNORED_META_PREFIXES = ['og:', 'twitter:'];
 
 /**
  * Check if a meta tag name should be ignored.
