@@ -313,19 +313,141 @@ describe('Limit Words', () => {
 });
 
 describe('Get Includes', () => {
-  it('returns an empty object for no includes', () => {
+  // --- no params ---
+  it('returns an empty object when no include or sheet params', () => {
     const req = new PipelineRequest(new URL('https://example.com'));
     assert.deepStrictEqual(getIncludes(req), {});
   });
 
-  it('returns an object with true for each include', () => {
+  it('ignores unrelated query params', () => {
+    const req = new PipelineRequest(new URL('https://example.com?limit=10&offset=5'));
+    assert.deepStrictEqual(getIncludes(req), {});
+  });
+
+  // --- include param ---
+  it('parses a single include value', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  it('parses comma-separated include values', () => {
     const req = new PipelineRequest(new URL('https://example.com?include=foo,bar'));
     assert.deepStrictEqual(getIncludes(req), { foo: true, bar: true });
   });
 
-  it('returns an object with true for each include', () => {
+  it('parses multiple include params', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo&include=bar'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true, bar: true });
+  });
+
+  it('parses multiple include params with comma-separated values', () => {
     const req = new PipelineRequest(new URL('https://example.com?include=foo&include=all'));
     assert.deepStrictEqual(getIncludes(req), { foo: true, all: true });
+  });
+
+  it('trims whitespace from include values', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=%20foo%20,%20bar%20'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true, bar: true });
+  });
+
+  it('skips empty include value', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include='));
+    assert.deepStrictEqual(getIncludes(req), {});
+  });
+
+  it('skips empty segments from trailing comma in include', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo,'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  it('skips empty segments from leading comma in include', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=,bar'));
+    assert.deepStrictEqual(getIncludes(req), { bar: true });
+  });
+
+  it('deduplicates repeated include values', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo,foo'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  // --- include: special values ---
+  it('parses include=all', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=all'));
+    assert.deepStrictEqual(getIncludes(req), { all: true });
+  });
+
+  it('parses include=noindex', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=noindex'));
+    assert.deepStrictEqual(getIncludes(req), { noindex: true });
+  });
+
+  it('parses all and noindex together via include', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=all,noindex'));
+    assert.deepStrictEqual(getIncludes(req), { all: true, noindex: true });
+  });
+
+  // --- sheet param ---
+  it('parses a single sheet filter value', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=filter-foo'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  it('parses multiple sheet filter params', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=filter-foo&sheet=filter-bar'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true, bar: true });
+  });
+
+  it('parses sheet=filter-all', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=filter-all'));
+    assert.deepStrictEqual(getIncludes(req), { all: true });
+  });
+
+  it('parses sheet=filter-noindex', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=filter-noindex'));
+    assert.deepStrictEqual(getIncludes(req), { noindex: true });
+  });
+
+  it('ignores sheet values without filter- prefix', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=products'));
+    assert.deepStrictEqual(getIncludes(req), {});
+  });
+
+  it('ignores sheet=filter- with no filter name', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=filter-'));
+    assert.deepStrictEqual(getIncludes(req), {});
+  });
+
+  it('trims whitespace from sheet filter names', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=filter-%20foo%20'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  it('ignores non-filter sheets while parsing filter sheets', () => {
+    const req = new PipelineRequest(new URL('https://example.com?sheet=products&sheet=filter-foo'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  // --- combined include and sheet ---
+  it('merges include and sheet filter values', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo&sheet=filter-bar'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true, bar: true });
+  });
+
+  it('deduplicates overlapping include and sheet values', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo&sheet=filter-foo'));
+    assert.deepStrictEqual(getIncludes(req), { foo: true });
+  });
+
+  it('merges all and noindex across include and sheet', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=all&sheet=filter-noindex'));
+    assert.deepStrictEqual(getIncludes(req), { all: true, noindex: true });
+  });
+
+  it('handles complex combination of include, sheet, and non-filter sheet', () => {
+    const req = new PipelineRequest(new URL('https://example.com?include=foo,bar&sheet=products&sheet=filter-baz&sheet=filter-all'));
+    assert.deepStrictEqual(getIncludes(req), {
+      foo: true, bar: true, baz: true, all: true,
+    });
   });
 });
 
