@@ -18,6 +18,8 @@ import rehypeParse from 'rehype-parse';
 import { constructImageUrl } from './create-pictures.js';
 import { limitWords, stripHTML } from './utils.js';
 
+const HREFLANG_PREFIX = 'hreflang-';
+
 /**
  * @param {PipelineState} state
  * @returns {Promise<void>}
@@ -63,6 +65,14 @@ export default async function render(state) {
   // Add product metadata to the head
   if (metadata) {
     Object.entries(metadata).forEach(([key, value]) => {
+      if (key.toLowerCase().startsWith(HREFLANG_PREFIX)) {
+        const localeRaw = key.substring(HREFLANG_PREFIX.length);
+        if (localeRaw && value) {
+          const hreflang = localeRaw.replaceAll('_', '-').toLowerCase();
+          head.children.push(h('link', { rel: 'alternate', hreflang, href: value }));
+        }
+        return;
+      }
       head.children.push(h('meta', { name: key, content: value }));
     });
   }

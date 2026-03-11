@@ -1,0 +1,31 @@
+{
+  "sku": "BlitzMax 5000",
+  "urlKey": "blitzmax-5000",
+  "description": "The BlitzMax 5000 is the ultimate blending powerhouse from Blendify.",
+  "name": "BlitzMax 5000",
+  "type": "simple",
+  "metaTitle": "Blendify BlitzMax 5000 Blender",
+  "metaDescription": "The BlitzMax 5000 is the ultimate blending powerhouse from Blendify.",
+  "url": "https://www.blendify.com/us/en_us/shop/blitzmax-5000",
+  "images": [
+    { "url": "./media_a1b2c3d4e5f6789012345678901234567890abcd.png" }
+  ],
+  "brand": "Blendify",
+  "availability": "InStock",
+  "price": {
+    "currency": "USD",
+    "regular": "399.95",
+    "final": "349.95"
+  },
+  "metadata": {
+    "hreflang-x-default": "https://www.blendify.com/products/blitzmax-5000",
+    "hreflang-en-us": "https://www.blendify.com/us/en_us/shop/blitzmax-5000",
+    "hreflang-de": "https://www.blendify.com/de/de/shop/blitzmax-5000",
+    "hreflang-fr_FR": "https://www.blendify.com/fr/fr/shop/blitzmax-5000",
+    "HREFLANG-en-au": "https://www.blendify.com/au/en/shop/blitzmax-5000",
+    "hreflang-": "https://www.blendify.com/skip-empty-locale",
+    "hreflang-it": "",
+    "robots": "noindex"
+  },
+  "variants": []
+}
