@@ -111,6 +111,13 @@ export function limitWords(text, maxWords = 25) {
 
 /**
  * Get include params from request URL
+ * Filters can be included using:
+ * 1. the `include={filter-name}` query param
+ * 2. the `sheet=filter-{filter-name}` query param
+ * 3. the `sheet=all` query param (special case for all filters)
+ *
+ * For either case, the value `all` is a special case that includes all filters.
+ *
  * @param {PipelineRequest} req
  * @returns {Record<string, boolean>}
  */
@@ -120,9 +127,26 @@ export function getIncludes(req) {
   const includes = {};
   for (const str of includeStrs) {
     str.split(',').forEach((item) => {
-      includes[item.trim()] = true;
+      const trimmed = item.trim();
+      if (trimmed) {
+        includes[trimmed] = true;
+      }
     });
   }
+
+  const sheetStrs = req.url.searchParams.getAll('sheet');
+  for (const str of sheetStrs) {
+    const trimmed = str.trim();
+    if (trimmed === 'all') {
+      includes.all = true;
+    } else if (trimmed.startsWith('filter-')) {
+      const filterName = trimmed.slice('filter-'.length).trim();
+      if (filterName) {
+        includes[filterName] = true;
+      }
+    }
+  }
+
   return includes;
 }
 
