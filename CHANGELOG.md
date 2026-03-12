@@ -1,3 +1,11 @@
+## [2.5.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.5.0...v2.5.1) (2026-03-12)
+
+
+### Bug Fixes
+
+* allow sheet or include params ([f510104](https://github.com/adobe-rnd/helix-product-pipeline/commit/f510104a4f8431e0ff2cde8cb0041b56fe55ec39))
+* allow sheet=all ([f319028](https://github.com/adobe-rnd/helix-product-pipeline/commit/f3190283077d73a6556d81d7f05a2816a37bea87))
+
 # [2.5.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.4.0...v2.5.0) (2026-03-11)
 
 
