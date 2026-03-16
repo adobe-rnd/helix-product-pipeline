@@ -44,6 +44,10 @@ declare global {
 
   export interface PipelineState extends ImportedPipelineState {
     type: 'json' | 'html' | 'media' | 'index' | 'merchant-feed' | 'sitemap';
+    redirect?: {
+      status: number;
+      location: string;
+    };
     config: PipelineSiteConfig;
     info: PathInfo;
     content: PipelineContent;
