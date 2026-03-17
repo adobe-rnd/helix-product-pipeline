@@ -55,7 +55,17 @@ export async function productHTMLPipe(state, req) {
     await initConfig(state, req, res);
 
     state.timer?.update('content-fetch');
-    await fetchProductBusContent(state, req, res);
+    await Promise.all([
+      fetchProductBusContent(state, req, res),
+      fetchEdgeContent(state, req, res),
+    ]);
+
+    if (state.redirect) {
+      res.status = state.redirect.status;
+      res.headers.set('location', state.redirect.location);
+      return res;
+    }
+
     if (res.status === 404) {
       await fetch404(state, req, res);
     }
@@ -75,8 +85,6 @@ export async function productHTMLPipe(state, req) {
     transformImages(state);
     state.timer?.update('render');
     await html(state);
-
-    await fetchEdgeContent(state, req, res);
     await extractAuthoredMetadata(state);
 
     await renderHead(state);

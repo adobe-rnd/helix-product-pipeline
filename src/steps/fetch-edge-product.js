@@ -34,10 +34,20 @@ export default async function fetchEdgeContent(state, req, res) {
     if (authorization) {
       headers.authorization = authorization;
     }
-    const contentRes = await fetch(contentUrl, { headers });
+    const contentRes = await fetch(contentUrl, { headers, redirect: 'manual' });
     if (contentRes.status === 401) {
       throw new PipelineStatusError(401, 'unauthorized');
     }
+
+    // Handle redirects
+    if (contentRes.status === 301) {
+      const location = contentRes.headers.get('location');
+      if (location) {
+        state.redirect = { status: 301, location };
+      }
+      return;
+    }
+
     if (contentRes.status === 200) {
       state.content.edge = await contentRes.text();
 

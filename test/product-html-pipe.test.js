@@ -911,6 +911,132 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
+  it('returns 301 when edge content returns a redirect', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/old-product-url', {
+      status: 301,
+      headers: { location: '/products/new-product-url' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/old-product-url',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/old-product-url');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/old-product-url')),
+    );
+
+    assert.strictEqual(resp.status, 301);
+    assert.strictEqual(resp.headers.get('location'), '/products/new-product-url');
+    assert.strictEqual(resp.body, '');
+    fetchMock.unmockGlobal();
+  });
+
+  it('returns 301 redirect even when product data also exists in R2', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-simple', {
+      status: 301,
+      headers: { location: '/products/new-url' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-simple',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-simple');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
+    );
+
+    assert.strictEqual(resp.status, 301);
+    assert.strictEqual(resp.headers.get('location'), '/products/new-url');
+    fetchMock.unmockGlobal();
+  });
+
+  it('returns 301 redirect when product is also a 404 in R2', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      status: 301,
+      headers: { location: '/products/replacement' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+
+    assert.strictEqual(resp.status, 301);
+    assert.strictEqual(resp.headers.get('location'), '/products/replacement');
+    fetchMock.unmockGlobal();
+  });
+
+  it('ignores 301 from edge content when location header is missing', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-simple', {
+      status: 301,
+      headers: {},
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-simple',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-simple');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
+    );
+
+    // No location → redirect is ignored, product renders normally
+    assert.strictEqual(resp.status, 200);
+    assert.ok(resp.body.includes('<h1 id="blitzmax-5000">BlitzMax 5000</h1>'));
+    fetchMock.unmockGlobal();
+  });
+
   it('handles authored content with meta tags without name value', async () => {
     // Clear any existing mocks and set up fresh
     fetchMock.unmockGlobal();
