@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.5.2...v2.6.0) (2026-03-17)
+
+
+### Features
+
+* honour redirects from edge ([a21fcd8](https://github.com/adobe-rnd/helix-product-pipeline/commit/a21fcd8118be35aa461037434f62f92d3efdac15))
+
 ## [2.5.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.5.1...v2.5.2) (2026-03-17)
 
 
