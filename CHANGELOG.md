@@ -1,3 +1,10 @@
+## [2.5.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.5.1...v2.5.2) (2026-03-17)
+
+
+### Bug Fixes
+
+* remove internal from json response ([81d7495](https://github.com/adobe-rnd/helix-product-pipeline/commit/81d7495fc308c593b74fd0eb038484bd3353d457))
+
 ## [2.5.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.5.0...v2.5.1) (2026-03-12)
 
 
