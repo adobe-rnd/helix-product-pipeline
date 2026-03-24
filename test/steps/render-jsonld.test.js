@@ -283,6 +283,25 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.potentialAction[0].name, 'Request</script><script>alert(1)</script>');
     });
 
+    it('escapes <script script-open sequences', () => {
+      const product = {
+        sku: 'SCRIPT-OPEN-SKU',
+        name: 'Product <script src="evil.js">',
+        metaDescription: 'Another <script> tag',
+        images: [],
+        variants: [],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+
+      assert.ok(!result.includes('<script'), 'output must not contain <script');
+
+      // Round-trip: JSON.parse must recover original values
+      const parsed = JSON.parse(result);
+      assert.strictEqual(parsed.name, 'Product <script src="evil.js">');
+      assert.strictEqual(parsed.description, 'Another <script> tag');
+    });
+
     it('escapes <!-- comment-open sequences', () => {
       const product = {
         sku: 'COMMENT-SKU',

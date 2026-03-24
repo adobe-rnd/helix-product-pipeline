@@ -30,9 +30,10 @@ import { stripHTML } from './utils.js';
  */
 function escapeForScriptElement(str) {
   return str
-    .replaceAll('</', '<\\/')
-    .replaceAll('<!--', '<\\u0021--')
-    .replaceAll('-->', '--\\u003e');
+    .replaceAll('<!--', '<\\u0021--') // comment-open
+    .replaceAll('-->', '--\\u003e') // comment-close
+    .replaceAll('<script', '\\u003cscript') // script-open (must precede </ rule)
+    .replaceAll('</', '<\\/'); // script-close
 }
 
 function renderOffer(state, variant, simple = false) {
