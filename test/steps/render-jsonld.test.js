@@ -468,6 +468,35 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.name, 'Override Name');
       assert.strictEqual(parsed.potentialAction, undefined);
     });
+
+    it('silently ignores reserved keys in jsonldExtensions', () => {
+      const product = {
+        sku: 'RES-SKU',
+        name: 'Reserved Key Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          '@context': 'https://evil.com',
+          '@type': 'Malicious',
+          name: 'Hijacked Name',
+          offers: [{ '@type': 'Offer', price: '0' }],
+          potentialAction: [{ '@type': 'QuoteAction', name: 'Quote' }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      // Reserved keys must not be overwritten
+      assert.strictEqual(parsed['@context'], 'https://schema.org');
+      assert.strictEqual(parsed['@type'], 'Product');
+      assert.strictEqual(parsed.name, 'Reserved Key Product');
+      assert.ok(Array.isArray(parsed.offers), 'offers must come from pipeline');
+
+      // Non-reserved key must still be merged
+      assert.ok(Array.isArray(parsed.potentialAction));
+      assert.strictEqual(parsed.potentialAction[0]['@type'], 'QuoteAction');
+    });
   });
 
   describe('standard generation', () => {
