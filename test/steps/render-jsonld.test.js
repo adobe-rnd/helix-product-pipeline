@@ -193,6 +193,119 @@ describe('convertToJsonLD', () => {
     });
   });
 
+  describe('jsonldExtensions', () => {
+    it('merges jsonldExtensions into generated jsonld', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          potentialAction: [
+            {
+              '@type': 'QuoteAction',
+              name: 'Request a Quote',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: 'https://example.com/quote',
+              },
+            },
+          ],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed['@type'], 'Product');
+      assert.strictEqual(parsed.sku, 'EXT-SKU');
+      assert.ok(Array.isArray(parsed.potentialAction));
+      assert.strictEqual(parsed.potentialAction[0]['@type'], 'QuoteAction');
+      assert.strictEqual(parsed.potentialAction[0].name, 'Request a Quote');
+      assert.strictEqual(parsed.potentialAction[0].target.urlTemplate, 'https://example.com/quote');
+    });
+
+    it('handles multiple potentialActions including location-specific', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          potentialAction: [
+            {
+              '@type': 'QuoteAction',
+              name: 'Request a Quote',
+              target: { '@type': 'EntryPoint', urlTemplate: 'https://example.com/quote' },
+            },
+            {
+              '@type': 'QuoteAction',
+              name: 'Request a Quote',
+              target: { '@type': 'EntryPoint', urlTemplate: 'https://example.com/quote?ca=1' },
+              location: { '@type': 'Country', name: 'CA' },
+            },
+          ],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.potentialAction.length, 2);
+      assert.deepStrictEqual(parsed.potentialAction[1].location, { '@type': 'Country', name: 'CA' });
+    });
+
+    it('does not add potentialAction when jsonldExtensions is absent', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.potentialAction, undefined);
+    });
+
+    it('supports any schema.org extension field, not just potentialAction', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          award: 'Best Product 2025',
+          review: [{ '@type': 'Review', author: 'Jane', reviewBody: 'Great product' }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.award, 'Best Product 2025');
+      assert.strictEqual(parsed.review[0].author, 'Jane');
+    });
+
+    it('does not apply jsonldExtensions when jsonld override is used', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        jsonld: { '@context': 'https://schema.org', '@type': 'Product', name: 'Override Name' },
+        jsonldExtensions: {
+          potentialAction: [{ '@type': 'QuoteAction' }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.name, 'Override Name');
+      assert.strictEqual(parsed.potentialAction, undefined);
+    });
+  });
+
   describe('standard generation', () => {
     it('generates basic product jsonld', () => {
       const product = {
