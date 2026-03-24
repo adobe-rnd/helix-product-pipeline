@@ -193,6 +193,69 @@ describe('convertToJsonLD', () => {
     });
   });
 
+  describe('HTML script element escaping', () => {
+    it('escapes </script> sequences in generated jsonld', () => {
+      const product = {
+        sku: 'XSS-SKU',
+        name: 'Product</script><script>alert(1)</script>',
+        metaDescription: 'Desc with </script> tag',
+        images: [],
+        variants: [],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+
+      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
+      assert.ok(!result.includes('</SCRIPT>'), 'output must not contain </SCRIPT>');
+      assert.ok(result.includes('<\\/script>'), 'output must contain escaped <\\/script>');
+
+      // Round-trip: JSON.parse must recover original values
+      const parsed = JSON.parse(result);
+      assert.strictEqual(parsed.name, 'Product</script><script>alert(1)</script>');
+      assert.strictEqual(parsed.description, 'Desc with </script> tag');
+    });
+
+    it('escapes </script> sequences in jsonldExtensions values', () => {
+      const product = {
+        sku: 'XSS-SKU',
+        name: 'Normal Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          potentialAction: [{
+            '@type': 'QuoteAction',
+            name: 'Request</script><script>alert(1)</script>',
+            target: { '@type': 'EntryPoint', urlTemplate: 'https://example.com/quote' },
+          }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+
+      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
+      assert.ok(result.includes('<\\/script>'), 'output must contain escaped sequence');
+
+      const parsed = JSON.parse(result);
+      assert.strictEqual(parsed.potentialAction[0].name, 'Request</script><script>alert(1)</script>');
+    });
+
+    it('does not alter output when no script sequences are present', () => {
+      const product = {
+        sku: 'CLEAN-SKU',
+        name: 'Clean Product',
+        metaDescription: 'A perfectly normal description',
+        images: [],
+        variants: [],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.name, 'Clean Product');
+      assert.strictEqual(parsed.description, 'A perfectly normal description');
+    });
+  });
+
   describe('jsonldExtensions', () => {
     it('merges jsonldExtensions into generated jsonld', () => {
       const product = {

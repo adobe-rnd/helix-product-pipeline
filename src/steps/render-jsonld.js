@@ -16,6 +16,18 @@ import { h } from 'hastscript';
 import { constructImageUrl } from './create-pictures.js';
 import { stripHTML } from './utils.js';
 
+/**
+ * Escapes a JSON string for safe embedding in an HTML <script> element.
+ * Replaces '</' with '<\/' so that sequences like '</script>' cannot break
+ * out of the script element context.
+ * @see https://www.w3.org/TR/json-ld11/#restrictions-for-contents-of-json-ld-script-elements
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeForScriptElement(str) {
+  return str.replaceAll('</', '<\\/');
+}
+
 function renderOffer(state, variant, simple = false) {
   const {
     sku,
@@ -118,7 +130,7 @@ export function convertToJsonLD(state, product) {
     Object.assign(jsonld, jsonldExtensions);
   }
 
-  return JSON.stringify(jsonld, null, 2);
+  return escapeForScriptElement(JSON.stringify(jsonld, null, 2));
 }
 
 /**
