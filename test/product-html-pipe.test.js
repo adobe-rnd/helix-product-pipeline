@@ -1091,4 +1091,241 @@ describe('Product HTML Pipe Test', () => {
     );
     fetchMock.unmockGlobal();
   });
+
+  it('falls back to edge content when Product Bus returns 404', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Marketing Page</title></head><body><main><h1>Winter Campaign</h1></main></body></html>';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      body: edgeHTML,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Last-Modified': 'Mon, 24 Mar 2026 10:00:00 GMT',
+        'surrogate-key': 'edge-key-1 edge-key-2',
+        'cache-control': 'max-age=600, must-revalidate',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404'), {
+        headers: {
+          'x-byo-cdn-type': 'cloudflare',
+        },
+      }),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    // Body is a ReadableStream — read it to verify content
+    const body = await new Response(resp.body).text();
+    assert.strictEqual(body, edgeHTML);
+    assert.strictEqual(resp.headers.get('content-type'), 'text/html; charset=utf-8');
+    // Should pass through edge response headers, not product cache headers
+    assert.strictEqual(resp.headers.get('surrogate-key'), 'edge-key-1 edge-key-2');
+    assert.strictEqual(resp.headers.get('cache-control'), 'max-age=600, must-revalidate');
+    assert.strictEqual(resp.headers.get('last-modified'), 'Mon, 24 Mar 2026 10:00:00 GMT');
+    // Should NOT have x-error header
+    assert.ok(!resp.headers.get('x-error'), 'Should not have x-error header');
+    fetchMock.unmockGlobal();
+  });
+
+  it('returns 404 when both Product Bus and Edge return 404', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
+
+    // Edge returns 404 for the product path
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', { status: 404 });
+    // Mock 404.html fetch
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', {
+      body: html404,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Last-Modified': 'Fri, 30 Apr 2025 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404'), {
+        headers: {
+          'x-byo-cdn-type': 'cloudflare',
+        },
+      }),
+    );
+
+    assert.strictEqual(resp.status, 404);
+    assert.strictEqual(resp.body, html404.toString());
+    fetchMock.unmockGlobal();
+  });
+
+  it('prefers product data over edge fallback when Product Bus returns 200', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Edge returns 200 with marketing content
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Marketing</title></head><body><main><h1>Marketing</h1></main></body></html>';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-simple', {
+      body: edgeHTML,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-simple',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-simple');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-simple')),
+    );
+
+    // Should render the product, not return raw edge HTML
+    assert.strictEqual(resp.status, 200);
+    assert.notStrictEqual(resp.body, edgeHTML);
+    // Product rendering includes the product name from Product Bus data
+    assert.ok(resp.body.includes('BlitzMax 5000'), 'Should contain product name from Product Bus');
+    fetchMock.unmockGlobal();
+  });
+
+  it('redirect takes precedence over edge fallback', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // Edge returns 301 redirect for a path with no product data
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      status: 301,
+      headers: { location: '/products/new-location' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+
+    assert.strictEqual(resp.status, 301);
+    assert.strictEqual(resp.headers.get('location'), '/products/new-location');
+    fetchMock.unmockGlobal();
+  });
+
+  it('returns 404 when edge fetch errors and Product Bus returns 404', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
+
+    // Edge fetch throws a network error
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', { throws: new Error('network error') });
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', {
+      body: html404,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404'), {
+        headers: { 'x-byo-cdn-type': 'cloudflare' },
+      }),
+    );
+
+    assert.strictEqual(resp.status, 404);
+    assert.strictEqual(resp.body, html404.toString());
+    fetchMock.unmockGlobal();
+  });
+
+  it('returns 404 when edge returns 500 and Product Bus returns 404', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
+
+    // Edge returns a server error
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', { status: 500 });
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', {
+      body: html404,
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404'), {
+        headers: { 'x-byo-cdn-type': 'cloudflare' },
+      }),
+    );
+
+    assert.strictEqual(resp.status, 404);
+    assert.strictEqual(resp.body, html404.toString());
+    fetchMock.unmockGlobal();
+  });
 });

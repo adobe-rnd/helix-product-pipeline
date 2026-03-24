@@ -49,7 +49,10 @@ export default async function fetchEdgeContent(state, req, res) {
     }
 
     if (contentRes.status === 200) {
-      state.content.edge = await contentRes.text();
+      // Store the response without consuming the body yet.
+      // The fallback path passes the body through directly;
+      // the rendering path decodes it lazily when needed.
+      state.content.edgeResponse = contentRes;
 
       // Track last-modified for caching
       const lastModified = extractLastModified(contentRes.headers);
