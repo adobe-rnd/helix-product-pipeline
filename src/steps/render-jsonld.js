@@ -18,11 +18,13 @@ import { stripHTML } from './utils.js';
 
 /**
  * Escapes a JSON string for safe embedding in an HTML <script> element.
- * Per W3C JSON-LD 1.1 §7.2, avoids sequences that could be confused with
- * script-close (</), comment-open (<!--), or comment-close (-->).
- * - '</'   → '<\/'      (valid JSON escape, prevents </script> breakout)
- * - '<!--' → '<\u0021--' (\u0021 = '!', prevents HTML comment-open)
- * - '-->'  → '--\u003e'  (\u003e = '>', prevents HTML comment-close)
+ * Per W3C JSON-LD 1.1 §7.2, avoids sequences that could terminate or confuse
+ * the script element (HTML comments, a nested script start tag, or `</script>`).
+ * Applied in this order (`<script` before `</`; see implementation):
+ * - '<!--'    → '<\u0021--'    (\u0021 = '!', prevents HTML comment-open)
+ * - '-->'     → '--\u003e'     (\u003e = '>', prevents HTML comment-close)
+ * - '<script' → '\u003cscript' (\u003c = '<', prevents nested script element)
+ * - '</'      → '<\/'         (valid JSON escape, prevents `</script>` breakout)
  * All replacements round-trip correctly through JSON.parse.
  * @see https://www.w3.org/TR/json-ld11/#restrictions-for-contents-of-json-ld-script-elements
  * @param {string} str
