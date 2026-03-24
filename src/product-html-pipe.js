@@ -69,6 +69,7 @@ export async function productHTMLPipe(state, req) {
     // Edge content fallback: if Product Bus has no product but Edge has authored content,
     // pass the edge response through directly without decoding the body
     if (res.status === 404 && state.content.edgeResponse) {
+      log.info(`edge content fallback for ${state.info.path}`);
       res.status = 200;
       res.body = state.content.edgeResponse.body;
       delete res.error;
