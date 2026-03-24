@@ -71,6 +71,50 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.sku, 'STRING-SKU');
     });
 
+    it('escapes </script> sequences in jsonld string override', () => {
+      const maliciousJsonLdString = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: 'Injected</script><script>alert(1)</script>',
+      });
+
+      const product = {
+        sku: 'ORIGINAL-SKU',
+        name: 'Original Product Name',
+        jsonld: maliciousJsonLdString,
+      };
+
+      const result = convertToJsonLD(mockState, product);
+
+      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
+      assert.ok(result.includes('<\\/script>'), 'output must contain escaped sequence');
+
+      // Round-trip: JSON.parse must recover original value
+      const parsed = JSON.parse(result);
+      assert.strictEqual(parsed.name, 'Injected</script><script>alert(1)</script>');
+    });
+
+    it('escapes </script> sequences in jsonld object override', () => {
+      const product = {
+        sku: 'ORIGINAL-SKU',
+        name: 'Original Product Name',
+        jsonld: {
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          name: 'Injected</script><script>alert(1)</script>',
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+
+      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
+      assert.ok(result.includes('<\\/script>'), 'output must contain escaped sequence');
+
+      // Round-trip: JSON.parse must recover original value
+      const parsed = JSON.parse(result);
+      assert.strictEqual(parsed.name, 'Injected</script><script>alert(1)</script>');
+    });
+
     it('generates jsonld when jsonld property is not provided', () => {
       const product = {
         sku: 'GENERATED-SKU',
