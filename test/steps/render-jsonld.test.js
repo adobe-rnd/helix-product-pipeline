@@ -283,6 +283,44 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.potentialAction[0].name, 'Request</script><script>alert(1)</script>');
     });
 
+    it('escapes <!-- comment-open sequences', () => {
+      const product = {
+        sku: 'COMMENT-SKU',
+        name: 'Product <!-- comment injection -->',
+        metaDescription: '<!-- also dangerous -->',
+        images: [],
+        variants: [],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+
+      assert.ok(!result.includes('<!--'), 'output must not contain <!--');
+
+      // Round-trip: JSON.parse must recover original values
+      const parsed = JSON.parse(result);
+      assert.strictEqual(parsed.name, 'Product <!-- comment injection -->');
+      assert.strictEqual(parsed.description, '<!-- also dangerous -->');
+    });
+
+    it('escapes --> comment-close sequences', () => {
+      const product = {
+        sku: 'COMMENT-CLOSE-SKU',
+        name: 'Product with --> close',
+        metaDescription: 'Trailing --> sequence',
+        images: [],
+        variants: [],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+
+      assert.ok(!result.includes('-->'), 'output must not contain -->');
+
+      // Round-trip: JSON.parse must recover original values
+      const parsed = JSON.parse(result);
+      assert.strictEqual(parsed.name, 'Product with --> close');
+      assert.strictEqual(parsed.description, 'Trailing --> sequence');
+    });
+
     it('does not alter output when no script sequences are present', () => {
       const product = {
         sku: 'CLEAN-SKU',
