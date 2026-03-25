@@ -495,23 +495,80 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.offers, undefined, 'jsonld override must not generate offers');
     });
 
-    it('jsonldExtensions can overwrite pipeline-generated keys', () => {
+    it('product jsonldExtensions can overwrite auto-generated Product keys', () => {
       const product = {
         sku: 'RES-SKU',
         name: 'Reserved Key Product',
+        description: 'Original description',
+        brand: 'OriginalBrand',
+        url: 'https://example.com/original',
+        gtin: '0000000000000',
         images: [],
         variants: [],
         jsonldExtensions: {
+          '@context': 'https://custom-context.org',
           '@type': 'SomeOtherType',
-          potentialAction: [{ '@type': 'QuoteAction', name: 'Quote' }],
+          name: 'Overridden Name',
+          description: 'Overridden description',
+          brand: { '@type': 'Brand', name: 'OverriddenBrand' },
+          sku: 'OVERRIDDEN-SKU',
+          url: 'https://example.com/overridden',
+          gtin: '9999999999999',
         },
       };
 
       const result = convertToJsonLD(mockState, product);
       const parsed = JSON.parse(result);
 
+      assert.strictEqual(parsed['@context'], 'https://custom-context.org');
       assert.strictEqual(parsed['@type'], 'SomeOtherType');
-      assert.ok(Array.isArray(parsed.potentialAction));
+      assert.strictEqual(parsed.name, 'Overridden Name');
+      assert.strictEqual(parsed.description, 'Overridden description');
+      assert.strictEqual(parsed.brand.name, 'OverriddenBrand');
+      assert.strictEqual(parsed.sku, 'OVERRIDDEN-SKU');
+      assert.strictEqual(parsed.url, 'https://example.com/overridden');
+      assert.strictEqual(parsed.gtin, '9999999999999');
+    });
+
+    it('variant jsonldExtensions can overwrite auto-generated Offer keys', () => {
+      const product = {
+        sku: 'PARENT-SKU',
+        name: 'Product with Variants',
+        images: [],
+        variants: [
+          {
+            sku: 'VAR-1',
+            name: 'Variant 1',
+            price: { currency: 'USD', final: '29.99' },
+            availability: 'InStock',
+            gtin: '1111111111111',
+            url: 'https://example.com/var-1',
+            jsonldExtensions: {
+              '@type': 'AggregateOffer',
+              sku: 'OVERRIDDEN-VAR-SKU',
+              name: 'Overridden Variant Name',
+              price: '0.00',
+              priceCurrency: 'EUR',
+              availability: 'https://schema.org/PreOrder',
+              gtin: '9999999999999',
+              url: 'https://example.com/overridden-var',
+            },
+          },
+        ],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      const offer = parsed.offers[0];
+      assert.strictEqual(offer['@type'], 'AggregateOffer');
+      assert.strictEqual(offer.sku, 'OVERRIDDEN-VAR-SKU');
+      assert.strictEqual(offer.name, 'Overridden Variant Name');
+      assert.strictEqual(offer.price, '0.00');
+      assert.strictEqual(offer.priceCurrency, 'EUR');
+      assert.strictEqual(offer.availability, 'https://schema.org/PreOrder');
+      assert.strictEqual(offer.gtin, '9999999999999');
+      assert.strictEqual(offer.url, 'https://example.com/overridden-var');
     });
 
     it('spreads variant jsonldExtensions into that variant offer', () => {
