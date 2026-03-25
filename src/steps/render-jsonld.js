@@ -86,7 +86,7 @@ function renderOffer(state, variant, simple, extensionsToSpread) {
     ...(!simple && custom && { custom }),
   };
 
-  const ext = extensionsToSpread || variant.jsonldExtensions;
+  const ext = extensionsToSpread || (!simple && variant.jsonldExtensions);
   if (ext && typeof ext === 'object') {
     Object.assign(offer, ext);
   }
@@ -138,7 +138,7 @@ export function convertToJsonLD(state, product) {
 
   const resolvedOffers = variants.length
     ? variants.map((v) => renderOffer(state, v))
-    : [renderOffer(state, product, true, jsonldExtensions)];
+    : [renderOffer(state, product, true)];
   jsonld.offers = resolvedOffers;
 
   if (custom && typeof custom === 'object') {

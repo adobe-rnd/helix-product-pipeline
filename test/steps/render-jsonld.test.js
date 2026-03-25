@@ -604,7 +604,7 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.offers[1].potentialAction, undefined, 'VAR-2 offer must not have potentialAction');
     });
 
-    it('spreads product jsonldExtensions into offer for simple product (no variants)', () => {
+    it('does not spread product jsonldExtensions into offer for simple product (no variants)', () => {
       const product = {
         sku: 'SIMPLE-SKU',
         name: 'Simple Product',
@@ -620,14 +620,13 @@ describe('convertToJsonLD', () => {
       const result = convertToJsonLD(mockState, product);
       const parsed = JSON.parse(result);
 
-      // Spread into Product object
+      // Spread into Product object only
       assert.ok(Array.isArray(parsed.potentialAction), 'Product must have potentialAction');
       assert.strictEqual(parsed.potentialAction[0]['@type'], 'QuoteAction');
 
-      // Also spread into single offer
+      // Not spread into the single offer
       assert.strictEqual(parsed.offers.length, 1);
-      assert.ok(Array.isArray(parsed.offers[0].potentialAction), 'Offer must have potentialAction from product jsonldExtensions');
-      assert.strictEqual(parsed.offers[0].potentialAction[0]['@type'], 'QuoteAction');
+      assert.strictEqual(parsed.offers[0].potentialAction, undefined, 'Offer must not inherit product-level jsonldExtensions');
     });
 
     it('does not spread product jsonldExtensions into variant offers', () => {
