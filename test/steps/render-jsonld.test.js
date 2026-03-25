@@ -469,6 +469,32 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.potentialAction, undefined);
     });
 
+    it('does not apply variant jsonldExtensions when jsonld override is used', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        jsonld: { '@context': 'https://schema.org', '@type': 'Product', name: 'Override Name' },
+        variants: [
+          {
+            sku: 'VAR-1',
+            name: 'Variant 1',
+            price: { currency: 'USD', final: '29.99' },
+            availability: 'InStock',
+            jsonldExtensions: {
+              potentialAction: [{ '@type': 'QuoteAction', name: 'Quote Variant' }],
+            },
+          },
+        ],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.name, 'Override Name');
+      assert.strictEqual(parsed.potentialAction, undefined);
+      assert.strictEqual(parsed.offers, undefined, 'jsonld override must not generate offers');
+    });
+
     it('jsonldExtensions can overwrite pipeline-generated keys', () => {
       const product = {
         sku: 'RES-SKU',
