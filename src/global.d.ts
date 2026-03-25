@@ -55,6 +55,7 @@ declare global {
 
   export interface PipelineContent extends ImportedPipelineContent {
     edge?: string;
+    edgeResponse?: Response;
     edgeHast?: Root;
     data: ProductBusEntry;
   }
