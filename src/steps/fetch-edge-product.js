@@ -14,7 +14,9 @@ import { PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 
 /**
- * Loads the content from either the content-bus and stores it in `state.content.edge`
+ * Loads the content from the content-bus and stores the response in `state.content.edgeResponse`.
+ * The body is not consumed here — the fallback path streams it through directly,
+ * while the rendering path decodes it lazily via `.text()` when needed.
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
@@ -49,7 +51,10 @@ export default async function fetchEdgeContent(state, req, res) {
     }
 
     if (contentRes.status === 200) {
-      state.content.edge = await contentRes.text();
+      // Store the response without consuming the body yet.
+      // The fallback path passes the body through directly;
+      // the rendering path decodes it lazily when needed.
+      state.content.edgeResponse = contentRes;
 
       // Track last-modified for caching
       const lastModified = extractLastModified(contentRes.headers);

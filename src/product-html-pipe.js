@@ -66,6 +66,19 @@ export async function productHTMLPipe(state, req) {
       return res;
     }
 
+    // Edge content fallback: if Product Bus has no product but Edge has authored content,
+    // pass the edge response through directly without decoding the body
+    if (res.status === 404 && state.content.edgeResponse) {
+      log.info(`edge content fallback for ${state.info.path}`);
+      res.status = 200;
+      res.body = state.content.edgeResponse.body;
+      delete res.error;
+      for (const [name, value] of state.content.edgeResponse.headers.entries()) {
+        res.headers.set(name, value);
+      }
+      return res;
+    }
+
     if (res.status === 404) {
       await fetch404(state, req, res);
     }
@@ -80,6 +93,11 @@ export async function productHTMLPipe(state, req) {
         setLastModified(state, res);
       }
       return res;
+    }
+
+    // Lazy decode edge content — only needed for the rendering path
+    if (state.content.edgeResponse) {
+      state.content.edge = await state.content.edgeResponse.text();
     }
 
     transformImages(state);
