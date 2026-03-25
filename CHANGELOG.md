@@ -1,3 +1,16 @@
+# [2.7.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.6.0...v2.7.0) (2026-03-25)
+
+
+### Bug Fixes
+
+* comments ([806773b](https://github.com/adobe-rnd/helix-product-pipeline/commit/806773bc55e7c63485c503003a69476f574a97f1))
+* update types ([36cc7b5](https://github.com/adobe-rnd/helix-product-pipeline/commit/36cc7b5f4e47beb1ee0fe701c1fc430139fa453e))
+
+
+### Features
+
+* fall back to edge content when Product Bus returns 404 ([1091e29](https://github.com/adobe-rnd/helix-product-pipeline/commit/1091e29bba4044c062a1ef95c18b9fafe13551d4))
+
 # [2.6.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.5.2...v2.6.0) (2026-03-17)
 
 
