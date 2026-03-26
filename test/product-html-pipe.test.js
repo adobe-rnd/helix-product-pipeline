@@ -1328,4 +1328,97 @@ describe('Product HTML Pipe Test', () => {
     assert.strictEqual(resp.body, html404.toString());
     fetchMock.unmockGlobal();
   });
+
+  it('forwards x-byo-cdn-type, x-push-invalidation, and x-forwarded-host to edge content fetch', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    fetchMock.clearHistory();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Edge</title></head><body><main><div><p>Edge content</p></div></main></body></html>';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      body: edgeHTML,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'surrogate-key': 'edge-key-1 edge-key-2',
+        'cache-control': 'max-age=172800, must-revalidate',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404'), {
+        headers: {
+          'x-byo-cdn-type': 'fastly',
+          'x-push-invalidation': 'enabled',
+          'x-forwarded-host': 'www.example.com',
+        },
+      }),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    assert.strictEqual(resp.headers.get('surrogate-key'), 'edge-key-1 edge-key-2');
+    assert.strictEqual(resp.headers.get('cache-control'), 'max-age=172800, must-revalidate');
+
+    // Verify headers were forwarded to edge fetch
+    const edgeCalls = fetchMockGlobal.callHistory.calls();
+    const edgeCall = edgeCalls.find((c) => c.url.includes('aem.live/products/product-404'));
+    assert.ok(edgeCall, 'should have made edge fetch call');
+    assert.strictEqual(edgeCall.options.headers['x-byo-cdn-type'], 'fastly');
+    assert.strictEqual(edgeCall.options.headers['x-push-invalidation'], 'enabled');
+    assert.strictEqual(edgeCall.options.headers['x-forwarded-host'], 'www.example.com');
+    fetchMock.unmockGlobal();
+  });
+
+  it('does not forward headers to edge when they are absent from the request', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    fetchMock.clearHistory();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Edge</title></head><body><main><div><p>Edge content</p></div></main></body></html>';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      body: edgeHTML,
+      headers: { 'content-type': 'text/html; charset=utf-8' },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+
+    // Verify no extra headers were forwarded
+    const edgeCalls = fetchMockGlobal.callHistory.calls();
+    const edgeCall = edgeCalls.find((c) => c.url.includes('aem.live/products/product-404'));
+    assert.ok(edgeCall, 'should have made edge fetch call');
+    assert.strictEqual(edgeCall.options.headers['x-byo-cdn-type'], undefined);
+    assert.strictEqual(edgeCall.options.headers['x-push-invalidation'], undefined);
+    assert.strictEqual(edgeCall.options.headers['x-forwarded-host'], undefined);
+    assert.strictEqual(edgeCall.options.headers.authorization, undefined);
+    fetchMock.unmockGlobal();
+  });
 });
