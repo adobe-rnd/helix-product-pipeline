@@ -1,3 +1,10 @@
+## [2.8.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.0...v2.8.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* do not spread product jsonldExtensions into simple product Offer ([#80](https://github.com/adobe-rnd/helix-product-pipeline/issues/80)) ([5b82e81](https://github.com/adobe-rnd/helix-product-pipeline/commit/5b82e81be53af51d633692a5254fff4ffe570099))
+
 # [2.8.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.7.1...v2.8.0) (2026-03-26)
 
 
