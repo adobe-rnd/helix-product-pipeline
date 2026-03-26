@@ -1,3 +1,10 @@
+## [2.7.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.7.0...v2.7.1) (2026-03-26)
+
+
+### Bug Fixes
+
+* pass push invalidation headers ([55db009](https://github.com/adobe-rnd/helix-product-pipeline/commit/55db0091aae720616e8fbd0b01f096f58ae7de1a))
+
 # [2.7.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.6.0...v2.7.0) (2026-03-25)
 
 
