@@ -65,7 +65,7 @@ function renderOffer(state, variant, simple = false) {
     ...(!simple && custom && { custom }),
   };
 
-  if (jsonldExtensions && typeof jsonldExtensions === 'object') {
+  if (!simple && jsonldExtensions && typeof jsonldExtensions === 'object') {
     Object.assign(offer, jsonldExtensions);
   }
 
