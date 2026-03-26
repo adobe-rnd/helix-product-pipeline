@@ -193,6 +193,308 @@ describe('convertToJsonLD', () => {
     });
   });
 
+  describe('jsonldExtensions', () => {
+    it('merges jsonldExtensions into generated jsonld', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          potentialAction: [
+            {
+              '@type': 'QuoteAction',
+              name: 'Request a Quote',
+              target: {
+                '@type': 'EntryPoint',
+                urlTemplate: 'https://example.com/quote',
+              },
+            },
+          ],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed['@type'], 'Product');
+      assert.strictEqual(parsed.sku, 'EXT-SKU');
+      assert.ok(Array.isArray(parsed.potentialAction));
+      assert.strictEqual(parsed.potentialAction[0]['@type'], 'QuoteAction');
+      assert.strictEqual(parsed.potentialAction[0].name, 'Request a Quote');
+      assert.strictEqual(parsed.potentialAction[0].target.urlTemplate, 'https://example.com/quote');
+    });
+
+    it('handles multiple potentialActions including location-specific', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          potentialAction: [
+            {
+              '@type': 'QuoteAction',
+              name: 'Request a Quote',
+              target: { '@type': 'EntryPoint', urlTemplate: 'https://example.com/quote' },
+            },
+            {
+              '@type': 'QuoteAction',
+              name: 'Request a Quote',
+              target: { '@type': 'EntryPoint', urlTemplate: 'https://example.com/quote?ca=1' },
+              location: { '@type': 'Country', name: 'CA' },
+            },
+          ],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.potentialAction.length, 2);
+      assert.deepStrictEqual(parsed.potentialAction[1].location, { '@type': 'Country', name: 'CA' });
+    });
+
+    it('does not add potentialAction when jsonldExtensions is absent', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.potentialAction, undefined);
+    });
+
+    it('supports any schema.org extension field, not just potentialAction', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          award: 'Best Product 2025',
+          review: [{ '@type': 'Review', author: 'Jane', reviewBody: 'Great product' }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.award, 'Best Product 2025');
+      assert.strictEqual(parsed.review[0].author, 'Jane');
+    });
+
+    it('does not apply jsonldExtensions when jsonld override is used', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        jsonld: { '@context': 'https://schema.org', '@type': 'Product', name: 'Override Name' },
+        jsonldExtensions: {
+          potentialAction: [{ '@type': 'QuoteAction' }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.name, 'Override Name');
+      assert.strictEqual(parsed.potentialAction, undefined);
+    });
+
+    it('does not apply variant jsonldExtensions when jsonld override is used', () => {
+      const product = {
+        sku: 'EXT-SKU',
+        name: 'Extension Product',
+        jsonld: { '@context': 'https://schema.org', '@type': 'Product', name: 'Override Name' },
+        variants: [
+          {
+            sku: 'VAR-1',
+            name: 'Variant 1',
+            price: { currency: 'USD', final: '29.99' },
+            availability: 'InStock',
+            jsonldExtensions: {
+              potentialAction: [{ '@type': 'QuoteAction', name: 'Quote Variant' }],
+            },
+          },
+        ],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.name, 'Override Name');
+      assert.strictEqual(parsed.potentialAction, undefined);
+      assert.strictEqual(parsed.offers, undefined, 'jsonld override must not generate offers');
+    });
+
+    it('product jsonldExtensions can overwrite auto-generated Product keys', () => {
+      const product = {
+        sku: 'RES-SKU',
+        name: 'Reserved Key Product',
+        description: 'Original description',
+        brand: 'OriginalBrand',
+        url: 'https://example.com/original',
+        gtin: '0000000000000',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          '@context': 'https://custom-context.org',
+          '@type': 'SomeOtherType',
+          name: 'Overridden Name',
+          description: 'Overridden description',
+          brand: { '@type': 'Brand', name: 'OverriddenBrand' },
+          sku: 'OVERRIDDEN-SKU',
+          url: 'https://example.com/overridden',
+          gtin: '9999999999999',
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed['@context'], 'https://custom-context.org');
+      assert.strictEqual(parsed['@type'], 'SomeOtherType');
+      assert.strictEqual(parsed.name, 'Overridden Name');
+      assert.strictEqual(parsed.description, 'Overridden description');
+      assert.strictEqual(parsed.brand.name, 'OverriddenBrand');
+      assert.strictEqual(parsed.sku, 'OVERRIDDEN-SKU');
+      assert.strictEqual(parsed.url, 'https://example.com/overridden');
+      assert.strictEqual(parsed.gtin, '9999999999999');
+    });
+
+    it('variant jsonldExtensions can overwrite auto-generated Offer keys', () => {
+      const product = {
+        sku: 'PARENT-SKU',
+        name: 'Product with Variants',
+        images: [],
+        variants: [
+          {
+            sku: 'VAR-1',
+            name: 'Variant 1',
+            price: { currency: 'USD', final: '29.99' },
+            availability: 'InStock',
+            gtin: '1111111111111',
+            url: 'https://example.com/var-1',
+            jsonldExtensions: {
+              '@type': 'AggregateOffer',
+              sku: 'OVERRIDDEN-VAR-SKU',
+              name: 'Overridden Variant Name',
+              price: '0.00',
+              priceCurrency: 'EUR',
+              availability: 'https://schema.org/PreOrder',
+              gtin: '9999999999999',
+              url: 'https://example.com/overridden-var',
+            },
+          },
+        ],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      const offer = parsed.offers[0];
+      assert.strictEqual(offer['@type'], 'AggregateOffer');
+      assert.strictEqual(offer.sku, 'OVERRIDDEN-VAR-SKU');
+      assert.strictEqual(offer.name, 'Overridden Variant Name');
+      assert.strictEqual(offer.price, '0.00');
+      assert.strictEqual(offer.priceCurrency, 'EUR');
+      assert.strictEqual(offer.availability, 'https://schema.org/PreOrder');
+      assert.strictEqual(offer.gtin, '9999999999999');
+      assert.strictEqual(offer.url, 'https://example.com/overridden-var');
+    });
+
+    it('spreads variant jsonldExtensions into that variant offer', () => {
+      const product = {
+        sku: 'VAR-PARENT-SKU',
+        name: 'Product with Variants',
+        images: [],
+        variants: [
+          {
+            sku: 'VAR-1',
+            name: 'Variant 1',
+            price: { currency: 'USD', final: '29.99' },
+            availability: 'InStock',
+            jsonldExtensions: {
+              potentialAction: [{ '@type': 'QuoteAction', name: 'Quote Variant 1' }],
+            },
+          },
+          {
+            sku: 'VAR-2',
+            name: 'Variant 2',
+            price: { currency: 'USD', final: '39.99' },
+            availability: 'InStock',
+          },
+        ],
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      assert.strictEqual(parsed.offers.length, 2);
+      assert.ok(Array.isArray(parsed.offers[0].potentialAction), 'VAR-1 offer must have potentialAction from jsonldExtensions');
+      assert.strictEqual(parsed.offers[0].potentialAction[0]['@type'], 'QuoteAction');
+      assert.strictEqual(parsed.offers[1].potentialAction, undefined, 'VAR-2 offer must not have potentialAction');
+    });
+
+    it('spreads product jsonldExtensions into offer for simple product (no variants)', () => {
+      const product = {
+        sku: 'SIMPLE-SKU',
+        name: 'Simple Product',
+        price: { currency: 'USD', final: '49.99' },
+        availability: 'InStock',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          potentialAction: [{ '@type': 'QuoteAction', name: 'Quote Simple' }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      // Spread into Product object
+      assert.ok(Array.isArray(parsed.potentialAction), 'Product must have potentialAction');
+      assert.strictEqual(parsed.potentialAction[0]['@type'], 'QuoteAction');
+
+      // Also spread into single offer (product acts as its own offer)
+      assert.strictEqual(parsed.offers.length, 1);
+      assert.ok(Array.isArray(parsed.offers[0].potentialAction), 'Offer must inherit product-level jsonldExtensions for simple products');
+      assert.strictEqual(parsed.offers[0].potentialAction[0]['@type'], 'QuoteAction');
+    });
+
+    it('does not spread product jsonldExtensions into variant offers', () => {
+      const product = {
+        sku: 'PARENT-SKU',
+        name: 'Product with Variants',
+        images: [],
+        variants: [
+          {
+            sku: 'VAR-1',
+            name: 'Variant 1',
+            price: { currency: 'USD', final: '29.99' },
+            availability: 'InStock',
+          },
+        ],
+        jsonldExtensions: {
+          potentialAction: [{ '@type': 'QuoteAction', name: 'Product Level' }],
+        },
+      };
+
+      const result = convertToJsonLD(mockState, product);
+      const parsed = JSON.parse(result);
+
+      // Product object gets the extensions
+      assert.ok(Array.isArray(parsed.potentialAction), 'Product must have potentialAction');
+
+      // But the variant offers do not inherit product-level extensions
+      assert.strictEqual(parsed.offers[0].potentialAction, undefined, 'Variant offer must not inherit product-level jsonldExtensions');
+    });
+  });
+
   describe('standard generation', () => {
     it('generates basic product jsonld', () => {
       const product = {

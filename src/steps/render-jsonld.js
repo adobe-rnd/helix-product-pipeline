@@ -28,6 +28,7 @@ function renderOffer(state, variant, simple = false) {
     options,
     custom,
     gtin,
+    jsonldExtensions,
   } = variant;
 
   const resolvedImages = Array.isArray(images)
@@ -48,7 +49,7 @@ function renderOffer(state, variant, simple = false) {
       priceCurrency: price.currency,
     } : null;
 
-  return {
+  const offer = {
     '@type': 'Offer',
     ...(sku && { sku }),
     ...(name && { name }),
@@ -63,6 +64,12 @@ function renderOffer(state, variant, simple = false) {
     ...(priceSpecification && { priceSpecification }),
     ...(!simple && custom && { custom }),
   };
+
+  if (jsonldExtensions && typeof jsonldExtensions === 'object') {
+    Object.assign(offer, jsonldExtensions);
+  }
+
+  return offer;
 }
 
 export function convertToJsonLD(state, product) {
@@ -85,6 +92,7 @@ export function convertToJsonLD(state, product) {
     variants = [],
     custom,
     gtin,
+    jsonldExtensions,
   } = product;
 
   /** @type {any} */
@@ -111,6 +119,10 @@ export function convertToJsonLD(state, product) {
 
   if (custom && typeof custom === 'object') {
     jsonld.custom = { ...custom };
+  }
+
+  if (jsonldExtensions && typeof jsonldExtensions === 'object') {
+    Object.assign(jsonld, jsonldExtensions);
   }
 
   return JSON.stringify(jsonld, null, 2);
