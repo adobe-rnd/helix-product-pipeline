@@ -71,50 +71,6 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.sku, 'STRING-SKU');
     });
 
-    it('escapes </script> sequences in jsonld string override', () => {
-      const maliciousJsonLdString = JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: 'Injected</script><script>alert(1)</script>',
-      });
-
-      const product = {
-        sku: 'ORIGINAL-SKU',
-        name: 'Original Product Name',
-        jsonld: maliciousJsonLdString,
-      };
-
-      const result = convertToJsonLD(mockState, product);
-
-      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
-      assert.ok(result.includes('<\\/script>'), 'output must contain escaped sequence');
-
-      // Round-trip: JSON.parse must recover original value
-      const parsed = JSON.parse(result);
-      assert.strictEqual(parsed.name, 'Injected</script><script>alert(1)</script>');
-    });
-
-    it('escapes </script> sequences in jsonld object override', () => {
-      const product = {
-        sku: 'ORIGINAL-SKU',
-        name: 'Original Product Name',
-        jsonld: {
-          '@context': 'https://schema.org',
-          '@type': 'Product',
-          name: 'Injected</script><script>alert(1)</script>',
-        },
-      };
-
-      const result = convertToJsonLD(mockState, product);
-
-      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
-      assert.ok(result.includes('<\\/script>'), 'output must contain escaped sequence');
-
-      // Round-trip: JSON.parse must recover original value
-      const parsed = JSON.parse(result);
-      assert.strictEqual(parsed.name, 'Injected</script><script>alert(1)</script>');
-    });
-
     it('generates jsonld when jsonld property is not provided', () => {
       const product = {
         sku: 'GENERATED-SKU',
@@ -234,126 +190,6 @@ describe('convertToJsonLD', () => {
 
       // Empty object should be returned as-is
       assert.deepStrictEqual(parsed, {});
-    });
-  });
-
-  describe('HTML script element escaping', () => {
-    it('escapes </script> sequences in generated jsonld', () => {
-      const product = {
-        sku: 'XSS-SKU',
-        name: 'Product</script><script>alert(1)</script>',
-        metaDescription: 'Desc with </script> tag',
-        images: [],
-        variants: [],
-      };
-
-      const result = convertToJsonLD(mockState, product);
-
-      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
-      assert.ok(!result.includes('</SCRIPT>'), 'output must not contain </SCRIPT>');
-      assert.ok(result.includes('<\\/script>'), 'output must contain escaped <\\/script>');
-
-      // Round-trip: JSON.parse must recover original values
-      const parsed = JSON.parse(result);
-      assert.strictEqual(parsed.name, 'Product</script><script>alert(1)</script>');
-      assert.strictEqual(parsed.description, 'Desc with </script> tag');
-    });
-
-    it('escapes </script> sequences in jsonldExtensions values', () => {
-      const product = {
-        sku: 'XSS-SKU',
-        name: 'Normal Product',
-        images: [],
-        variants: [],
-        jsonldExtensions: {
-          potentialAction: [{
-            '@type': 'QuoteAction',
-            name: 'Request</script><script>alert(1)</script>',
-            target: { '@type': 'EntryPoint', urlTemplate: 'https://example.com/quote' },
-          }],
-        },
-      };
-
-      const result = convertToJsonLD(mockState, product);
-
-      assert.ok(!result.includes('</script>'), 'output must not contain </script>');
-      assert.ok(result.includes('<\\/script>'), 'output must contain escaped sequence');
-
-      const parsed = JSON.parse(result);
-      assert.strictEqual(parsed.potentialAction[0].name, 'Request</script><script>alert(1)</script>');
-    });
-
-    it('escapes <script script-open sequences', () => {
-      const product = {
-        sku: 'SCRIPT-OPEN-SKU',
-        name: 'Product <script src="evil.js">',
-        metaDescription: 'Another <script> tag',
-        images: [],
-        variants: [],
-      };
-
-      const result = convertToJsonLD(mockState, product);
-
-      assert.ok(!result.includes('<script'), 'output must not contain <script');
-
-      // Round-trip: JSON.parse must recover original values
-      const parsed = JSON.parse(result);
-      assert.strictEqual(parsed.name, 'Product <script src="evil.js">');
-      assert.strictEqual(parsed.description, 'Another <script> tag');
-    });
-
-    it('escapes <!-- comment-open sequences', () => {
-      const product = {
-        sku: 'COMMENT-SKU',
-        name: 'Product <!-- comment injection -->',
-        metaDescription: '<!-- also dangerous -->',
-        images: [],
-        variants: [],
-      };
-
-      const result = convertToJsonLD(mockState, product);
-
-      assert.ok(!result.includes('<!--'), 'output must not contain <!--');
-
-      // Round-trip: JSON.parse must recover original values
-      const parsed = JSON.parse(result);
-      assert.strictEqual(parsed.name, 'Product <!-- comment injection -->');
-      assert.strictEqual(parsed.description, '<!-- also dangerous -->');
-    });
-
-    it('escapes --> comment-close sequences', () => {
-      const product = {
-        sku: 'COMMENT-CLOSE-SKU',
-        name: 'Product with --> close',
-        metaDescription: 'Trailing --> sequence',
-        images: [],
-        variants: [],
-      };
-
-      const result = convertToJsonLD(mockState, product);
-
-      assert.ok(!result.includes('-->'), 'output must not contain -->');
-
-      // Round-trip: JSON.parse must recover original values
-      const parsed = JSON.parse(result);
-      assert.strictEqual(parsed.name, 'Product with --> close');
-      assert.strictEqual(parsed.description, 'Trailing --> sequence');
-    });
-
-    it('does not alter output when no script sequences are present', () => {
-      const product = {
-        sku: 'CLEAN-SKU',
-        name: 'Clean Product',
-        metaDescription: 'A perfectly normal description',
-        images: [],
-        variants: [],
-      };
-
-      const result = convertToJsonLD(mockState, product);
-      const parsed = JSON.parse(result);
-
-      assert.strictEqual(parsed.name, 'Clean Product');
-      assert.strictEqual(parsed.description, 'A perfectly normal description');
     });
   });
 
@@ -604,7 +440,7 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.offers[1].potentialAction, undefined, 'VAR-2 offer must not have potentialAction');
     });
 
-    it('does not spread product jsonldExtensions into offer for simple product (no variants)', () => {
+    it('spreads product jsonldExtensions into offer for simple product (no variants)', () => {
       const product = {
         sku: 'SIMPLE-SKU',
         name: 'Simple Product',
@@ -620,13 +456,14 @@ describe('convertToJsonLD', () => {
       const result = convertToJsonLD(mockState, product);
       const parsed = JSON.parse(result);
 
-      // Spread into Product object only
+      // Spread into Product object
       assert.ok(Array.isArray(parsed.potentialAction), 'Product must have potentialAction');
       assert.strictEqual(parsed.potentialAction[0]['@type'], 'QuoteAction');
 
-      // Not spread into the single offer
+      // Also spread into single offer (product acts as its own offer)
       assert.strictEqual(parsed.offers.length, 1);
-      assert.strictEqual(parsed.offers[0].potentialAction, undefined, 'Offer must not inherit product-level jsonldExtensions');
+      assert.ok(Array.isArray(parsed.offers[0].potentialAction), 'Offer must inherit product-level jsonldExtensions for simple products');
+      assert.strictEqual(parsed.offers[0].potentialAction[0]['@type'], 'QuoteAction');
     });
 
     it('does not spread product jsonldExtensions into variant offers', () => {

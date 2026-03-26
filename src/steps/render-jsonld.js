@@ -16,29 +16,7 @@ import { h } from 'hastscript';
 import { constructImageUrl } from './create-pictures.js';
 import { stripHTML } from './utils.js';
 
-/**
- * Escapes a JSON string for safe embedding in an HTML <script> element.
- * Per W3C JSON-LD 1.1 §7.2, avoids sequences that could terminate or confuse
- * the script element (HTML comments, a nested script start tag, or `</script>`).
- * Applied in this order (`<script` before `</`; see implementation):
- * - '<!--'    → '<\u0021--'    (\u0021 = '!', prevents HTML comment-open)
- * - '-->'     → '--\u003e'     (\u003e = '>', prevents HTML comment-close)
- * - '<script' → '\u003cscript' (\u003c = '<', prevents nested script element)
- * - '</'      → '<\/'         (valid JSON escape, prevents `</script>` breakout)
- * All replacements round-trip correctly through JSON.parse.
- * @see https://www.w3.org/TR/json-ld11/#restrictions-for-contents-of-json-ld-script-elements
- * @param {string} str
- * @returns {string}
- */
-function escapeForScriptElement(str) {
-  return str
-    .replaceAll('<!--', '<\\u0021--') // comment-open
-    .replaceAll('-->', '--\\u003e') // comment-close
-    .replaceAll('<script', '\\u003cscript') // script-open (must precede </ rule)
-    .replaceAll('</', '<\\/'); // script-close
-}
-
-function renderOffer(state, variant, simple, extensionsToSpread) {
+function renderOffer(state, variant, simple = false) {
   const {
     sku,
     name,
@@ -50,6 +28,7 @@ function renderOffer(state, variant, simple, extensionsToSpread) {
     options,
     custom,
     gtin,
+    jsonldExtensions,
   } = variant;
 
   const resolvedImages = Array.isArray(images)
@@ -86,9 +65,8 @@ function renderOffer(state, variant, simple, extensionsToSpread) {
     ...(!simple && custom && { custom }),
   };
 
-  const ext = extensionsToSpread || (!simple && variant.jsonldExtensions);
-  if (ext && typeof ext === 'object') {
-    Object.assign(offer, ext);
+  if (jsonldExtensions && typeof jsonldExtensions === 'object') {
+    Object.assign(offer, jsonldExtensions);
   }
 
   return offer;
@@ -97,11 +75,9 @@ function renderOffer(state, variant, simple, extensionsToSpread) {
 export function convertToJsonLD(state, product) {
   // If the product has a jsonld property, use it directly instead of generating
   if (product.jsonld) {
-    return escapeForScriptElement(
-      typeof product.jsonld === 'string'
-        ? product.jsonld
-        : JSON.stringify(product.jsonld, null, 2),
-    );
+    return typeof product.jsonld === 'string'
+      ? product.jsonld
+      : JSON.stringify(product.jsonld, null, 2);
   }
 
   const {
@@ -149,7 +125,7 @@ export function convertToJsonLD(state, product) {
     Object.assign(jsonld, jsonldExtensions);
   }
 
-  return escapeForScriptElement(JSON.stringify(jsonld, null, 2));
+  return JSON.stringify(jsonld, null, 2);
 }
 
 /**
