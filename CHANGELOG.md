@@ -1,3 +1,10 @@
+# [2.8.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.7.1...v2.8.0) (2026-03-26)
+
+
+### Features
+
+* merge jsonldExtensions (if provided) into auto-generated JSON-LD ([#77](https://github.com/adobe-rnd/helix-product-pipeline/issues/77)) ([11de183](https://github.com/adobe-rnd/helix-product-pipeline/commit/11de183d319c6661eed513c414e57dc79bba2fcb))
+
 ## [2.7.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.7.0...v2.7.1) (2026-03-26)
 
 
