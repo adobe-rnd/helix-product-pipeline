@@ -36,6 +36,15 @@ export default async function fetchEdgeContent(state, req, res) {
     if (authorization) {
       headers.authorization = authorization;
     }
+    // Forward CDN and cache headers so edge delivery returns
+    // correct surrogate keys, cache TTLs, and canonical URLs
+    const forwardHeaders = ['x-byo-cdn-type', 'x-push-invalidation', 'x-forwarded-host'];
+    for (const name of forwardHeaders) {
+      const value = req.headers.get(name);
+      if (value) {
+        headers[name] = value;
+      }
+    }
     const contentRes = await fetch(contentUrl, { headers, redirect: 'manual' });
     if (contentRes.status === 401) {
       throw new PipelineStatusError(401, 'unauthorized');
