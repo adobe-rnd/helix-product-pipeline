@@ -34,14 +34,14 @@ export function formatPrice(price) {
 
 // Render media. Image first than anchor if video
 function renderMedia(media) {
-  const { url, alt, title } = media;
+  const { url, label, title } = media;
   if (media.video) {
     return h('p', [
-      createOptimizedPicture(url, alt, title),
+      createOptimizedPicture(url, label, title),
       h('a', { href: media.video }, 'Video'),
     ]);
   }
-  return h('p', createOptimizedPicture(url, alt, title));
+  return h('p', createOptimizedPicture(url, label, title));
 }
 
 /**
@@ -171,7 +171,7 @@ export default async function render(state, req, res) {
     main.children.push(...variants.map((variant) => h('div', { className: 'section', ...variantDataAttrs(variant) }, [
       h('h2', variant.name),
       formatPrice(variant.price),
-      ...(variant.images?.length > 0 ? variant.images.map((img) => h('p', createOptimizedPicture(img.url, img.alt, img.title))) : []),
+      ...(variant.images?.length > 0 ? variant.images.map((img) => h('p', createOptimizedPicture(img.url, img.label, img.title))) : []),
     ])));
   }
 
