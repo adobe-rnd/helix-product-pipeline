@@ -1,3 +1,10 @@
+## [2.8.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.1...v2.8.2) (2026-03-30)
+
+
+### Bug Fixes
+
+* use label instead of alt for image tags ([9c01bc8](https://github.com/adobe-rnd/helix-product-pipeline/commit/9c01bc8b5f9b9412301cf10c0751ac49996fab6f))
+
 ## [2.8.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.0...v2.8.1) (2026-03-26)
 
 
