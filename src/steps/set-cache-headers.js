@@ -18,6 +18,8 @@ import {
   compute404Key,
   computeAuthoredContentKey,
   computeProductKeys,
+  computeIndexKeys,
+  computeSitemapKeys,
 } from '@dylandepass/helix-product-shared';
 import { applyByoCdnHeaders } from '../utils/cache-headers.js';
 
@@ -105,4 +107,30 @@ export async function setProductCacheHeaders(state, req, resp) {
 
   const productKeys = await computeProductKeys(org, site, info.path, contentBusId);
   setCachingHeaders(req, resp, productKeys);
+}
+
+/**
+ * Sets the cache headers for an index.json resource
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @returns {Promise<void>}
+ */
+export async function setIndexCacheHeaders(state, req, resp) {
+  const { org, site, info } = state;
+  const keys = await computeIndexKeys(org, site, info.path);
+  setCachingHeaders(req, resp, keys);
+}
+
+/**
+ * Sets the cache headers for a sitemap.xml resource
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @returns {Promise<void>}
+ */
+export async function setSitemapCacheHeaders(state, req, resp) {
+  const { org, site, info } = state;
+  const keys = await computeSitemapKeys(org, site, info.path);
+  setCachingHeaders(req, resp, keys);
 }

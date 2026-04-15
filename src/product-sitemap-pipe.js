@@ -18,7 +18,7 @@ import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
-import { set404CacheHeaders } from './steps/set-cache-headers.js';
+import { set404CacheHeaders, setSitemapCacheHeaders } from './steps/set-cache-headers.js';
 
 dayjs.extend(utc);
 
@@ -151,9 +151,7 @@ export async function productSitemapPipe(state, req) {
       throw new PipelineStatusError(res.status, res.error);
     }
 
-    // TODO: set surrogate keys
-    // const keys = await computeJSONSurrogateKeys(state);
-    // setCachingHeaders(state, req, res, keys);
+    await setSitemapCacheHeaders(state, req, res);
 
     setLastModified(state, res);
 
