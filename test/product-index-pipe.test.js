@@ -68,7 +68,7 @@ describe('Product Index Pipe Test', () => {
     const body = JSON.parse(resp.body);
     assert.deepStrictEqual(body, spreadsheetIndexFixture);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
-      // 'cache-control': 'max-age=7200, must-revalidate',
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
     });
@@ -107,6 +107,7 @@ describe('Product Index Pipe Test', () => {
     const body = JSON.parse(resp.body);
     assert.deepStrictEqual(body, spreadsheetIndexFixture);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/json',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
     });

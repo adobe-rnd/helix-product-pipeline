@@ -16,7 +16,7 @@ import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
-import { set404CacheHeaders } from './steps/set-cache-headers.js';
+import { set404CacheHeaders, setIndexCacheHeaders } from './steps/set-cache-headers.js';
 import { getIncludes, getPaginationParams } from './steps/utils.js';
 
 /**
@@ -147,9 +147,7 @@ export async function productIndexPipe(state, req) {
       throw new PipelineStatusError(res.status, res.error);
     }
 
-    // TODO: set surrogate keys
-    // const keys = await computeJSONSurrogateKeys(state);
-    // setCachingHeaders(state, req, res, keys);
+    await setIndexCacheHeaders(state, req, res);
 
     setLastModified(state, res);
 

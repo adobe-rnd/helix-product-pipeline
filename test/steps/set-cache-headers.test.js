@@ -13,7 +13,12 @@
 /* eslint-env mocha */
 import assert from 'assert';
 import { PipelineRequest, PipelineResponse } from '@adobe/helix-html-pipeline';
-import { setCachingHeaders, setProductCacheHeaders } from '../../src/steps/set-cache-headers.js';
+import {
+  setCachingHeaders,
+  setProductCacheHeaders,
+  setIndexCacheHeaders,
+  setSitemapCacheHeaders,
+} from '../../src/steps/set-cache-headers.js';
 
 describe('setCachingHeaders', () => {
   const createRequest = (url, headers = {}) => {
@@ -605,5 +610,184 @@ describe('setProductCacheHeaders', () => {
     // Should have set Fastly-specific headers
     assert.strictEqual(resp.headers.get('surrogate-control'), 'max-age=300, stale-while-revalidate=0');
     assert.strictEqual(resp.headers.get('surrogate-key'), 'G56lYRBKFiJX2i-A main--test-site--test-org Id9xWdjCxe493biK content-bus-id_metadata main--test-site--test-org_head content-bus-id');
+  });
+});
+
+describe('setIndexCacheHeaders', () => {
+  const createRequest = (url, headers = {}) => {
+    const req = new PipelineRequest(new URL(url));
+    Object.entries(headers).forEach(([key, value]) => {
+      req.headers.set(key, value);
+    });
+    return req;
+  };
+
+  const createResponse = (status = 200) => {
+    const resp = new PipelineResponse('', { status });
+    if (status < 300) {
+      resp.ok = true;
+    }
+    return resp;
+  };
+
+  it('sets cache-control and exactly two cache tags (path key + site key)', async () => {
+    const state = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/index.json' },
+    };
+    const req = createRequest('https://example.com/products/index.json', {
+      'x-byo-cdn-type': 'cloudflare',
+    });
+    const resp = createResponse();
+
+    await setIndexCacheHeaders(state, req, resp);
+
+    assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
+    const tags = resp.headers.get('cache-tag').split(',');
+    assert.strictEqual(tags.length, 2);
+    assert.ok(tags.includes('main--test-site--test-org'));
+  });
+
+  it('does not include authored content keys even when contentBusId is on state', async () => {
+    const state = {
+      org: 'test-org',
+      site: 'test-site',
+      contentBusId: 'some-content-bus-id',
+      info: { path: '/products/index.json' },
+    };
+    const req = createRequest('https://example.com/products/index.json', {
+      'x-byo-cdn-type': 'cloudflare',
+    });
+    const resp = createResponse();
+
+    await setIndexCacheHeaders(state, req, resp);
+
+    const tags = resp.headers.get('cache-tag').split(',');
+    assert.strictEqual(tags.length, 2);
+    assert.ok(!tags.some((t) => t.includes('_metadata') || t.includes('_head') || t === 'some-content-bus-id'));
+  });
+
+  it('sets Fastly surrogate-key with two keys', async () => {
+    const state = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/index.json' },
+    };
+    const req = createRequest('https://example.com/products/index.json', {
+      'x-byo-cdn-type': 'fastly',
+    });
+    const resp = createResponse();
+
+    await setIndexCacheHeaders(state, req, resp);
+
+    assert.strictEqual(resp.headers.get('surrogate-control'), 'max-age=300, stale-while-revalidate=0');
+    const keys = resp.headers.get('surrogate-key').split(' ');
+    assert.strictEqual(keys.length, 2);
+    assert.ok(keys.includes('main--test-site--test-org'));
+  });
+
+  it('sets a different path key for different root paths', async () => {
+    const state1 = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/index.json' },
+    };
+    const state2 = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/us/en/index.json' },
+    };
+    const req = createRequest('https://example.com/test', { 'x-byo-cdn-type': 'cloudflare' });
+
+    const resp1 = createResponse();
+    const resp2 = createResponse();
+    await setIndexCacheHeaders(state1, req, resp1);
+    await setIndexCacheHeaders(state2, req, resp2);
+
+    const tags1 = resp1.headers.get('cache-tag').split(',');
+    const tags2 = resp2.headers.get('cache-tag').split(',');
+    assert.notStrictEqual(tags1[0], tags2[0]);
+    assert.strictEqual(tags1[1], tags2[1]); // same site key
+  });
+});
+
+describe('setSitemapCacheHeaders', () => {
+  const createRequest = (url, headers = {}) => {
+    const req = new PipelineRequest(new URL(url));
+    Object.entries(headers).forEach(([key, value]) => {
+      req.headers.set(key, value);
+    });
+    return req;
+  };
+
+  const createResponse = (status = 200) => {
+    const resp = new PipelineResponse('', { status });
+    if (status < 300) {
+      resp.ok = true;
+    }
+    return resp;
+  };
+
+  it('sets cache-control and exactly two cache tags (path key + site key)', async () => {
+    const state = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/sitemap.xml' },
+    };
+    const req = createRequest('https://example.com/products/sitemap.xml', {
+      'x-byo-cdn-type': 'cloudflare',
+    });
+    const resp = createResponse();
+
+    await setSitemapCacheHeaders(state, req, resp);
+
+    assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
+    const tags = resp.headers.get('cache-tag').split(',');
+    assert.strictEqual(tags.length, 2);
+    assert.ok(tags.includes('main--test-site--test-org'));
+  });
+
+  it('does not include authored content keys even when contentBusId is on state', async () => {
+    const state = {
+      org: 'test-org',
+      site: 'test-site',
+      contentBusId: 'some-content-bus-id',
+      info: { path: '/products/sitemap.xml' },
+    };
+    const req = createRequest('https://example.com/products/sitemap.xml', {
+      'x-byo-cdn-type': 'cloudflare',
+    });
+    const resp = createResponse();
+
+    await setSitemapCacheHeaders(state, req, resp);
+
+    const tags = resp.headers.get('cache-tag').split(',');
+    assert.strictEqual(tags.length, 2);
+    assert.ok(!tags.some((t) => t.includes('_metadata') || t.includes('_head') || t === 'some-content-bus-id'));
+  });
+
+  it('sets a different path key than the index at the same directory', async () => {
+    const indexState = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/index.json' },
+    };
+    const sitemapState = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/sitemap.xml' },
+    };
+    const req = createRequest('https://example.com/test', { 'x-byo-cdn-type': 'cloudflare' });
+
+    const indexResp = createResponse();
+    const sitemapResp = createResponse();
+    await setIndexCacheHeaders(indexState, req, indexResp);
+    await setSitemapCacheHeaders(sitemapState, req, sitemapResp);
+
+    const indexTags = indexResp.headers.get('cache-tag').split(',');
+    const sitemapTags = sitemapResp.headers.get('cache-tag').split(',');
+    assert.notStrictEqual(indexTags[0], sitemapTags[0]);
+    assert.strictEqual(indexTags[1], sitemapTags[1]); // same site key
   });
 });
