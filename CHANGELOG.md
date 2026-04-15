@@ -1,3 +1,10 @@
+## [2.8.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.2...v2.8.3) (2026-04-15)
+
+
+### Bug Fixes
+
+* add cache key headers to index and sitemap responses ([#82](https://github.com/adobe-rnd/helix-product-pipeline/issues/82)) ([bce6e51](https://github.com/adobe-rnd/helix-product-pipeline/commit/bce6e510c1fd55b1c3d7f57b91edd1111e7d8f22))
+
 ## [2.8.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.1...v2.8.2) (2026-03-30)
 
 
