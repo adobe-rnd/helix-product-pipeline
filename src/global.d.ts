@@ -51,6 +51,8 @@ declare global {
     config: PipelineSiteConfig;
     info: PathInfo;
     content: PipelineContent;
+    priceRule?: SharedTypes.CatalogPriceRule | null;
+    catalogPriceRules?: SharedTypes.CatalogPriceRules;
   }
 
   export interface PipelineContent extends ImportedPipelineContent {
