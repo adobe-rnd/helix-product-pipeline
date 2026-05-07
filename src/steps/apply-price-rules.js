@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 
+/* eslint-disable no-continue */
+
 /**
  * @param {{ start?: string, end?: string }} rule
  * @param {number} now
@@ -31,8 +33,6 @@ function isActive(rule, now) {
  * @param {boolean} isIndex
  */
 function applyRuleToProduct(product, rule, now, isIndex = false) {
-  if (!isActive(rule, now)) return;
-
   if (rule.price != null) {
     if (isIndex) {
       product.price = rule.price;
@@ -74,30 +74,87 @@ function applyRuleToProduct(product, rule, now, isIndex = false) {
 }
 
 /**
- * Apply state.priceRule to state.content.data (single product request).
- * @param {PipelineState} state
+ * Find the lowest-priced active promotion rule for a product path across all promotions.
+ * Returns null if no active rule matches or if the best price is not lower than the product price.
+ * @param {SharedTypes.CatalogPriceRules} catalogPriceRules
+ * @param {string} productPath
+ * @param {number} now
+ * @param {number} currentPrice - product's current price as a number for comparison
+ * @returns {SharedTypes.CatalogPriceRule | null}
  */
-export function applyProductPriceRule(state) {
-  const { priceRule, content } = state;
-  if (!priceRule || !content?.data) return;
-  applyRuleToProduct(content.data, priceRule, Date.now(), false);
+function findBestRule(catalogPriceRules, productPath, now, currentPrice) {
+  let bestRule = null;
+  let bestPrice = currentPrice;
+
+  for (const promotion of catalogPriceRules.promotions) {
+    for (const rule of promotion.rules) {
+      if (rule.path !== productPath) continue;
+      if (!isActive(rule, now)) continue;
+      const p = parseFloat(rule.price);
+      if (!Number.isNaN(p) && p < bestPrice) {
+        bestPrice = p;
+        bestRule = rule;
+      }
+    }
+  }
+
+  return bestRule;
 }
 
 /**
- * Apply state.catalogPriceRules to the stored index (index request).
- * Index product entries are flat — price is a root field, not price.final.
+ * Apply catalog price rules to state.content.data (single product request).
+ * Finds the lowest active promotion price for the product path and applies it only
+ * if it is less than the product's current price.
+ * @param {PipelineState} state
+ */
+export function applyProductPriceRule(state) {
+  const { catalogPriceRules, content, info } = state;
+  if (!catalogPriceRules?.promotions?.length || !content?.data) return;
+
+  const productPath = info.path.replace(/\.(json|html)$/, '');
+  const now = Date.now();
+  const currentPrice = parseFloat(content.data.price?.final ?? 'Infinity');
+  const rule = findBestRule(catalogPriceRules, productPath, now, currentPrice);
+  if (rule) applyRuleToProduct(content.data, rule, now, false);
+}
+
+/**
+ * Apply catalog price rules to the stored index (index request).
+ * For each product, finds the lowest active promotion price and applies it only
+ * if it is less than the product's current price.
  * @param {PipelineState} state
  */
 export function applyCatalogPriceRules(state) {
   const { catalogPriceRules, content } = state;
-  if (!catalogPriceRules || !content?.data) return;
+  if (!catalogPriceRules?.promotions?.length || !content?.data) return;
 
   const now = Date.now();
+
+  // Build a path → best rule map across all promotions
+  /** @type {Map<string, SharedTypes.CatalogPriceRule>} */
+  const bestRuleByPath = new Map();
+  for (const promotion of catalogPriceRules.promotions) {
+    for (const rule of promotion.rules) {
+      if (!isActive(rule, now)) continue;
+      const price = parseFloat(rule.price);
+      if (Number.isNaN(price)) continue;
+      const current = bestRuleByPath.get(rule.path);
+      if (!current || price < parseFloat(current.price)) {
+        bestRuleByPath.set(rule.path, rule);
+      }
+    }
+  }
+
   for (const entry of Object.values(content.data)) {
     const product = entry?.data;
     // eslint-disable-next-line no-continue
     if (!product?.path) continue;
-    const rule = catalogPriceRules[product.path];
-    if (rule) applyRuleToProduct(product, rule, now, true);
+    const rule = bestRuleByPath.get(product.path);
+    if (!rule) continue;
+    const rulePrice = parseFloat(rule.price);
+    const productPrice = parseFloat(product.price);
+    if (!Number.isNaN(productPrice) && rulePrice < productPrice) {
+      applyRuleToProduct(product, rule, now, true);
+    }
   }
 }

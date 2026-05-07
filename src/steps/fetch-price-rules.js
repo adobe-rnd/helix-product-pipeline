@@ -15,55 +15,20 @@ const PRICING_BUCKET_ID = 'helix-commerce-pricing';
 /**
  * @param {string} org
  * @param {string} site
- * @param {string} path - product path without extension, e.g. "/us/en/my-product"
- * @returns {string}
- */
-function byPathKey(org, site, path) {
-  const clean = path.startsWith('/') ? path.slice(1) : path;
-  return `${org}/${site}/prices/catalog/_byPath/${clean}.json`;
-}
-
-/**
- * @param {string} org
- * @param {string} site
  * @returns {string}
  */
 function catalogRulesKey(org, site) {
   return `${org}/${site}/prices/catalog/rules.json`;
 }
 
-/**
- * Fetch the price rule for a single product path. Sets state.priceRule.
- * No-ops if PRICING_BUCKET is not available in the s3Loader.
- * @param {PipelineState} state
- */
-export async function fetchProductPriceRule(state) {
-  const {
-    org,
-    site,
-    info,
-    s3Loader,
-  } = state;
-  const path = info.path.replace(/\.(json|html)$/, '');
-
-  /** @type {PipelineResponse} */
-  let res;
-  try {
-    res = await s3Loader.getObject(PRICING_BUCKET_ID, byPathKey(org, site, path));
-    if (res.status !== 200) {
-      state.priceRule = null;
-      return;
-    }
-    state.priceRule = JSON.parse(res.body);
-  } catch (e) {
-    state.log.warn(`failed to fetch price rule for ${path}: ${res?.status ?? 'unknown error'}`, e);
-    state.priceRule = null;
-  }
+/** @returns {SharedTypes.CatalogPriceRules} */
+function emptyRules() {
+  return { promotions: [] };
 }
 
 /**
  * Fetch all catalog price rules. Sets state.catalogPriceRules.
- * No-ops if PRICING_BUCKET is not available in the s3Loader.
+ * Used for both single-product and index routes.
  * @param {PipelineState} state
  */
 export async function fetchCatalogPriceRules(state) {
@@ -74,20 +39,30 @@ export async function fetchCatalogPriceRules(state) {
   try {
     res = await s3Loader.getObject(PRICING_BUCKET_ID, catalogRulesKey(org, site));
     if (res.status !== 200) {
-      state.catalogPriceRules = {};
+      state.catalogPriceRules = emptyRules();
       return;
     }
 
     /** @type {SharedTypes.CatalogPriceRules} */
     const rules = JSON.parse(res.body);
+    if (!rules || !Array.isArray(rules.promotions)) {
+      state.catalogPriceRules = emptyRules();
+      return;
+    }
+
     const now = Date.now();
 
-    // Pre-filter fully expired product-level rules to avoid per-product checks in apply step
-    state.catalogPriceRules = Object.fromEntries(
-      Object.entries(rules).filter(([, rule]) => !rule.end || new Date(rule.end).getTime() > now),
-    );
+    // Pre-filter rules whose end is already past; remove promotions with no remaining rules
+    state.catalogPriceRules = {
+      promotions: rules.promotions
+        .map((promotion) => ({
+          ...promotion,
+          rules: promotion.rules.filter((rule) => !rule.end || new Date(rule.end).getTime() > now),
+        }))
+        .filter((promotion) => promotion.rules.length > 0),
+    };
   } catch (e) {
     state.log.warn(`failed to fetch catalog price rules: ${res?.status ?? 'unknown error'}`, e);
-    state.catalogPriceRules = {};
+    state.catalogPriceRules = emptyRules();
   }
 }

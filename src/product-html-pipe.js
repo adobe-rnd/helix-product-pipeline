@@ -28,7 +28,7 @@ import fetch404 from './steps/fetch-404.js';
 import { setProductCacheHeaders } from './steps/set-cache-headers.js';
 import { getUnauthorizedBody } from './utils/http-response.js';
 import extractAuthoredMetadata from './steps/extract-authored-metadata.js';
-import { fetchProductPriceRule } from './steps/fetch-price-rules.js';
+import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
 import { applyProductPriceRule } from './steps/apply-price-rules.js';
 
 export async function productHTMLPipe(state, req) {
@@ -104,7 +104,7 @@ export async function productHTMLPipe(state, req) {
 
     transformImages(state);
 
-    await fetchProductPriceRule(state);
+    await fetchCatalogPriceRules(state);
     applyProductPriceRule(state);
 
     state.timer?.update('render');

@@ -13,7 +13,7 @@
 /* eslint-env mocha */
 import assert from 'assert';
 import { applyProductPriceRule, applyCatalogPriceRules } from '../../src/steps/apply-price-rules.js';
-import { fetchProductPriceRule, fetchCatalogPriceRules } from '../../src/steps/fetch-price-rules.js';
+import { fetchCatalogPriceRules } from '../../src/steps/fetch-price-rules.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -43,203 +43,247 @@ function makeState(overrides = {}) {
   };
 }
 
+function promo(id, rules, name = 'Test') {
+  return { id, name, rules };
+}
+
+function rule(path, price, extras = {}) {
+  return { path, price, ...extras };
+}
+
+function catalogRules(...promotions) {
+  return { promotions };
+}
+
 // ---------------------------------------------------------------------------
 // applyProductPriceRule
 // ---------------------------------------------------------------------------
 
 describe('applyProductPriceRule', () => {
-  it('no-ops when priceRule is absent', () => {
-    const state = { content: { data: { price: { final: '10.00' } } } };
+  it('no-ops when catalogPriceRules is absent', () => {
+    const state = makeState({ content: { data: { price: { final: '10.00' } } } });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '10.00');
+  });
+
+  it('no-ops when catalogPriceRules has no promotions', () => {
+    const state = makeState({
+      catalogPriceRules: { promotions: [] },
+      content: { data: { price: { final: '10.00' } } },
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '10.00');
   });
 
   it('no-ops when content.data is absent', () => {
-    const state = { priceRule: { price: '5.00' }, content: {} };
+    const state = makeState({ catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '5.00')])), content: {} });
     applyProductPriceRule(state);
   });
 
-  it('sets price.final from rule when always active (no dates)', () => {
-    const state = {
-      priceRule: { price: '29.99' },
+  it('sets price.final when promotion rule matches path', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '29.99')])),
       content: { data: { price: { final: '50.00' } } },
-    };
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '29.99');
   });
 
-  it('applies rule when start is in the past', () => {
-    const state = {
-      priceRule: { price: '25.00', start: PAST },
+  it('does not apply rule when price is not lower than current price', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '60.00')])),
       content: { data: { price: { final: '50.00' } } },
-    };
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00');
+  });
+
+  it('applies rule when start is in the past', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '25.00', { start: PAST })])),
+      content: { data: { price: { final: '50.00' } } },
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '25.00');
   });
 
   it('does not apply rule when start is in the future', () => {
-    const state = {
-      priceRule: { price: '25.00', start: FUTURE },
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '25.00', { start: FUTURE })])),
       content: { data: { price: { final: '50.00' } } },
-    };
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '50.00');
   });
 
   it('applies rule when end is in the future', () => {
-    const state = {
-      priceRule: { price: '25.00', end: FUTURE },
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '25.00', { end: FUTURE })])),
       content: { data: { price: { final: '50.00' } } },
-    };
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '25.00');
   });
 
   it('does not apply rule when end is in the past', () => {
-    const state = {
-      priceRule: { price: '25.00', end: PAST },
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '25.00', { end: PAST })])),
       content: { data: { price: { final: '50.00' } } },
-    };
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00');
+  });
+
+  it('applies the lowest price when multiple promotions match', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(
+        promo('p1', [rule('/us/en/my-product', '30.00')]),
+        promo('p2', [rule('/us/en/my-product', '25.00')]),
+        promo('p3', [rule('/us/en/my-product', '28.00')]),
+      ),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '25.00');
+  });
+
+  it('strips .json extension from path when matching', () => {
+    const state = makeState({
+      info: { path: '/us/en/my-product.json' },
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '29.99')])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '29.99');
+  });
+
+  it('strips .html extension from path when matching', () => {
+    const state = makeState({
+      info: { path: '/us/en/my-product.html' },
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '29.99')])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '29.99');
+  });
+
+  it('does not apply rule for a different path', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/other-product', '25.00')])),
+      content: { data: { price: { final: '50.00' } } },
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '50.00');
   });
 
   it('inherits parent price to array variants without a variant rule', () => {
-    const state = {
-      priceRule: { price: '20.00' },
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00')])),
       content: {
         data: {
           price: { final: '50.00' },
           variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
         },
       },
-    };
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.variants[0].price.final, '20.00');
   });
 
   it('applies variant-specific rule from array variants', () => {
-    const state = {
-      priceRule: {
-        price: '20.00',
-        variants: { 'sku-a': { price: '15.00' } },
-      },
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00', {
+        variants: { 'sku-a': { sku: 'sku-a', price: '15.00' } },
+      })])),
       content: {
         data: {
           price: { final: '50.00' },
           variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
         },
       },
-    };
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.variants[0].price.final, '15.00');
   });
 
-  it('applies variant-specific rule from object-keyed variants', () => {
-    const state = {
-      priceRule: {
-        price: '20.00',
-        variants: { 'sku-b': { price: '12.00' } },
-      },
-      content: {
-        data: {
-          price: { final: '50.00' },
-          variants: { 'sku-b': { sku: 'sku-b', price: { final: '50.00' } } },
-        },
-      },
-    };
-    applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.variants['sku-b'].price.final, '12.00');
-  });
-
   it('skips expired variant rule and inherits parent price instead', () => {
-    const state = {
-      priceRule: {
-        price: '20.00',
-        variants: { 'sku-a': { price: '5.00', end: PAST } },
-      },
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00', {
+        variants: { 'sku-a': { sku: 'sku-a', price: '5.00', end: PAST } },
+      })])),
       content: {
         data: {
           price: { final: '50.00' },
           variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
         },
       },
-    };
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.variants[0].price.final, '20.00');
   });
 
-  it('handles product with no variants field', () => {
-    const state = {
-      priceRule: { price: '30.00' },
+  it('skips rule with non-numeric price', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [{ path: '/us/en/my-product', price: 'not-a-number' }])),
       content: { data: { price: { final: '50.00' } } },
-    };
+    });
     applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.price.final, '30.00');
+    assert.strictEqual(state.content.data.price.final, '50.00');
+  });
+
+  it('skips variant price update when variant rule price is null', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00', {
+        variants: { 'sku-a': { sku: 'sku-a', price: null } },
+      })])),
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.variants[0].price.final, '50.00');
+  });
+
+  it('skips variant price inheritance when rule.price is null', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [{ path: '/us/en/my-product', price: '20.00', variants: { 'sku-a': { sku: 'sku-a', price: '15.00', start: FUTURE } } }])),
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
+        },
+      },
+    });
+    // Variant rule is inactive (future start), so parent price is inherited
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.variants[0].price.final, '20.00');
+  });
+
+  it('skips price update when product has no price object', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00')])),
+      content: { data: {} },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price, undefined);
   });
 
   it('skips variant price update when variant has no price field', () => {
-    const state = {
-      priceRule: { price: '20.00' },
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00')])),
       content: {
         data: {
           price: { final: '50.00' },
           variants: [{ sku: 'sku-a' }],
         },
       },
-    };
+    });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '20.00');
     assert.strictEqual(state.content.data.variants[0].price, undefined);
-  });
-
-  it('skips product price update when rule.price is null', () => {
-    const state = {
-      priceRule: { price: null },
-      content: { data: { price: { final: '50.00' } } },
-    };
-    applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.price.final, '50.00');
-  });
-
-  it('skips product price update when rule.price is undefined', () => {
-    const state = {
-      priceRule: {},
-      content: { data: { price: { final: '50.00' } } },
-    };
-    applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.price.final, '50.00');
-  });
-
-  it('skips variant price update when variant rule price is null', () => {
-    const state = {
-      priceRule: {
-        price: '20.00',
-        variants: { 'sku-a': { price: null } },
-      },
-      content: {
-        data: {
-          price: { final: '50.00' },
-          variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
-        },
-      },
-    };
-    applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.variants[0].price.final, '50.00');
-  });
-
-  it('skips variant price inheritance when rule.price is null', () => {
-    const state = {
-      priceRule: { price: null },
-      content: {
-        data: {
-          price: { final: '50.00' },
-          variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
-        },
-      },
-    };
-    applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.variants[0].price.final, '50.00');
   });
 });
 
@@ -254,19 +298,48 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['/p/a'].data.price, '10.00');
   });
 
+  it('no-ops when catalogPriceRules has no promotions', () => {
+    const state = {
+      catalogPriceRules: { promotions: [] },
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+  });
+
   it('no-ops when content.data is absent', () => {
-    const state = { catalogPriceRules: { '/p/a': { price: '5.00' } }, content: {} };
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '5.00')])),
+      content: {},
+    };
     applyCatalogPriceRules(state);
   });
 
   it('sets flat product.price from rule in index entry', () => {
     const state = {
-      catalogPriceRules: { '/p/a': { price: '25.00' } },
-      content: {
-        data: {
-          'key-a': { data: { path: '/p/a', price: '50.00' } },
-        },
-      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '25.00');
+  });
+
+  it('does not apply rule when price is not lower than current price', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '60.00')])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+  });
+
+  it('applies the lowest price when multiple promotions match the same path', () => {
+    const state = {
+      catalogPriceRules: catalogRules(
+        promo('p1', [rule('/p/a', '30.00')]),
+        promo('p2', [rule('/p/a', '25.00')]),
+      ),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['key-a'].data.price, '25.00');
@@ -274,12 +347,8 @@ describe('applyCatalogPriceRules', () => {
 
   it('skips index entry with no matching rule', () => {
     const state = {
-      catalogPriceRules: { '/p/other': { price: '25.00' } },
-      content: {
-        data: {
-          'key-a': { data: { path: '/p/a', price: '50.00' } },
-        },
-      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/other', '25.00')])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
@@ -287,7 +356,7 @@ describe('applyCatalogPriceRules', () => {
 
   it('skips entries with no data or no path', () => {
     const state = {
-      catalogPriceRules: { '/p/a': { price: '25.00' } },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
       content: {
         data: {
           'key-null': null,
@@ -300,24 +369,11 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['key-no-path'].data.price, '10.00');
   });
 
-  it('skips index price update when rule.price is null', () => {
-    const state = {
-      catalogPriceRules: { '/p/a': { price: null } },
-      content: {
-        data: {
-          'key-a': { data: { path: '/p/a', price: '50.00' } },
-        },
-      },
-    };
-    applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
-  });
-
   it('sets flat variant.price from variant rule in index entry', () => {
     const state = {
-      catalogPriceRules: {
-        '/p/a': { price: '25.00', variants: { 'sku-a': { price: '20.00' } } },
-      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', {
+        variants: { 'sku-a': { sku: 'sku-a', price: '20.00' } },
+      })])),
       content: {
         data: {
           'key-a': {
@@ -336,7 +392,7 @@ describe('applyCatalogPriceRules', () => {
 
   it('inherits parent price to index variant without a variant rule', () => {
     const state = {
-      catalogPriceRules: { '/p/a': { price: '25.00' } },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
       content: {
         data: {
           'key-a': {
@@ -352,72 +408,32 @@ describe('applyCatalogPriceRules', () => {
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '25.00');
   });
-});
 
-// ---------------------------------------------------------------------------
-// fetchProductPriceRule
-// ---------------------------------------------------------------------------
-
-describe('fetchProductPriceRule', () => {
-  it('sets priceRule from R2 when object is found', async () => {
-    const rule = { price: '19.99' };
-    const state = makeState({
-      s3Loader: makeS3Loader({
-        'org/site/prices/catalog/_byPath/us/en/my-product.json': rule,
-      }),
-    });
-    await fetchProductPriceRule(state);
-    assert.deepStrictEqual(state.priceRule, rule);
+  it('skips rule with non-numeric price', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [{ path: '/p/a', price: 'not-a-number' }])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
   });
 
-  it('sets priceRule to null when object is not found (404)', async () => {
-    const state = makeState();
-    await fetchProductPriceRule(state);
-    assert.strictEqual(state.priceRule, null);
+  it('skips inactive rule in index mode', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', { end: PAST })])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
   });
 
-  it('strips .html extension from path when building key', async () => {
-    const rule = { price: '9.99' };
-    const state = makeState({
-      info: { path: '/us/en/my-product.html' },
-      s3Loader: makeS3Loader({
-        'org/site/prices/catalog/_byPath/us/en/my-product.json': rule,
-      }),
-    });
-    await fetchProductPriceRule(state);
-    assert.deepStrictEqual(state.priceRule, rule);
-  });
-
-  it('handles path that does not start with slash', async () => {
-    const rule = { price: '7.99' };
-    const state = makeState({
-      info: { path: 'us/en/no-leading-slash' },
-      s3Loader: makeS3Loader({
-        'org/site/prices/catalog/_byPath/us/en/no-leading-slash.json': rule,
-      }),
-    });
-    await fetchProductPriceRule(state);
-    assert.deepStrictEqual(state.priceRule, rule);
-  });
-
-  it('sets priceRule to null on s3Loader error', async () => {
-    const state = makeState({
-      s3Loader: {
-        getObject: async () => { throw new Error('R2 down'); },
-      },
-    });
-    await fetchProductPriceRule(state);
-    assert.strictEqual(state.priceRule, null);
-  });
-
-  it('sets priceRule to null when response body is invalid JSON', async () => {
-    const state = makeState({
-      s3Loader: makeS3Loader({
-        'org/site/prices/catalog/_byPath/us/en/my-product.json': 'not-json{{{',
-      }),
-    });
-    await fetchProductPriceRule(state);
-    assert.strictEqual(state.priceRule, null);
+  it('skips product when its price is non-numeric', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: 'free' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, 'free');
   });
 });
 
@@ -428,51 +444,87 @@ describe('fetchProductPriceRule', () => {
 describe('fetchCatalogPriceRules', () => {
   it('sets catalogPriceRules from R2', async () => {
     const rules = {
-      '/p/a': { price: '29.99', start: PAST, end: FUTURE },
-      '/p/b': { price: '49.99' },
+      promotions: [{
+        id: 'p',
+        name: 'P',
+        rules: [
+          {
+            path: '/p/a', price: '29.99', start: PAST, end: FUTURE,
+          },
+          { path: '/p/b', price: '49.99' },
+        ],
+      }],
     };
     const state = makeState({
       s3Loader: makeS3Loader({ 'org/site/prices/catalog/rules.json': rules }),
     });
     await fetchCatalogPriceRules(state);
-    assert.ok('/p/a' in state.catalogPriceRules);
-    assert.ok('/p/b' in state.catalogPriceRules);
+    assert.strictEqual(state.catalogPriceRules.promotions.length, 1);
+    assert.strictEqual(state.catalogPriceRules.promotions[0].rules.length, 2);
   });
 
   it('pre-filters rules whose end is in the past', async () => {
     const rules = {
-      '/p/active': { price: '10.00', end: FUTURE },
-      '/p/expired': { price: '5.00', end: PAST },
+      promotions: [{
+        id: 'p',
+        name: 'P',
+        rules: [
+          { path: '/p/active', price: '10.00', end: FUTURE },
+          { path: '/p/expired', price: '5.00', end: PAST },
+        ],
+      }],
     };
     const state = makeState({
       s3Loader: makeS3Loader({ 'org/site/prices/catalog/rules.json': rules }),
     });
     await fetchCatalogPriceRules(state);
-    assert.ok('/p/active' in state.catalogPriceRules);
-    assert.ok(!('/p/expired' in state.catalogPriceRules));
+    const remaining = state.catalogPriceRules.promotions[0].rules;
+    assert.ok(remaining.some((r) => r.path === '/p/active'));
+    assert.ok(!remaining.some((r) => r.path === '/p/expired'));
   });
 
-  it('sets catalogPriceRules to {} when object is not found (404)', async () => {
-    const state = makeState();
-    await fetchCatalogPriceRules(state);
-    assert.deepStrictEqual(state.catalogPriceRules, {});
-  });
-
-  it('sets catalogPriceRules to {} on s3Loader error', async () => {
+  it('removes promotions with all-expired rules', async () => {
+    const rules = {
+      promotions: [
+        { id: 'p1', name: 'P1', rules: [{ path: '/p/expired', price: '5.00', end: PAST }] },
+        { id: 'p2', name: 'P2', rules: [{ path: '/p/active', price: '10.00' }] },
+      ],
+    };
     const state = makeState({
-      s3Loader: {
-        getObject: async () => { throw new Error('R2 down'); },
-      },
+      s3Loader: makeS3Loader({ 'org/site/prices/catalog/rules.json': rules }),
     });
     await fetchCatalogPriceRules(state);
-    assert.deepStrictEqual(state.catalogPriceRules, {});
+    assert.strictEqual(state.catalogPriceRules.promotions.length, 1);
+    assert.strictEqual(state.catalogPriceRules.promotions[0].id, 'p2');
   });
 
-  it('sets catalogPriceRules to {} when response body is invalid JSON', async () => {
+  it('sets catalogPriceRules to { promotions: [] } when object is not found', async () => {
+    const state = makeState();
+    await fetchCatalogPriceRules(state);
+    assert.deepStrictEqual(state.catalogPriceRules, { promotions: [] });
+  });
+
+  it('sets catalogPriceRules to { promotions: [] } when value lacks promotions array', async () => {
+    const state = makeState({
+      s3Loader: makeS3Loader({ 'org/site/prices/catalog/rules.json': { '/old/format': { price: '1.00' } } }),
+    });
+    await fetchCatalogPriceRules(state);
+    assert.deepStrictEqual(state.catalogPriceRules, { promotions: [] });
+  });
+
+  it('sets catalogPriceRules to { promotions: [] } on s3Loader error', async () => {
+    const state = makeState({
+      s3Loader: { getObject: async () => { throw new Error('R2 down'); } },
+    });
+    await fetchCatalogPriceRules(state);
+    assert.deepStrictEqual(state.catalogPriceRules, { promotions: [] });
+  });
+
+  it('sets catalogPriceRules to { promotions: [] } when response body is invalid JSON', async () => {
     const state = makeState({
       s3Loader: makeS3Loader({ 'org/site/prices/catalog/rules.json': 'not-json{{{' }),
     });
     await fetchCatalogPriceRules(state);
-    assert.deepStrictEqual(state.catalogPriceRules, {});
+    assert.deepStrictEqual(state.catalogPriceRules, { promotions: [] });
   });
 });
