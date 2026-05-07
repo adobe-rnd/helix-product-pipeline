@@ -22,17 +22,23 @@ function isActive(rule, now) {
 }
 
 /**
- * Apply a catalog price rule to a product object, mutating price.final.
- * Handles both array variants (product JSON) and object variants (stored index).
+ * Apply a catalog price rule to a product object.
+ * In product mode, mutates price.final. In index mode, mutates the flat price field.
+ * Variant rules are only applied in product mode (index entries are flat).
  * @param {object} product
  * @param {SharedTypes.CatalogPriceRule} rule
  * @param {number} now
+ * @param {boolean} isIndex
  */
-function applyRuleToProduct(product, rule, now) {
+function applyRuleToProduct(product, rule, now, isIndex = false) {
   if (!isActive(rule, now)) return;
 
-  if (product.price) {
-    product.price.final = rule.price;
+  if (rule.price != null) {
+    if (isIndex) {
+      product.price = rule.price;
+    } else if (product.price) {
+      product.price.final = rule.price;
+    }
   }
 
   // Variants may be an array (product JSON) or an object keyed by SKU (stored index)
@@ -49,10 +55,20 @@ function applyRuleToProduct(product, rule, now) {
   for (const variant of variantList) {
     const variantRule = rule.variants?.[variant.sku];
     if (variantRule && isActive(variantRule, now)) {
-      if (variant.price) variant.price.final = variantRule.price;
-    } else if (variant.price) {
+      if (variantRule.price != null) {
+        if (isIndex) {
+          variant.price = variantRule.price;
+        } else if (variant.price) {
+          variant.price.final = variantRule.price;
+        }
+      }
+    } else if (rule.price != null) {
       // inherit parent product price
-      variant.price.final = rule.price;
+      if (isIndex) {
+        variant.price = rule.price;
+      } else if (variant.price) {
+        variant.price.final = rule.price;
+      }
     }
   }
 }
@@ -64,11 +80,12 @@ function applyRuleToProduct(product, rule, now) {
 export function applyProductPriceRule(state) {
   const { priceRule, content } = state;
   if (!priceRule || !content?.data) return;
-  applyRuleToProduct(content.data, priceRule, Date.now());
+  applyRuleToProduct(content.data, priceRule, Date.now(), false);
 }
 
 /**
  * Apply state.catalogPriceRules to the stored index (index request).
+ * Index product entries are flat — price is a root field, not price.final.
  * @param {PipelineState} state
  */
 export function applyCatalogPriceRules(state) {
@@ -81,6 +98,6 @@ export function applyCatalogPriceRules(state) {
     // eslint-disable-next-line no-continue
     if (!product?.path) continue;
     const rule = catalogPriceRules[product.path];
-    if (rule) applyRuleToProduct(product, rule, now);
+    if (rule) applyRuleToProduct(product, rule, now, true);
   }
 }

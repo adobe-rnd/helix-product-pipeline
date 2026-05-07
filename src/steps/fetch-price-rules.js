@@ -46,14 +46,17 @@ export async function fetchProductPriceRule(state) {
   } = state;
   const path = info.path.replace(/\.(json|html)$/, '');
 
+  /** @type {PipelineResponse} */
+  let res;
   try {
-    const res = await s3Loader.getObject(PRICING_BUCKET_ID, byPathKey(org, site, path));
+    res = await s3Loader.getObject(PRICING_BUCKET_ID, byPathKey(org, site, path));
     if (res.status !== 200) {
       state.priceRule = null;
       return;
     }
     state.priceRule = JSON.parse(res.body);
-  } catch {
+  } catch (e) {
+    state.log.warn(`failed to fetch price rule for ${path}: ${res?.status ?? 'unknown error'}`, e);
     state.priceRule = null;
   }
 }
@@ -66,8 +69,10 @@ export async function fetchProductPriceRule(state) {
 export async function fetchCatalogPriceRules(state) {
   const { org, site, s3Loader } = state;
 
+  /** @type {PipelineResponse} */
+  let res;
   try {
-    const res = await s3Loader.getObject(PRICING_BUCKET_ID, catalogRulesKey(org, site));
+    res = await s3Loader.getObject(PRICING_BUCKET_ID, catalogRulesKey(org, site));
     if (res.status !== 200) {
       state.catalogPriceRules = {};
       return;
@@ -81,7 +86,8 @@ export async function fetchCatalogPriceRules(state) {
     state.catalogPriceRules = Object.fromEntries(
       Object.entries(rules).filter(([, rule]) => !rule.end || new Date(rule.end).getTime() > now),
     );
-  } catch {
+  } catch (e) {
+    state.log.warn(`failed to fetch catalog price rules: ${res?.status ?? 'unknown error'}`, e);
     state.catalogPriceRules = {};
   }
 }

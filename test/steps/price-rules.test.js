@@ -38,6 +38,7 @@ function makeState(overrides = {}) {
     site: 'site',
     info: { path: '/us/en/my-product.json' },
     s3Loader: makeS3Loader(),
+    log: { warn: () => {}, error: () => {} },
     ...overrides,
   };
 }
@@ -191,6 +192,55 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(state.content.data.price.final, '20.00');
     assert.strictEqual(state.content.data.variants[0].price, undefined);
   });
+
+  it('skips product price update when rule.price is null', () => {
+    const state = {
+      priceRule: { price: null },
+      content: { data: { price: { final: '50.00' } } },
+    };
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00');
+  });
+
+  it('skips product price update when rule.price is undefined', () => {
+    const state = {
+      priceRule: {},
+      content: { data: { price: { final: '50.00' } } },
+    };
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00');
+  });
+
+  it('skips variant price update when variant rule price is null', () => {
+    const state = {
+      priceRule: {
+        price: '20.00',
+        variants: { 'sku-a': { price: null } },
+      },
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
+        },
+      },
+    };
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.variants[0].price.final, '50.00');
+  });
+
+  it('skips variant price inheritance when rule.price is null', () => {
+    const state = {
+      priceRule: { price: null },
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '50.00' } }],
+        },
+      },
+    };
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.variants[0].price.final, '50.00');
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -199,9 +249,9 @@ describe('applyProductPriceRule', () => {
 
 describe('applyCatalogPriceRules', () => {
   it('no-ops when catalogPriceRules is absent', () => {
-    const state = { content: { data: { '/p/a': { data: { path: '/p/a', price: { final: '10.00' } } } } } };
+    const state = { content: { data: { '/p/a': { data: { path: '/p/a', price: '10.00' } } } } };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['/p/a'].data.price.final, '10.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '10.00');
   });
 
   it('no-ops when content.data is absent', () => {
@@ -209,17 +259,17 @@ describe('applyCatalogPriceRules', () => {
     applyCatalogPriceRules(state);
   });
 
-  it('applies matching catalog rule to index entry', () => {
+  it('sets flat product.price from rule in index entry', () => {
     const state = {
       catalogPriceRules: { '/p/a': { price: '25.00' } },
       content: {
         data: {
-          'key-a': { data: { path: '/p/a', price: { final: '50.00' } } },
+          'key-a': { data: { path: '/p/a', price: '50.00' } },
         },
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price.final, '25.00');
+    assert.strictEqual(state.content.data['key-a'].data.price, '25.00');
   });
 
   it('skips index entry with no matching rule', () => {
@@ -227,12 +277,12 @@ describe('applyCatalogPriceRules', () => {
       catalogPriceRules: { '/p/other': { price: '25.00' } },
       content: {
         data: {
-          'key-a': { data: { path: '/p/a', price: { final: '50.00' } } },
+          'key-a': { data: { path: '/p/a', price: '50.00' } },
         },
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price.final, '50.00');
+    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
   });
 
   it('skips entries with no data or no path', () => {
@@ -242,12 +292,65 @@ describe('applyCatalogPriceRules', () => {
         data: {
           'key-null': null,
           'key-no-data': {},
-          'key-no-path': { data: { price: { final: '10.00' } } },
+          'key-no-path': { data: { price: '10.00' } },
         },
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-no-path'].data.price.final, '10.00');
+    assert.strictEqual(state.content.data['key-no-path'].data.price, '10.00');
+  });
+
+  it('skips index price update when rule.price is null', () => {
+    const state = {
+      catalogPriceRules: { '/p/a': { price: null } },
+      content: {
+        data: {
+          'key-a': { data: { path: '/p/a', price: '50.00' } },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+  });
+
+  it('sets flat variant.price from variant rule in index entry', () => {
+    const state = {
+      catalogPriceRules: {
+        '/p/a': { price: '25.00', variants: { 'sku-a': { price: '20.00' } } },
+      },
+      content: {
+        data: {
+          'key-a': {
+            data: {
+              path: '/p/a',
+              price: '50.00',
+              variants: { 'sku-a': { sku: 'sku-a', price: '50.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '20.00');
+  });
+
+  it('inherits parent price to index variant without a variant rule', () => {
+    const state = {
+      catalogPriceRules: { '/p/a': { price: '25.00' } },
+      content: {
+        data: {
+          'key-a': {
+            data: {
+              path: '/p/a',
+              price: '50.00',
+              variants: { 'sku-a': { sku: 'sku-a', price: '50.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '25.00');
   });
 });
 
@@ -306,6 +409,16 @@ describe('fetchProductPriceRule', () => {
     await fetchProductPriceRule(state);
     assert.strictEqual(state.priceRule, null);
   });
+
+  it('sets priceRule to null when response body is invalid JSON', async () => {
+    const state = makeState({
+      s3Loader: makeS3Loader({
+        'org/site/prices/catalog/_byPath/us/en/my-product.json': 'not-json{{{',
+      }),
+    });
+    await fetchProductPriceRule(state);
+    assert.strictEqual(state.priceRule, null);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -350,6 +463,14 @@ describe('fetchCatalogPriceRules', () => {
       s3Loader: {
         getObject: async () => { throw new Error('R2 down'); },
       },
+    });
+    await fetchCatalogPriceRules(state);
+    assert.deepStrictEqual(state.catalogPriceRules, {});
+  });
+
+  it('sets catalogPriceRules to {} when response body is invalid JSON', async () => {
+    const state = makeState({
+      s3Loader: makeS3Loader({ 'org/site/prices/catalog/rules.json': 'not-json{{{' }),
     });
     await fetchCatalogPriceRules(state);
     assert.deepStrictEqual(state.catalogPriceRules, {});
