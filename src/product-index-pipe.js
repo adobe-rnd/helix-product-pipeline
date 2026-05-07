@@ -18,6 +18,8 @@ import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders, setIndexCacheHeaders } from './steps/set-cache-headers.js';
 import { getIncludes, getPaginationParams } from './steps/utils.js';
+import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
+import { applyCatalogPriceRules } from './steps/apply-price-rules.js';
 
 /**
  * Returns index as spreadsheet with pagination support.
@@ -148,6 +150,9 @@ export async function productIndexPipe(state, req) {
     }
 
     await setIndexCacheHeaders(state, req, res);
+
+    await fetchCatalogPriceRules(state);
+    applyCatalogPriceRules(state);
 
     setLastModified(state, res);
 
