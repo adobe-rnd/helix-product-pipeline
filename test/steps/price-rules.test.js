@@ -38,7 +38,7 @@ function makeState(overrides = {}) {
     site: 'site',
     info: { path: '/us/en/my-product.json' },
     s3Loader: makeS3Loader(),
-    log: { warn: () => {}, error: () => {} },
+    log: { info: () => {}, warn: () => {}, error: () => {} },
     ...overrides,
   };
 }
