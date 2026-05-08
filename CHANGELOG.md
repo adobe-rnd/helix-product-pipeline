@@ -1,3 +1,10 @@
+# [2.9.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.3...v2.9.0) (2026-05-08)
+
+
+### Features
+
+* add price-rules overrides ([#83](https://github.com/adobe-rnd/helix-product-pipeline/issues/83)) ([cbf9bd6](https://github.com/adobe-rnd/helix-product-pipeline/commit/cbf9bd613155176121f6148f1788d0b922192962))
+
 ## [2.8.3](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.2...v2.8.3) (2026-04-15)
 
 
