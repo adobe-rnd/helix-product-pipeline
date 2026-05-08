@@ -104,7 +104,7 @@ export async function productHTMLPipe(state, req) {
 
     transformImages(state);
 
-    await fetchCatalogPriceRules(state);
+    await fetchCatalogPriceRules(state, req);
     applyProductPriceRule(state, res);
 
     state.timer?.update('render');

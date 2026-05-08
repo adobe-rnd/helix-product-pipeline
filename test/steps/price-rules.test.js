@@ -763,4 +763,57 @@ describe('fetchCatalogPriceRules', () => {
     await fetchCatalogPriceRules(state);
     assert.deepStrictEqual(state.catalogPriceRules, { promotions: [] });
   });
+
+  it('uses the prod bucket and does not set stagePricing when x-env header is absent', async () => {
+    let capturedBucket;
+    const state = makeState({
+      s3Loader: {
+        async getObject(bucket) {
+          capturedBucket = bucket;
+          return { status: 404, body: 'Not Found' };
+        },
+      },
+    });
+    await fetchCatalogPriceRules(state, { headers: { get: () => null } });
+    assert.strictEqual(capturedBucket, 'helix-commerce-pricing');
+    assert.ok(!state.stagePricing, 'stagePricing must not be set');
+  });
+
+  it('uses the dev bucket and sets stagePricing when x-env: stage', async () => {
+    let capturedBucket;
+    const state = makeState({
+      s3Loader: {
+        async getObject(bucket) {
+          capturedBucket = bucket;
+          return { status: 404, body: 'Not Found' };
+        },
+      },
+    });
+    const req = { headers: { get: (name) => (name === 'x-env' ? 'stage' : null) } };
+    await fetchCatalogPriceRules(state, req);
+    assert.strictEqual(capturedBucket, 'helix-commerce-pricing-dev');
+    assert.strictEqual(state.stagePricing, true);
+  });
+
+  it('reads rules from the dev bucket when x-env: stage', async () => {
+    const rules = {
+      promotions: [{ id: 'p', name: 'P', rules: [{ path: '/p/a', price: '9.99' }] }],
+    };
+    let capturedBucket;
+    const state = makeState({
+      s3Loader: {
+        async getObject(bucket, key) {
+          capturedBucket = bucket;
+          if (bucket === 'helix-commerce-pricing-dev' && key === 'org/site/prices/catalog/rules.json') {
+            return { status: 200, body: JSON.stringify(rules) };
+          }
+          return { status: 404, body: 'Not Found' };
+        },
+      },
+    });
+    const req = { headers: { get: (name) => (name === 'x-env' ? 'stage' : null) } };
+    await fetchCatalogPriceRules(state, req);
+    assert.strictEqual(capturedBucket, 'helix-commerce-pricing-dev');
+    assert.strictEqual(state.catalogPriceRules.promotions.length, 1);
+  });
 });

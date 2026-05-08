@@ -52,6 +52,7 @@ declare global {
     info: PathInfo;
     content: PipelineContent;
     catalogPriceRules?: SharedTypes.CatalogPriceRules;
+    stagePricing?: boolean;
   }
 
   export interface PipelineContent extends ImportedPipelineContent {

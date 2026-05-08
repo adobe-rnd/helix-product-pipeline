@@ -151,7 +151,7 @@ export async function productIndexPipe(state, req) {
 
     await setIndexCacheHeaders(state, req, res);
 
-    await fetchCatalogPriceRules(state);
+    await fetchCatalogPriceRules(state, req);
     applyCatalogPriceRules(state, res);
 
     setLastModified(state, res);

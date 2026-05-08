@@ -11,6 +11,7 @@
  */
 
 const PRICING_BUCKET_ID = 'helix-commerce-pricing';
+const PRICING_BUCKET_DEV_ID = 'helix-commerce-pricing-dev';
 
 /**
  * @param {string} org
@@ -28,16 +29,27 @@ function emptyRules() {
 
 /**
  * Fetch all catalog price rules. Sets state.catalogPriceRules.
+ * When the request carries `x-env: stage`, fetches from the dev pricing bucket and sets
+ * state.stagePricing = true so cache headers can be suppressed downstream.
  * Used for both single-product and index routes.
  * @param {PipelineState} state
+ * @param {PipelineRequest} [req]
  */
-export async function fetchCatalogPriceRules(state) {
+export async function fetchCatalogPriceRules(state, req) {
   const { org, site, s3Loader } = state;
+  const useStagePricing = req?.headers?.get('x-env') === 'stage';
+  const bucketId = useStagePricing
+    ? PRICING_BUCKET_DEV_ID
+    : PRICING_BUCKET_ID;
+  if (useStagePricing) {
+    state.log.info('fetching catalog price rules from dev bucket');
+    state.stagePricing = true;
+  }
 
   /** @type {PipelineResponse} */
   let res;
   try {
-    res = await s3Loader.getObject(PRICING_BUCKET_ID, catalogRulesKey(org, site));
+    res = await s3Loader.getObject(bucketId, catalogRulesKey(org, site));
     if (res.status !== 200) {
       state.catalogPriceRules = emptyRules();
       return;
