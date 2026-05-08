@@ -12,6 +12,8 @@
 
 /* eslint-disable no-continue */
 
+import { recordLastModified } from '../utils/last-modified.js';
+
 /**
  * @param {{ start?: string, end?: string }} rule
  * @param {number} now
@@ -104,10 +106,12 @@ function findBestRule(catalogPriceRules, productPath, now, currentPrice) {
 /**
  * Apply catalog price rules to state.content.data (single product request).
  * Finds the lowest active promotion price for the product path and applies it only
- * if it is less than the product's current price.
+ * if it is less than the product's current price. Also records the most recently
+ * started active rule's start time as a last-modified source.
  * @param {PipelineState} state
+ * @param {PipelineResponse} [res]
  */
-export function applyProductPriceRule(state) {
+export function applyProductPriceRule(state, res) {
   const { catalogPriceRules, content, info } = state;
   if (!catalogPriceRules?.promotions?.length || !content?.data) return;
 
@@ -116,23 +120,41 @@ export function applyProductPriceRule(state) {
   const currentPrice = parseFloat(content.data.price?.final ?? 'Infinity');
   const rule = findBestRule(catalogPriceRules, productPath, now, currentPrice);
   if (rule) applyRuleToProduct(content.data, rule, now, false);
+
+  if (res) {
+    let newestStartMs = 0;
+    for (const promotion of catalogPriceRules.promotions) {
+      for (const r of promotion.rules) {
+        if (r.path !== productPath || !isActive(r, now) || !r.start) continue;
+        const ms = new Date(r.start).getTime();
+        if (ms > newestStartMs) newestStartMs = ms;
+      }
+    }
+    if (newestStartMs) {
+      recordLastModified(state, res, 'price-rules', new Date(newestStartMs).toUTCString());
+    }
+  }
 }
 
 /**
  * Apply catalog price rules to the stored index (index request).
  * For each product, finds the lowest active promotion price and applies it only
- * if it is less than the product's current price.
+ * if it is less than the product's current price. Also records the most recently
+ * started active rule's start time (across all paths in the index) as a last-modified source.
  * @param {PipelineState} state
+ * @param {PipelineResponse} [res]
  */
-export function applyCatalogPriceRules(state) {
+export function applyCatalogPriceRules(state, res) {
   const { catalogPriceRules, content } = state;
   if (!catalogPriceRules?.promotions?.length || !content?.data) return;
 
   const now = Date.now();
 
-  // Build a path → best rule map across all promotions
+  // Build a path → best rule map and a path → newest start map across all promotions
   /** @type {Map<string, SharedTypes.CatalogPriceRule>} */
   const bestRuleByPath = new Map();
+  /** @type {Map<string, number>} */
+  const newestStartMsByPath = new Map();
   for (const promotion of catalogPriceRules.promotions) {
     for (const rule of promotion.rules) {
       if (!isActive(rule, now)) continue;
@@ -142,9 +164,16 @@ export function applyCatalogPriceRules(state) {
       if (!current || price < parseFloat(current.price)) {
         bestRuleByPath.set(rule.path, rule);
       }
+      if (rule.start) {
+        const startMs = new Date(rule.start).getTime();
+        if (startMs > (newestStartMsByPath.get(rule.path) ?? 0)) {
+          newestStartMsByPath.set(rule.path, startMs);
+        }
+      }
     }
   }
 
+  let newestStartMs = 0;
   for (const entry of Object.values(content.data)) {
     const product = entry?.data;
     // eslint-disable-next-line no-continue
@@ -156,5 +185,11 @@ export function applyCatalogPriceRules(state) {
     if (!Number.isNaN(productPrice) && rulePrice < productPrice) {
       applyRuleToProduct(product, rule, now, true);
     }
+    const startMs = newestStartMsByPath.get(product.path) ?? 0;
+    if (startMs > newestStartMs) newestStartMs = startMs;
+  }
+
+  if (newestStartMs && res) {
+    recordLastModified(state, res, 'price-rules', new Date(newestStartMs).toUTCString());
   }
 }

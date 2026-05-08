@@ -66,7 +66,7 @@ export async function productJSONPipe(state, req) {
     transformImages(state);
 
     await fetchCatalogPriceRules(state);
-    applyProductPriceRule(state);
+    applyProductPriceRule(state, res);
 
     // set surrogate keys
     await setProductCacheHeaders(state, req, res);

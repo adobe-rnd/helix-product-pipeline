@@ -285,6 +285,62 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(state.content.data.price.final, '20.00');
     assert.strictEqual(state.content.data.variants[0].price, undefined);
   });
+
+  it('records last-modified from rule start when res is provided', () => {
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '29.99', { start: PAST })])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state, res);
+    assert.ok(res.lastModifiedSources['price-rules'], 'should record price-rules last-modified');
+    // HTTP-date has second precision; compare against seconds-truncated value
+    assert.strictEqual(res.lastModifiedSources['price-rules'].time, new Date(new Date(PAST).toUTCString()).getTime());
+  });
+
+  it('records last-modified at the newest start among multiple active rules', () => {
+    const OLDER = new Date(Date.now() - 7 * 86400_000).toISOString();
+    const NEWER = new Date(Date.now() - 86400_000).toISOString();
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = makeState({
+      catalogPriceRules: catalogRules(
+        promo('p1', [rule('/us/en/my-product', '30.00', { start: OLDER })]),
+        promo('p2', [rule('/us/en/my-product', '35.00', { start: NEWER })]),
+      ),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state, res);
+    // p2 has newer start but higher price; last-modified should reflect newest start (NEWER)
+    assert.strictEqual(res.lastModifiedSources['price-rules'].time, new Date(new Date(NEWER).toUTCString()).getTime());
+  });
+
+  it('does not record last-modified when active rule has no start date', () => {
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '29.99')])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state, res);
+    assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
+  });
+
+  it('does not record last-modified when no rules match the product path', () => {
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/other', '29.99', { start: PAST })])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state, res);
+    assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
+  });
+
+  it('does not throw when res is omitted', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '29.99', { start: PAST })])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    assert.doesNotThrow(() => applyProductPriceRule(state));
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -434,6 +490,74 @@ describe('applyCatalogPriceRules', () => {
     };
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['key-a'].data.price, 'free');
+  });
+
+  it('records last-modified at newest rule start among index products', () => {
+    const OLDER = new Date(Date.now() - 7 * 86400_000).toISOString();
+    const NEWER = new Date(Date.now() - 86400_000).toISOString();
+    const log = { warn: () => {}, error: () => {} };
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = {
+      log,
+      catalogPriceRules: catalogRules(
+        promo('p1', [rule('/p/a', '25.00', { start: OLDER })]),
+        promo('p2', [rule('/p/b', '30.00', { start: NEWER })]),
+      ),
+      content: {
+        data: {
+          'key-a': { data: { path: '/p/a', price: '50.00' } },
+          'key-b': { data: { path: '/p/b', price: '50.00' } },
+        },
+      },
+    };
+    applyCatalogPriceRules(state, res);
+    assert.ok(res.lastModifiedSources['price-rules'], 'should record price-rules last-modified');
+    assert.strictEqual(res.lastModifiedSources['price-rules'].time, new Date(new Date(NEWER).toUTCString()).getTime());
+  });
+
+  it('picks newest start even when multiple promotions target the same path', () => {
+    const OLDER = new Date(Date.now() - 7 * 86400_000).toISOString();
+    const NEWER = new Date(Date.now() - 86400_000).toISOString();
+    const log = { warn: () => {}, error: () => {} };
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = {
+      log,
+      catalogPriceRules: catalogRules(
+        promo('p1', [rule('/p/a', '30.00', { start: OLDER })]),
+        promo('p2', [rule('/p/a', '35.00', { start: NEWER })]),
+      ),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state, res);
+    assert.strictEqual(res.lastModifiedSources['price-rules'].time, new Date(new Date(NEWER).toUTCString()).getTime());
+  });
+
+  it('does not record last-modified when no matching rules have a start date', () => {
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state, res);
+    assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
+  });
+
+  it('does not record last-modified for paths not in the index', () => {
+    const res = { lastModifiedSources: {}, headers: { set: () => {} } };
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/other', '25.00', { start: PAST })])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state, res);
+    assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
+  });
+
+  it('does not throw when res is omitted', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', { start: PAST })])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    assert.doesNotThrow(() => applyCatalogPriceRules(state));
   });
 });
 
