@@ -286,6 +286,97 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(state.content.data.variants[0].price, undefined);
   });
 
+  it('does not raise a variant price when rule price is higher than variant price', () => {
+    // rule targets product at $50 → $40, but variant is already $30 — must stay $30
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '40.00')])),
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '30.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '40.00', 'product price should be lowered');
+    assert.strictEqual(state.content.data.variants[0].price.final, '30.00', 'variant must not be raised');
+  });
+
+  it('applies rule selected via variant benefit when rule price exceeds product price', () => {
+    // product $30, variant $60, rule product→$40 (higher, skipped), variant→$50 (lower, applied)
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/us/en/my-product',
+        price: '40.00',
+        variants: { 'sku-a': { sku: 'sku-a', price: '50.00' } },
+      }])),
+      content: {
+        data: {
+          price: { final: '30.00' },
+          variants: [{ sku: 'sku-a', price: { final: '60.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '30.00', 'product price must not be raised');
+    assert.strictEqual(state.content.data.variants[0].price.final, '50.00', 'variant should be discounted');
+  });
+
+  it('applies a rule with no product price when its variant-specific price is lower', () => {
+    // rule has only a variant-specific price (no product-level price)
+    //   — product unchanged, variant discounted
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/us/en/my-product',
+        variants: { 'sku-a': { sku: 'sku-a', price: '45.00' } },
+      }])),
+      content: {
+        data: {
+          price: { final: '30.00' },
+          variants: [{ sku: 'sku-a', price: { final: '60.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '30.00', 'product price unchanged');
+    assert.strictEqual(state.content.data.variants[0].price.final, '45.00', 'variant discounted via variant-only rule');
+  });
+
+  it('rejects a rule when its product price is higher and no variant benefits', () => {
+    // rule price $60 > product price $50, no variant rules → rule should not qualify at all
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '60.00')])),
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '30.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00', 'product price unchanged');
+    assert.strictEqual(state.content.data.variants[0].price.final, '30.00', 'variant unchanged');
+  });
+
+  it('does not raise a variant price when a variant-specific rule price is higher', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/us/en/my-product',
+        price: '40.00',
+        variants: { 'sku-a': { sku: 'sku-a', price: '35.00' } },
+      }])),
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '30.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '40.00', 'product price should be lowered');
+    assert.strictEqual(state.content.data.variants[0].price.final, '30.00', 'variant must not be raised by variant rule');
+  });
+
   it('records last-modified from rule start when res is provided', () => {
     const res = { lastModifiedSources: {}, headers: { set: () => {} } };
     const state = makeState({
@@ -463,6 +554,27 @@ describe('applyCatalogPriceRules', () => {
     };
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '25.00');
+  });
+
+  it('does not raise an index variant price when inherited parent rule price is higher', () => {
+    // product $50 → $40 via rule; index variant is already $30 — must stay $30
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '40.00')])),
+      content: {
+        data: {
+          'key-a': {
+            data: {
+              path: '/p/a',
+              price: '50.00',
+              variants: { 'sku-a': { sku: 'sku-a', price: '30.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '40.00', 'product price should be lowered');
+    assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '30.00', 'index variant must not be raised');
   });
 
   it('skips rule with non-numeric price', () => {

@@ -29,6 +29,8 @@ function isActive(rule, now) {
  * Apply a catalog price rule to a product object.
  * In product mode, mutates price.final. In index mode, mutates the flat price field.
  * Variant rules are only applied in product mode (index entries are flat).
+ * In non-index mode, the product price is only written if the rule price is lower
+ * (a rule may be selected purely for variant benefit without improving the product price).
  * @param {object} product
  * @param {SharedTypes.CatalogPriceRule} rule
  * @param {number} now
@@ -38,7 +40,7 @@ function applyRuleToProduct(product, rule, now, isIndex = false) {
   if (rule.price != null) {
     if (isIndex) {
       product.price = rule.price;
-    } else if (product.price) {
+    } else if (product.price && parseFloat(rule.price) < parseFloat(product.price.final)) {
       product.price.final = rule.price;
     }
   }
@@ -55,17 +57,19 @@ function applyRuleToProduct(product, rule, now, isIndex = false) {
   }
 
   for (const variant of variantList) {
+    const currentVariantPrice = isIndex ? variant.price : variant.price?.final;
     const variantRule = rule.variants?.[variant.sku];
     if (variantRule && isActive(variantRule, now)) {
-      if (variantRule.price != null) {
+      if (variantRule.price != null
+        && parseFloat(variantRule.price) < parseFloat(currentVariantPrice)) {
         if (isIndex) {
           variant.price = variantRule.price;
         } else if (variant.price) {
           variant.price.final = variantRule.price;
         }
       }
-    } else if (rule.price != null) {
-      // inherit parent product price
+    } else if (rule.price != null && parseFloat(rule.price) < parseFloat(currentVariantPrice)) {
+      // inherit parent product price only if lower than variant's current price
       if (isIndex) {
         variant.price = rule.price;
       } else if (variant.price) {
@@ -76,25 +80,50 @@ function applyRuleToProduct(product, rule, now, isIndex = false) {
 }
 
 /**
- * Find the lowest-priced active promotion rule for a product path across all promotions.
- * Returns null if no active rule matches or if the best price is not lower than the product price.
+ * Find the best active promotion rule for a product across all promotions.
+ * A rule qualifies if its price is lower than the product's current price OR if any of
+ * its active variant-specific prices are lower than the corresponding variant's current price.
+ * Among qualifying rules, the one with the lowest product-level price wins.
  * @param {SharedTypes.CatalogPriceRules} catalogPriceRules
  * @param {string} productPath
  * @param {number} now
- * @param {number} currentPrice - product's current price as a number for comparison
+ * @param {object} product - the product object (used to read current price and variant prices)
  * @returns {SharedTypes.CatalogPriceRule | null}
  */
-function findBestRule(catalogPriceRules, productPath, now, currentPrice) {
+function findBestRule(catalogPriceRules, productPath, now, product) {
+  const currentPrice = parseFloat(product.price?.final ?? 'Infinity');
+
+  const variantCurrentPrices = new Map();
+  const variantList = Array.isArray(product.variants)
+    ? product.variants
+    : Object.values(product.variants ?? {});
+  for (const v of variantList) {
+    if (v.sku && v.price?.final != null) {
+      variantCurrentPrices.set(v.sku, parseFloat(v.price.final));
+    }
+  }
+
   let bestRule = null;
-  let bestPrice = currentPrice;
+  let bestRuleProductPrice = Infinity;
 
   for (const promotion of catalogPriceRules.promotions) {
     for (const rule of promotion.rules) {
       if (rule.path !== productPath) continue;
       if (!isActive(rule, now)) continue;
+
       const p = parseFloat(rule.price);
-      if (!Number.isNaN(p) && p < bestPrice) {
-        bestPrice = p;
+      const lowersProductPrice = !Number.isNaN(p) && p < currentPrice;
+      const lowersVariantPrice = Object.entries(rule.variants ?? {}).some(([sku, vr]) => {
+        if (!isActive(vr, now) || vr.price == null) return false;
+        const currentVPrice = variantCurrentPrices.get(sku);
+        return currentVPrice !== undefined && parseFloat(vr.price) < currentVPrice;
+      });
+
+      if (!lowersProductPrice && !lowersVariantPrice) continue;
+
+      const ruleProductPrice = Number.isNaN(p) ? Infinity : p;
+      if (!bestRule || ruleProductPrice < bestRuleProductPrice) {
+        bestRuleProductPrice = ruleProductPrice;
         bestRule = rule;
       }
     }
@@ -117,8 +146,7 @@ export function applyProductPriceRule(state, res) {
 
   const productPath = info.path.replace(/\.(json|html)$/, '');
   const now = Date.now();
-  const currentPrice = parseFloat(content.data.price?.final ?? 'Infinity');
-  const rule = findBestRule(catalogPriceRules, productPath, now, currentPrice);
+  const rule = findBestRule(catalogPriceRules, productPath, now, content.data);
   if (rule) applyRuleToProduct(content.data, rule, now, false);
 
   if (res) {
