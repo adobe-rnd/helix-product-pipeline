@@ -630,7 +630,7 @@ describe('setIndexCacheHeaders', () => {
     return resp;
   };
 
-  it('sets cache-control and exactly two cache tags (path key + site key)', async () => {
+  it('sets cache-control and exactly three cache tags (path key + site key + pricerules key)', async () => {
     const state = {
       org: 'test-org',
       site: 'test-site',
@@ -645,8 +645,9 @@ describe('setIndexCacheHeaders', () => {
 
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(tags.includes('main--test-site--test-org'));
+    assert.ok(tags.includes('main--test-site--test-org_pricerules'));
   });
 
   it('does not include authored content keys even when contentBusId is on state', async () => {
@@ -664,11 +665,11 @@ describe('setIndexCacheHeaders', () => {
     await setIndexCacheHeaders(state, req, resp);
 
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(!tags.some((t) => t.includes('_metadata') || t.includes('_head') || t === 'some-content-bus-id'));
   });
 
-  it('sets Fastly surrogate-key with two keys', async () => {
+  it('sets Fastly surrogate-key with three keys', async () => {
     const state = {
       org: 'test-org',
       site: 'test-site',
@@ -683,8 +684,9 @@ describe('setIndexCacheHeaders', () => {
 
     assert.strictEqual(resp.headers.get('surrogate-control'), 'max-age=300, stale-while-revalidate=0');
     const keys = resp.headers.get('surrogate-key').split(' ');
-    assert.strictEqual(keys.length, 2);
+    assert.strictEqual(keys.length, 3);
     assert.ok(keys.includes('main--test-site--test-org'));
+    assert.ok(keys.includes('main--test-site--test-org_pricerules'));
   });
 
   it('sets a different path key for different root paths', async () => {
@@ -729,7 +731,7 @@ describe('setSitemapCacheHeaders', () => {
     return resp;
   };
 
-  it('sets cache-control and exactly two cache tags (path key + site key)', async () => {
+  it('sets cache-control and exactly three cache tags (path key + site key + pricerules key)', async () => {
     const state = {
       org: 'test-org',
       site: 'test-site',
@@ -744,8 +746,9 @@ describe('setSitemapCacheHeaders', () => {
 
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(tags.includes('main--test-site--test-org'));
+    assert.ok(tags.includes('main--test-site--test-org_pricerules'));
   });
 
   it('does not include authored content keys even when contentBusId is on state', async () => {
@@ -763,7 +766,7 @@ describe('setSitemapCacheHeaders', () => {
     await setSitemapCacheHeaders(state, req, resp);
 
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(!tags.some((t) => t.includes('_metadata') || t.includes('_head') || t === 'some-content-bus-id'));
   });
 
