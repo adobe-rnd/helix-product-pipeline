@@ -18,6 +18,8 @@ import fetchProductBusContent from './steps/fetch-productbus.js';
 import transformImages from './steps/transform-images.js';
 import { setLastModified } from './utils/last-modified.js';
 import { set404CacheHeaders, setProductCacheHeaders } from './steps/set-cache-headers.js';
+import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
+import { applyProductPriceRule } from './steps/apply-price-rules.js';
 
 export async function productJSONPipe(state, req) {
   const { log, info } = state;
@@ -62,6 +64,9 @@ export async function productJSONPipe(state, req) {
     }
 
     transformImages(state);
+
+    await fetchCatalogPriceRules(state, req);
+    applyProductPriceRule(state, res);
 
     // set surrogate keys
     await setProductCacheHeaders(state, req, res);

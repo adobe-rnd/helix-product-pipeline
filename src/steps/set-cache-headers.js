@@ -16,6 +16,7 @@ import {
   computeProductPathKey,
   computeSiteKey,
   compute404Key,
+  computePriceRulesKey,
   computeAuthoredContentKey,
   computeProductKeys,
   computeIndexKeys,
@@ -107,6 +108,7 @@ export async function setProductCacheHeaders(state, req, resp) {
 
   const productKeys = await computeProductKeys(org, site, info.path, contentBusId);
   setCachingHeaders(req, resp, productKeys);
+  if (state.stagePricing) resp.headers.set('cache-control', 'no-store');
 }
 
 /**
@@ -119,7 +121,9 @@ export async function setProductCacheHeaders(state, req, resp) {
 export async function setIndexCacheHeaders(state, req, resp) {
   const { org, site, info } = state;
   const keys = await computeIndexKeys(org, site, info.path);
+  keys.push(computePriceRulesKey(org, site));
   setCachingHeaders(req, resp, keys);
+  if (state.stagePricing) resp.headers.set('cache-control', 'no-store');
 }
 
 /**
@@ -132,5 +136,7 @@ export async function setIndexCacheHeaders(state, req, resp) {
 export async function setSitemapCacheHeaders(state, req, resp) {
   const { org, site, info } = state;
   const keys = await computeSitemapKeys(org, site, info.path);
+  keys.push(computePriceRulesKey(org, site));
   setCachingHeaders(req, resp, keys);
+  if (state.stagePricing) resp.headers.set('cache-control', 'no-store');
 }

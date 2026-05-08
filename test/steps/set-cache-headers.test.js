@@ -611,6 +611,22 @@ describe('setProductCacheHeaders', () => {
     assert.strictEqual(resp.headers.get('surrogate-control'), 'max-age=300, stale-while-revalidate=0');
     assert.strictEqual(resp.headers.get('surrogate-key'), 'G56lYRBKFiJX2i-A main--test-site--test-org Id9xWdjCxe493biK content-bus-id_metadata main--test-site--test-org_head content-bus-id');
   });
+
+  it('overrides cache-control to no-store when state.stagePricing is true', async () => {
+    const state = {
+      stagePricing: true,
+      content: { data: { sku: 'sku', urlKey: 'url-key' } },
+      config: { route: { params: {} } },
+      contentBusId: 'cbus',
+      info: { path: '/test', originalPath: '/test' },
+      org: 'test-org',
+      site: 'test-site',
+    };
+    const req = createRequest('https://example.com/test', { 'x-byo-cdn-type': 'cloudflare' });
+    const resp = createResponse();
+    await setProductCacheHeaders(state, req, resp);
+    assert.strictEqual(resp.headers.get('cache-control'), 'no-store');
+  });
 });
 
 describe('setIndexCacheHeaders', () => {
@@ -630,7 +646,7 @@ describe('setIndexCacheHeaders', () => {
     return resp;
   };
 
-  it('sets cache-control and exactly two cache tags (path key + site key)', async () => {
+  it('sets cache-control and exactly three cache tags (path key + site key + pricerules key)', async () => {
     const state = {
       org: 'test-org',
       site: 'test-site',
@@ -645,8 +661,9 @@ describe('setIndexCacheHeaders', () => {
 
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(tags.includes('main--test-site--test-org'));
+    assert.ok(tags.includes('main--test-site--test-org_pricerules'));
   });
 
   it('does not include authored content keys even when contentBusId is on state', async () => {
@@ -664,11 +681,11 @@ describe('setIndexCacheHeaders', () => {
     await setIndexCacheHeaders(state, req, resp);
 
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(!tags.some((t) => t.includes('_metadata') || t.includes('_head') || t === 'some-content-bus-id'));
   });
 
-  it('sets Fastly surrogate-key with two keys', async () => {
+  it('sets Fastly surrogate-key with three keys', async () => {
     const state = {
       org: 'test-org',
       site: 'test-site',
@@ -683,8 +700,9 @@ describe('setIndexCacheHeaders', () => {
 
     assert.strictEqual(resp.headers.get('surrogate-control'), 'max-age=300, stale-while-revalidate=0');
     const keys = resp.headers.get('surrogate-key').split(' ');
-    assert.strictEqual(keys.length, 2);
+    assert.strictEqual(keys.length, 3);
     assert.ok(keys.includes('main--test-site--test-org'));
+    assert.ok(keys.includes('main--test-site--test-org_pricerules'));
   });
 
   it('sets a different path key for different root paths', async () => {
@@ -710,6 +728,19 @@ describe('setIndexCacheHeaders', () => {
     assert.notStrictEqual(tags1[0], tags2[0]);
     assert.strictEqual(tags1[1], tags2[1]); // same site key
   });
+
+  it('overrides cache-control to no-store when state.stagePricing is true', async () => {
+    const state = {
+      stagePricing: true,
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/index.json' },
+    };
+    const req = createRequest('https://example.com/products/index.json', { 'x-byo-cdn-type': 'cloudflare' });
+    const resp = createResponse();
+    await setIndexCacheHeaders(state, req, resp);
+    assert.strictEqual(resp.headers.get('cache-control'), 'no-store');
+  });
 });
 
 describe('setSitemapCacheHeaders', () => {
@@ -729,7 +760,7 @@ describe('setSitemapCacheHeaders', () => {
     return resp;
   };
 
-  it('sets cache-control and exactly two cache tags (path key + site key)', async () => {
+  it('sets cache-control and exactly three cache tags (path key + site key + pricerules key)', async () => {
     const state = {
       org: 'test-org',
       site: 'test-site',
@@ -744,8 +775,9 @@ describe('setSitemapCacheHeaders', () => {
 
     assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(tags.includes('main--test-site--test-org'));
+    assert.ok(tags.includes('main--test-site--test-org_pricerules'));
   });
 
   it('does not include authored content keys even when contentBusId is on state', async () => {
@@ -763,7 +795,7 @@ describe('setSitemapCacheHeaders', () => {
     await setSitemapCacheHeaders(state, req, resp);
 
     const tags = resp.headers.get('cache-tag').split(',');
-    assert.strictEqual(tags.length, 2);
+    assert.strictEqual(tags.length, 3);
     assert.ok(!tags.some((t) => t.includes('_metadata') || t.includes('_head') || t === 'some-content-bus-id'));
   });
 
@@ -789,5 +821,18 @@ describe('setSitemapCacheHeaders', () => {
     const sitemapTags = sitemapResp.headers.get('cache-tag').split(',');
     assert.notStrictEqual(indexTags[0], sitemapTags[0]);
     assert.strictEqual(indexTags[1], sitemapTags[1]); // same site key
+  });
+
+  it('overrides cache-control to no-store when state.stagePricing is true', async () => {
+    const state = {
+      stagePricing: true,
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/sitemap.xml' },
+    };
+    const req = createRequest('https://example.com/products/sitemap.xml', { 'x-byo-cdn-type': 'cloudflare' });
+    const resp = createResponse();
+    await setSitemapCacheHeaders(state, req, resp);
+    assert.strictEqual(resp.headers.get('cache-control'), 'no-store');
   });
 });
