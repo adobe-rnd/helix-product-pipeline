@@ -816,4 +816,28 @@ describe('fetchCatalogPriceRules', () => {
     assert.strictEqual(capturedBucket, 'helix-commerce-pricing-dev');
     assert.strictEqual(state.catalogPriceRules.promotions.length, 1);
   });
+
+  it('drops conditional promotions (those with a conditions field)', async () => {
+    const rules = {
+      promotions: [
+        {
+          id: 'regular',
+          name: 'Regular Sale',
+          rules: [{ path: '/p/blender', price: '299.00' }],
+        },
+        {
+          id: 'gwp',
+          name: 'GWP Tumbler',
+          conditions: { minimumSubtotal: 349.95 },
+          rules: [{ path: '/p/tumbler', price: '0', start: FUTURE }],
+        },
+      ],
+    };
+    const state = makeState({
+      s3Loader: makeS3Loader({ 'org/site/prices/catalog/rules.json': rules }),
+    });
+    await fetchCatalogPriceRules(state);
+    assert.strictEqual(state.catalogPriceRules.promotions.length, 1);
+    assert.strictEqual(state.catalogPriceRules.promotions[0].id, 'regular');
+  });
 });
