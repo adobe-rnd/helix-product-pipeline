@@ -1,3 +1,10 @@
+## [2.9.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.9.0...v2.9.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* add conditional catalog rules ([#84](https://github.com/adobe-rnd/helix-product-pipeline/issues/84)) ([b6f0c03](https://github.com/adobe-rnd/helix-product-pipeline/commit/b6f0c036c621df081cd3e985b87b7ace304553b2))
+
 # [2.9.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.3...v2.9.0) (2026-05-08)
 
 
