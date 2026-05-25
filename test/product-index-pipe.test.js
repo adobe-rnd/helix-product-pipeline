@@ -113,6 +113,31 @@ describe('Product Index Pipe Test', () => {
     });
   });
 
+  it('emits cache-control: no-store when x-env: stage is set', async () => {
+    const s3Loader = new FileS3Loader();
+    s3Loader.statusCodeOverrides = { index: 200 };
+    s3Loader.dirs['helix-commerce-pricing-dev'] = s3Loader.dirs['helix-product-bus'];
+
+    const state = DEFAULT_STATE({
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/index.json',
+      partition: 'live',
+      timer: { update: () => { } },
+    });
+    state.info = getPathInfo('/products/index.json');
+    const resp = await productIndexPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/index.json'), {
+        headers: { 'x-env': 'stage' },
+      }),
+    );
+    assert.strictEqual(resp.status, 200);
+    assert.strictEqual(state.stagePricing, true);
+    assert.strictEqual(resp.headers.get('cache-control'), 'no-store');
+  });
+
   it('sends 400 for non json path', async () => {
     const state = DEFAULT_STATE({
       path: '/blog/index',

@@ -149,9 +149,8 @@ export async function productIndexPipe(state, req) {
       throw new PipelineStatusError(res.status, res.error);
     }
 
-    await setIndexCacheHeaders(state, req, res);
-
     await fetchCatalogPriceRules(state, req);
+    await setIndexCacheHeaders(state, req, res);
     applyCatalogPriceRules(state, res);
 
     setLastModified(state, res);
