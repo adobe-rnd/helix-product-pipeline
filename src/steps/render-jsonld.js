@@ -16,7 +16,56 @@ import { h } from 'hastscript';
 import { constructImageUrl } from './create-pictures.js';
 import { stripHTML } from './utils.js';
 
-function renderOffer(state, variant, simple = false) {
+const WEIGHT_UNIT_CODES = {
+  kg: 'KGM', g: 'GRM', lb: 'LBR', oz: 'ONZ',
+};
+const DIMENSIONS_UNIT_CODES = {
+  cm: 'CMT', mm: 'MMT', in: 'INH',
+};
+
+function quantitativeWeight(weight) {
+  if (!weight || typeof weight.value !== 'number' || !weight.unit) return null;
+  const unitCode = WEIGHT_UNIT_CODES[weight.unit];
+  if (!unitCode) return null;
+  return {
+    '@type': 'QuantitativeValue',
+    value: weight.value,
+    unitCode,
+    unitText: weight.unit,
+  };
+}
+
+function quantitativeDimension(value, unitCode) {
+  return {
+    '@type': 'QuantitativeValue',
+    value,
+    unitCode,
+  };
+}
+
+function renderShippingDetails(shippingDimensions) {
+  if (!shippingDimensions || typeof shippingDimensions !== 'object') return null;
+  const {
+    weight, height, width, depth, dimensionsUnit,
+  } = shippingDimensions;
+
+  const details = { '@type': 'OfferShippingDetails' };
+  const weightQv = quantitativeWeight(weight);
+  if (weightQv) details.weight = weightQv;
+
+  const dimUnitCode = dimensionsUnit ? DIMENSIONS_UNIT_CODES[dimensionsUnit] : null;
+  if (dimUnitCode) {
+    if (typeof height === 'number') details.height = quantitativeDimension(height, dimUnitCode);
+    if (typeof width === 'number') details.width = quantitativeDimension(width, dimUnitCode);
+    if (typeof depth === 'number') details.depth = quantitativeDimension(depth, dimUnitCode);
+  }
+
+  // Only emit shippingDetails if it carries at least one measurement
+  if (!details.weight && !details.height && !details.width && !details.depth) return null;
+  return details;
+}
+
+function renderOffer(state, variant, simple = false, fallbackShippingDimensions = null) {
   const {
     sku,
     name,
@@ -29,7 +78,10 @@ function renderOffer(state, variant, simple = false) {
     custom,
     gtin,
     jsonldExtensions,
+    shippingDimensions,
   } = variant;
+
+  const shippingDetails = renderShippingDetails(shippingDimensions ?? fallbackShippingDimensions);
 
   const resolvedImages = Array.isArray(images)
     ? images.map((img) => img.url && constructImageUrl(state, img.url)).filter(Boolean)
@@ -62,6 +114,7 @@ function renderOffer(state, variant, simple = false) {
     ...(url && { url }),
     ...(options && { options }),
     ...(priceSpecification && { priceSpecification }),
+    ...(shippingDetails && { shippingDetails }),
     ...(!simple && custom && { custom }),
   };
 
@@ -93,7 +146,11 @@ export function convertToJsonLD(state, product) {
     custom,
     gtin,
     jsonldExtensions,
+    weight,
+    shippingDimensions,
   } = product;
+
+  const weightQv = quantitativeWeight(weight);
 
   /** @type {any} */
   const jsonld = {
@@ -105,6 +162,7 @@ export function convertToJsonLD(state, product) {
     ...(gtin && { gtin }),
     ...(url && { url }),
     ...(brand && { brand: { '@type': 'Brand', name: brand } }),
+    ...(weightQv && { weight: weightQv }),
   };
 
   const resolvedImages = images
@@ -113,7 +171,7 @@ export function convertToJsonLD(state, product) {
   if (resolvedImages.length) jsonld.image = resolvedImages;
 
   const resolvedOffers = variants.length
-    ? variants.map((v) => renderOffer(state, v))
+    ? variants.map((v) => renderOffer(state, v, false, shippingDimensions))
     : [renderOffer(state, product, true)];
   jsonld.offers = resolvedOffers;
 

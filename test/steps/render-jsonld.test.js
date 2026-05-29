@@ -670,4 +670,216 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.offers[0].priceSpecification, undefined);
     });
   });
+
+  describe('weight', () => {
+    it('emits Product.weight as a QuantitativeValue with UN/CEFACT unitCode', () => {
+      const product = {
+        sku: 'WEIGHT-SKU',
+        name: 'Weighted Product',
+        weight: { value: 14.25, unit: 'lb' },
+        images: [],
+        variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.deepStrictEqual(parsed.weight, {
+        '@type': 'QuantitativeValue',
+        value: 14.25,
+        unitCode: 'LBR',
+        unitText: 'lb',
+      });
+    });
+
+    it('maps each supported unit to the correct UN/CEFACT code', () => {
+      const cases = [
+        ['kg', 'KGM'],
+        ['g', 'GRM'],
+        ['lb', 'LBR'],
+        ['oz', 'ONZ'],
+      ];
+      for (const [unit, unitCode] of cases) {
+        const parsed = JSON.parse(convertToJsonLD(mockState, {
+          sku: 'S', name: 'P', weight: { value: 1, unit }, images: [], variants: [],
+        }));
+        assert.strictEqual(parsed.weight.unitCode, unitCode, `${unit} -> ${unitCode}`);
+        assert.strictEqual(parsed.weight.unitText, unit);
+      }
+    });
+
+    it('omits weight when value is missing', () => {
+      const parsed = JSON.parse(convertToJsonLD(mockState, {
+        sku: 'S', name: 'P', weight: { unit: 'lb' }, images: [], variants: [],
+      }));
+      assert.strictEqual(parsed.weight, undefined);
+    });
+
+    it('omits weight when unit is missing', () => {
+      const parsed = JSON.parse(convertToJsonLD(mockState, {
+        sku: 'S', name: 'P', weight: { value: 5 }, images: [], variants: [],
+      }));
+      assert.strictEqual(parsed.weight, undefined);
+    });
+
+    it('omits weight when unit is unknown', () => {
+      const parsed = JSON.parse(convertToJsonLD(mockState, {
+        sku: 'S', name: 'P', weight: { value: 5, unit: 'stones' }, images: [], variants: [],
+      }));
+      assert.strictEqual(parsed.weight, undefined);
+    });
+
+    it('omits weight when not provided', () => {
+      const parsed = JSON.parse(convertToJsonLD(mockState, {
+        sku: 'S', name: 'P', images: [], variants: [],
+      }));
+      assert.strictEqual(parsed.weight, undefined);
+    });
+  });
+
+  describe('shippingDetails', () => {
+    it('emits OfferShippingDetails on a simple offer from product.shippingDimensions', () => {
+      const product = {
+        sku: 'SD-SKU',
+        name: 'Shipping Product',
+        shippingDimensions: {
+          weight: { value: 14.25, unit: 'lb' },
+          height: 14,
+          width: 8,
+          depth: 11,
+          dimensionsUnit: 'in',
+        },
+        images: [],
+        variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      const { shippingDetails } = parsed.offers[0];
+      assert.strictEqual(shippingDetails['@type'], 'OfferShippingDetails');
+      assert.deepStrictEqual(shippingDetails.weight, {
+        '@type': 'QuantitativeValue', value: 14.25, unitCode: 'LBR', unitText: 'lb',
+      });
+      assert.deepStrictEqual(shippingDetails.height, {
+        '@type': 'QuantitativeValue', value: 14, unitCode: 'INH',
+      });
+      assert.deepStrictEqual(shippingDetails.width, {
+        '@type': 'QuantitativeValue', value: 8, unitCode: 'INH',
+      });
+      assert.deepStrictEqual(shippingDetails.depth, {
+        '@type': 'QuantitativeValue', value: 11, unitCode: 'INH',
+      });
+    });
+
+    it('emits shippingDetails on each variant offer when variants carry shippingDimensions', () => {
+      const product = {
+        sku: 'PARENT',
+        name: 'Parent',
+        variants: [
+          {
+            sku: 'V1',
+            name: 'V1',
+            availability: 'InStock',
+            images: [],
+            shippingDimensions: { weight: { value: 14.25, unit: 'lb' } },
+          },
+          {
+            sku: 'V2',
+            name: 'V2',
+            availability: 'InStock',
+            images: [],
+            shippingDimensions: { weight: { value: 15.5, unit: 'lb' } },
+          },
+        ],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.offers[0].shippingDetails.weight.value, 14.25);
+      assert.strictEqual(parsed.offers[1].shippingDetails.weight.value, 15.5);
+    });
+
+    it('falls back to parent shippingDimensions when a variant has none', () => {
+      const product = {
+        sku: 'PARENT',
+        name: 'Parent',
+        shippingDimensions: { weight: { value: 14.25, unit: 'lb' } },
+        variants: [
+          {
+            sku: 'V1', name: 'V1', availability: 'InStock', images: [],
+          },
+        ],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.offers[0].shippingDetails.weight.value, 14.25);
+      assert.strictEqual(parsed.offers[0].shippingDetails.weight.unitCode, 'LBR');
+    });
+
+    it('variant shippingDimensions takes precedence over parent', () => {
+      const product = {
+        sku: 'PARENT',
+        name: 'Parent',
+        shippingDimensions: { weight: { value: 1, unit: 'lb' } },
+        variants: [
+          {
+            sku: 'V1',
+            name: 'V1',
+            availability: 'InStock',
+            images: [],
+            shippingDimensions: { weight: { value: 99, unit: 'lb' } },
+          },
+        ],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.offers[0].shippingDetails.weight.value, 99);
+    });
+
+    it('omits spatial dimensions when dimensionsUnit is missing', () => {
+      const product = {
+        sku: 'S',
+        name: 'P',
+        shippingDimensions: {
+          weight: { value: 5, unit: 'lb' },
+          height: 14,
+          width: 8,
+          depth: 11,
+        },
+        images: [],
+        variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      const { shippingDetails } = parsed.offers[0];
+      assert.ok(shippingDetails.weight);
+      assert.strictEqual(shippingDetails.height, undefined);
+      assert.strictEqual(shippingDetails.width, undefined);
+      assert.strictEqual(shippingDetails.depth, undefined);
+    });
+
+    it('omits shippingDetails entirely when shippingDimensions has no usable fields', () => {
+      const product = {
+        sku: 'S',
+        name: 'P',
+        shippingDimensions: { height: 14, width: 8, depth: 11 },
+        images: [],
+        variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.offers[0].shippingDetails, undefined);
+    });
+
+    it('omits shippingDetails when shippingDimensions is absent', () => {
+      const product = {
+        sku: 'S', name: 'P', images: [], variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.offers[0].shippingDetails, undefined);
+    });
+
+    it('maps dimensionsUnit cm/mm/in to UN/CEFACT codes CMT/MMT/INH', () => {
+      const cases = [['cm', 'CMT'], ['mm', 'MMT'], ['in', 'INH']];
+      for (const [unit, code] of cases) {
+        const parsed = JSON.parse(convertToJsonLD(mockState, {
+          sku: 'S',
+          name: 'P',
+          shippingDimensions: { height: 10, dimensionsUnit: unit },
+          images: [],
+          variants: [],
+        }));
+        assert.strictEqual(parsed.offers[0].shippingDetails.height.unitCode, code);
+      }
+    });
+  });
 });
