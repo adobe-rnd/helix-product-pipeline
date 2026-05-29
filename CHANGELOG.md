@@ -1,3 +1,10 @@
+# [2.10.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.9.1...v2.10.0) (2026-05-29)
+
+
+### Features
+
+* render `weight` and `shippingDetails` in product JSON-LD ([893adf9](https://github.com/adobe-rnd/helix-product-pipeline/commit/893adf95722996bd73c0c47fb0beff5387906bac))
+
 ## [2.9.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.9.0...v2.9.1) (2026-05-25)
 
 
