@@ -179,8 +179,8 @@ describe('Rendering', () => {
       await testRender('variants-no-options', 'html', 200);
     });
 
-    it('renders no specifications, no name', async () => {
-      await testRender('no-specifications-no-name', 'html', 200);
+    it('renders no product name', async () => {
+      await testRender('no-product-name', 'html', 200);
     });
 
     it('renders no option uid', async () => {
