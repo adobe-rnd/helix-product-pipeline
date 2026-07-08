@@ -78,8 +78,18 @@ export async function productHTMLPipe(state, req) {
       res.status = 200;
       res.body = rewriteMediaUrl(await state.content.edgeResponse.text());
       delete res.error;
+      // `fetch()` returns the body already decoded, but leaves the transfer/encoding headers
+      // describing the original wire bytes on the response — and we then rewrite the body on top
+      // of that. Forwarding them corrupts the response: content-length reports the compressed
+      // size (client truncates), content-encoding claims br/gzip over decoded+rewritten plaintext
+      // (client fails to decode), and transfer-encoding no longer applies to a buffered string.
+      // Freshness/invalidation headers (cache-control, cache-tag, last-modified) describe the
+      // resource, not the bytes, so they pass through.
+      const skipHeaders = new Set(['content-length', 'content-encoding', 'transfer-encoding']);
       for (const [name, value] of state.content.edgeResponse.headers.entries()) {
-        res.headers.set(name, value);
+        if (!skipHeaders.has(name.toLowerCase())) {
+          res.headers.set(name, value);
+        }
       }
       return res;
     }

@@ -1250,6 +1250,67 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
+  it('does not copy stale content-length/content-encoding when rewriting edge fallback body', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    const hash = 'media_abcdef0123456789abcdef0123456789abcdef01';
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Marketing Page</title></head>'
+      + `<body><main><img src="./images/${hash}.png" alt="Hero"></main></body></html>`;
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      body: edgeHTML,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        // Edge advertises the *original* body length; the rewrite lengthens the body,
+        // so copying this verbatim would make the CDN truncate the response.
+        'Content-Length': String(edgeHTML.length),
+        // A stale content-encoding on decompressed plaintext would corrupt the client's decode.
+        'Content-Encoding': 'gzip',
+        // Freshness/invalidation headers describe the resource and must still pass through.
+        'Last-Modified': 'Mon, 24 Mar 2026 10:00:00 GMT',
+        'surrogate-key': 'edge-key-1 edge-key-2',
+        'cache-control': 'max-age=600, must-revalidate',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const body = await new Response(resp.body).text();
+    // Body was rewritten and is longer than the edge-advertised content-length.
+    assert.ok(body.length > edgeHTML.length, 'rewritten body should be longer than original');
+    // Entity headers that describe the (now transformed) body must not be copied verbatim.
+    assert.ok(
+      !resp.headers.get('content-encoding'),
+      'stale content-encoding must not be forwarded on a rewritten plaintext body',
+    );
+    const forwardedLength = resp.headers.get('content-length');
+    assert.ok(
+      !forwardedLength || Number(forwardedLength) === body.length,
+      `content-length must be absent or match the rewritten body length, got ${forwardedLength}`,
+    );
+    // Freshness/invalidation headers describe the resource and must still pass through.
+    assert.strictEqual(resp.headers.get('surrogate-key'), 'edge-key-1 edge-key-2');
+    assert.strictEqual(resp.headers.get('cache-control'), 'max-age=600, must-revalidate');
+    assert.strictEqual(resp.headers.get('last-modified'), 'Mon, 24 Mar 2026 10:00:00 GMT');
+    fetchMock.unmockGlobal();
+  });
+
   it('returns 404 when both Product Bus and Edge return 404', async () => {
     fetchMock.unmockGlobal();
     fetchMock.removeRoutes();
