@@ -16,7 +16,7 @@ import { h } from 'hastscript';
 import { fromHtml } from 'hast-util-from-html';
 import { slug } from 'github-slugger';
 import { createOptimizedPicture } from './create-pictures.js';
-import { maybeHTML } from './utils.js';
+import { maybeHTML, rewriteMediaUrl } from './utils.js';
 
 /**
  * Format price with sale logic using HAST nodes.
@@ -42,17 +42,6 @@ function renderMedia(media) {
     ]);
   }
   return h('p', createOptimizedPicture(url, label, title));
-}
-
-/**
- * Rewrite a single URL to include /content-images/ prefix for media files.
- * @param {string} url - The URL to potentially rewrite
- * @returns {string} The rewritten URL
- */
-function rewriteMediaUrl(url) {
-  /* c8 ignore next */
-  if (!url) return url;
-  return url.replace(/\/(media_[a-f0-9]+\.\w+)/g, '/content-images/$1');
 }
 
 /**

@@ -27,6 +27,7 @@ import tohtml from './steps/stringify-response.js';
 import fetch404 from './steps/fetch-404.js';
 import { setProductCacheHeaders } from './steps/set-cache-headers.js';
 import { getUnauthorizedBody } from './utils/http-response.js';
+import { rewriteMediaUrl } from './steps/utils.js';
 import extractAuthoredMetadata from './steps/extract-authored-metadata.js';
 import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
 import { applyProductPriceRule } from './steps/apply-price-rules.js';
@@ -69,11 +70,13 @@ export async function productHTMLPipe(state, req) {
     }
 
     // Edge content fallback: if Product Bus has no product but Edge has authored content,
-    // pass the edge response through directly without decoding the body
+    // serve the authored content. The body must be decoded (not streamed through) so media
+    // bus image URLs can be rewritten with the `/content-images/` prefix — the signal the
+    // Mixer uses to route those images back to Edge instead of the product media bus.
     if (res.status === 404 && state.content.edgeResponse) {
       log.info(`edge content fallback for ${state.info.path}`);
       res.status = 200;
-      res.body = state.content.edgeResponse.body;
+      res.body = rewriteMediaUrl(await state.content.edgeResponse.text());
       delete res.error;
       for (const [name, value] of state.content.edgeResponse.headers.entries()) {
         res.headers.set(name, value);
