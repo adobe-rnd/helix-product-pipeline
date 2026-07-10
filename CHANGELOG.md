@@ -1,3 +1,10 @@
+## [2.10.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.0...v2.10.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* rewrite media bus image URLs in edge content fallback ([#89](https://github.com/adobe-rnd/helix-product-pipeline/issues/89)) ([5aafb36](https://github.com/adobe-rnd/helix-product-pipeline/commit/5aafb3605acc1c0339b8d94305e444b9cc7d0536)), closes [#88](https://github.com/adobe-rnd/helix-product-pipeline/issues/88)
+
 # [2.10.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.9.1...v2.10.0) (2026-05-29)
 
 
