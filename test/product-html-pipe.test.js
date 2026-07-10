@@ -1142,6 +1142,175 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
+  it('rewrites media bus image URLs to /content-images/ in edge fallback content', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    const hash1 = 'media_1a2b3c4d5e6f7890abcdef1234567890abcdef12';
+    const hash2 = 'media_9876543210fedcba9876543210fedcba98765432';
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Marketing Page</title></head><body><main>'
+      + '<h1>Winter Campaign</h1>'
+      + '<picture>'
+      + `<source srcset="./images/${hash1}.avif?width=1200" type="image/avif">`
+      + `<img src="./images/${hash1}.jpg?width=1200" alt="Hero">`
+      + '</picture>'
+      + `<img src="./gallery/${hash2}.png" alt="Gallery">`
+      + '</main></body></html>';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      body: edgeHTML,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const body = await new Response(resp.body).text();
+    assert.ok(
+      body.includes(`./images/content-images/${hash1}.avif?width=1200`),
+      'source srcset should have /content-images/ prefix',
+    );
+    assert.ok(
+      body.includes(`./images/content-images/${hash1}.jpg?width=1200`),
+      'img src should have /content-images/ prefix',
+    );
+    assert.ok(
+      body.includes(`./gallery/content-images/${hash2}.png`),
+      'second img src should have /content-images/ prefix',
+    );
+    // Non-media markup untouched
+    assert.ok(body.includes('<h1>Winter Campaign</h1>'), 'authored markup should be preserved');
+    // No un-rewritten media URLs remain
+    assert.ok(!/\/(images|gallery)\/media_/.test(body), 'no un-rewritten media_ URLs should remain');
+    fetchMock.unmockGlobal();
+  });
+
+  it('rewrites media bus og:image URLs in the head of edge fallback content', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    const hash = 'media_abcdef0123456789abcdef0123456789abcdef01';
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Marketing Page</title>'
+      + `<meta property="og:image" content="./media/${hash}.png">`
+      + `<meta name="twitter:image" content="./media/${hash}.png">`
+      + '</head><body><main><h1>Winter Campaign</h1></main></body></html>';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      body: edgeHTML,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const body = await new Response(resp.body).text();
+    // og:image and twitter:image in <head> are rewritten too — the whole-string rewrite
+    // covers head meta URLs, which a HAST img/source-only rewrite would have missed.
+    assert.ok(
+      body.includes(`<meta property="og:image" content="./media/content-images/${hash}.png">`),
+      'og:image content should have /content-images/ prefix',
+    );
+    assert.ok(
+      body.includes(`<meta name="twitter:image" content="./media/content-images/${hash}.png">`),
+      'twitter:image content should have /content-images/ prefix',
+    );
+    assert.ok(!/\/media\/media_/.test(body), 'no un-rewritten media_ URLs should remain');
+    fetchMock.unmockGlobal();
+  });
+
+  it('does not copy stale content-length/content-encoding when rewriting edge fallback body', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    const hash = 'media_abcdef0123456789abcdef0123456789abcdef01';
+    const edgeHTML = '<!DOCTYPE html><html><head><title>Marketing Page</title></head>'
+      + `<body><main><img src="./images/${hash}.png" alt="Hero"></main></body></html>`;
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', {
+      body: edgeHTML,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        // Edge advertises the *original* body length; the rewrite lengthens the body,
+        // so copying this verbatim would make the CDN truncate the response.
+        'Content-Length': String(edgeHTML.length),
+        // A stale content-encoding on decompressed plaintext would corrupt the client's decode.
+        'Content-Encoding': 'gzip',
+        // Freshness/invalidation headers describe the resource and must still pass through.
+        'Last-Modified': 'Mon, 24 Mar 2026 10:00:00 GMT',
+        'surrogate-key': 'edge-key-1 edge-key-2',
+        'cache-control': 'max-age=600, must-revalidate',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-404',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/products/product-404');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-404')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const body = await new Response(resp.body).text();
+    // Body was rewritten and is longer than the edge-advertised content-length.
+    assert.ok(body.length > edgeHTML.length, 'rewritten body should be longer than original');
+    // Entity headers that describe the (now transformed) body must not be copied verbatim.
+    assert.ok(
+      !resp.headers.get('content-encoding'),
+      'stale content-encoding must not be forwarded on a rewritten plaintext body',
+    );
+    const forwardedLength = resp.headers.get('content-length');
+    assert.ok(
+      !forwardedLength || Number(forwardedLength) === body.length,
+      `content-length must be absent or match the rewritten body length, got ${forwardedLength}`,
+    );
+    // Freshness/invalidation headers describe the resource and must still pass through.
+    assert.strictEqual(resp.headers.get('surrogate-key'), 'edge-key-1 edge-key-2');
+    assert.strictEqual(resp.headers.get('cache-control'), 'max-age=600, must-revalidate');
+    assert.strictEqual(resp.headers.get('last-modified'), 'Mon, 24 Mar 2026 10:00:00 GMT');
+    fetchMock.unmockGlobal();
+  });
+
   it('returns 404 when both Product Bus and Edge return 404', async () => {
     fetchMock.unmockGlobal();
     fetchMock.removeRoutes();
