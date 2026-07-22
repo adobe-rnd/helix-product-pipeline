@@ -54,6 +54,23 @@ const relToAbsLink = (state, req, relLink) => {
 };
 
 /**
+ * Render additional product images as g:additional_image_link elements.
+ * Relative URLs are resolved the same way as the primary image_link.
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {{ additional_image_link?: string[] }} data
+ * @returns {string}
+ */
+const additionalImageLinks = (state, req, data) => {
+  if (!Array.isArray(data.additional_image_link)) {
+    return '';
+  }
+  return data.additional_image_link
+    .map((link) => optionalEntry('g:additional_image_link', relToAbsLink(state, req, link)))
+    .join('');
+};
+
+/**
  * @param {{ shipping?: string | object | object[] }} data
  * @returns {string}
  */
@@ -95,10 +112,14 @@ const feedEntry = (state, req, data) => `
     ${data.description ?? ''}
     </g:description>
     <g:link>${data.link ?? ''}</g:link>
-    <g:image_link>${relToAbsLink(state, req, data.image_link)}</g:image_link>
+    <g:image_link>${relToAbsLink(state, req, data.image_link)}</g:image_link>\
+${additionalImageLinks(state, req, data)}
     <g:condition>${data.condition ?? ''}</g:condition>
-    <g:availability>${data.availability ?? ''}</g:availability>
-    <g:price>${data.price ?? ''}</g:price>
+    <g:availability>${data.availability ?? ''}</g:availability>\
+${optionalEntry('g:availability_date', data.availability_date)}
+    <g:price>${data.price ?? ''}</g:price>\
+${optionalEntry('g:sale_price', data.sale_price)}\
+${optionalEntry('g:sale_price_effective_date', data.sale_price_effective_date)}
     <g:brand>${data.brand ?? ''}</g:brand>\
 ${optionalEntry('g:age_group', data.age_group)}\
 ${optionalEntry('g:google_product_category', data.google_product_category)}\

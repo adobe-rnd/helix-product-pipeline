@@ -712,5 +712,40 @@ describe('Product Merchant Feed Pipe Test', () => {
 </channel>
 </rss>`);
     });
+
+    it('renders sale_price, availability_date and additional_image_link', () => {
+      const xml = toFeedXML(
+        {
+          prodHost: 'https://www.example.com',
+          config: { merchantFeedConfig: {} },
+        },
+        new PipelineRequest('https://www.example.com/products/merchant-center-feed.xml'),
+        {
+          2000: {
+            data: {
+              id: '2000',
+              title: 'On Sale Blender',
+              description: 'desc',
+              link: 'https://www.example.com/2000.html',
+              image_link: './media_main.jpg',
+              additional_image_link: ['./media_alt1.jpg', './media_alt2.jpg'],
+              condition: 'new',
+              availability: 'preorder',
+              availability_date: '2026-08-01T00:00+0000',
+              price: '299.95 USD',
+              sale_price: '249.95 USD',
+              sale_price_effective_date: '2026-07-01T00:00+0000/2026-07-31T00:00+0000',
+              brand: 'Vitamix',
+            },
+          },
+        },
+      );
+      assert.ok(xml.includes('<g:sale_price>249.95 USD</g:sale_price>'));
+      assert.ok(xml.includes('<g:sale_price_effective_date>2026-07-01T00:00+0000/2026-07-31T00:00+0000</g:sale_price_effective_date>'));
+      assert.ok(xml.includes('<g:availability_date>2026-08-01T00:00+0000</g:availability_date>'));
+      // relative additional images resolved to absolute, one element each
+      assert.ok(xml.includes('<g:additional_image_link>https://www.example.com/products/media_alt1.jpg</g:additional_image_link>'));
+      assert.ok(xml.includes('<g:additional_image_link>https://www.example.com/products/media_alt2.jpg</g:additional_image_link>'));
+    });
   });
 });
