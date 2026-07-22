@@ -747,5 +747,35 @@ describe('Product Merchant Feed Pipe Test', () => {
       assert.ok(xml.includes('<g:additional_image_link>https://www.example.com/products/media_alt1.jpg</g:additional_image_link>'));
       assert.ok(xml.includes('<g:additional_image_link>https://www.example.com/products/media_alt2.jpg</g:additional_image_link>'));
     });
+
+    it('passes absolute image URLs through unchanged (pre media-bus ingestion)', () => {
+      const xml = toFeedXML(
+        {
+          prodHost: 'https://prod.example.com',
+          config: { merchantFeedConfig: {} },
+        },
+        new PipelineRequest('https://prod.example.com/products/merchant-center-feed.xml'),
+        {
+          3000: {
+            data: {
+              id: '3000',
+              title: 'Not Yet Ingested',
+              link: 'https://prod.example.com/3000.html',
+              // absolute external URL — image not yet moved into the media bus
+              image_link: 'https://mydomain.com/img123.jpg',
+              additional_image_link: ['https://mydomain.com/img124.jpg'],
+              condition: 'new',
+              availability: 'in_stock',
+              price: '99.00 USD',
+              brand: 'Vitamix',
+            },
+          },
+        },
+      );
+      // not concatenated onto the request path
+      assert.ok(xml.includes('<g:image_link>https://mydomain.com/img123.jpg</g:image_link>'));
+      assert.ok(xml.includes('<g:additional_image_link>https://mydomain.com/img124.jpg</g:additional_image_link>'));
+      assert.ok(!xml.includes('prod.example.com/productshttps'));
+    });
   });
 });

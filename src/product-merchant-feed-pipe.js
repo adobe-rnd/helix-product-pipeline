@@ -44,6 +44,12 @@ const relToAbsLink = (state, req, relLink) => {
   if (!relLink) {
     return '';
   }
+  // Already-absolute URLs (e.g. images not yet ingested into the media bus, which
+  // still point at an external origin) must pass through unchanged — otherwise
+  // they get concatenated onto the path (".../org/sitehttps://host/img.jpg").
+  if (/^https?:\/\//i.test(relLink)) {
+    return relLink;
+  }
   const { prodHost } = state;
   const path = req.url.pathname.replace(/\/merchant-center-feed\.xml$/, '');
   const url = new URL(
