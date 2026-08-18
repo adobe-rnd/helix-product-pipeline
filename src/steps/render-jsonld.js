@@ -156,6 +156,7 @@ export function convertToJsonLD(state, product) {
   const jsonld = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    ...(url && { '@id': url }),
     ...(sku && { sku }),
     ...(name || metaTitle ? { name: name || metaTitle } : {}),
     ...(metaDescription || description ? { description: metaDescription || stripHTML(description).trim() } : {}),

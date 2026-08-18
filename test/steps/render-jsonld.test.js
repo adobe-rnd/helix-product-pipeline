@@ -671,6 +671,71 @@ describe('convertToJsonLD', () => {
     });
   });
 
+  describe('@id', () => {
+    it('sets @id to the product url (matches the canonical link)', () => {
+      const product = {
+        sku: 'ID-SKU',
+        name: 'Id Product',
+        url: 'https://example.com/ca/en_us/products/ascent-x5',
+        images: [],
+        variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed['@id'], 'https://example.com/ca/en_us/products/ascent-x5');
+      // @id must equal url byte-for-byte so it merges with the canonical-keyed markup.
+      assert.strictEqual(parsed['@id'], parsed.url);
+    });
+
+    it('emits @id as the bare canonical url, with no #fragment', () => {
+      const product = {
+        sku: 'ID-SKU',
+        name: 'Id Product',
+        url: 'https://example.com/product',
+        images: [],
+        variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed['@id'], 'https://example.com/product');
+      assert.ok(!parsed['@id'].includes('#'), '@id must not carry a fragment');
+    });
+
+    it('omits @id when url is absent', () => {
+      const product = {
+        sku: 'NO-URL-SKU',
+        name: 'No Url Product',
+        images: [],
+        variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed['@id'], undefined);
+    });
+
+    it('allows jsonldExtensions to override @id', () => {
+      const product = {
+        sku: 'ID-OVERRIDE-SKU',
+        name: 'Id Override Product',
+        url: 'https://example.com/product',
+        images: [],
+        variants: [],
+        jsonldExtensions: {
+          '@id': 'https://example.com/product#product',
+        },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed['@id'], 'https://example.com/product#product');
+    });
+
+    it('does not inject @id into a full jsonld override', () => {
+      const product = {
+        sku: 'OVERRIDE-SKU',
+        url: 'https://example.com/product',
+        jsonld: { '@context': 'https://schema.org', '@type': 'Product', name: 'Override' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed['@id'], undefined);
+    });
+  });
+
   describe('weight', () => {
     it('emits Product.weight as a QuantitativeValue with UN/CEFACT unitCode', () => {
       const product = {
