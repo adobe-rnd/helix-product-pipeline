@@ -1,3 +1,10 @@
+## [2.10.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.1...v2.10.2) (2026-08-19)
+
+
+### Bug Fixes
+
+* **jsonld:** add [@id](https://github.com/id) (canonical URL) to Product schema ([e484c4f](https://github.com/adobe-rnd/helix-product-pipeline/commit/e484c4f87a27fcda42198d3aa7cbbf057f065075)), closes [#91](https://github.com/adobe-rnd/helix-product-pipeline/issues/91)
+
 ## [2.10.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.0...v2.10.1) (2026-07-10)
 
 
