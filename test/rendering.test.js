@@ -214,5 +214,9 @@ describe('Rendering', () => {
     it('uses jsonld override from product instead of generating', async () => {
       await testRender('jsonld-override', 'html', 200);
     });
+
+    it('renders aggregateRating nested on the Product node', async () => {
+      await testRender('aggregate-rating', 'html', 200);
+    });
   });
 });

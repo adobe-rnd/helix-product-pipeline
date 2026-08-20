@@ -125,6 +125,48 @@ function renderOffer(state, variant, simple = false, fallbackShippingDimensions 
   return offer;
 }
 
+/**
+ * Build a schema.org AggregateRating node from Product Bus rating data.
+ * Values are stored as numeric strings and coerced to numbers here. Returns
+ * null (so the field is omitted) when there is no rating value or no positive
+ * count, since an empty aggregate is invalid for Google rich results.
+ * @param {any} rating
+ * @returns {object|null}
+ */
+function renderAggregateRating(rating) {
+  if (!rating || typeof rating !== 'object') return null;
+
+  const ratingValue = rating.ratingValue != null && rating.ratingValue !== ''
+    ? Number(rating.ratingValue)
+    : null;
+  if (ratingValue == null || Number.isNaN(ratingValue)) return null;
+
+  const toCount = (v) => {
+    if (v == null || v === '') return null;
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const ratingCount = toCount(rating.ratingCount);
+  const reviewCount = toCount(rating.reviewCount);
+  // Google requires at least one of ratingCount / reviewCount, with a positive value.
+  if (ratingCount == null && reviewCount == null) return null;
+
+  const toNum = (v) => {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isNaN(n) ? null : n;
+  };
+
+  return {
+    '@type': 'AggregateRating',
+    ratingValue,
+    ...(ratingCount != null && { ratingCount }),
+    ...(reviewCount != null && { reviewCount }),
+    bestRating: toNum(rating.bestRating) ?? 5,
+    worstRating: toNum(rating.worstRating) ?? 1,
+  };
+}
+
 export function convertToJsonLD(state, product) {
   // If the product has a jsonld property, use it directly instead of generating
   if (product.jsonld) {
@@ -148,6 +190,7 @@ export function convertToJsonLD(state, product) {
     jsonldExtensions,
     weight,
     shippingDimensions,
+    aggregateRating,
   } = product;
 
   const weightQv = quantitativeWeight(weight);
@@ -175,6 +218,9 @@ export function convertToJsonLD(state, product) {
     ? variants.map((v) => renderOffer(state, v, false, shippingDimensions))
     : [renderOffer(state, product, true)];
   jsonld.offers = resolvedOffers;
+
+  const aggregateRatingLd = renderAggregateRating(aggregateRating);
+  if (aggregateRatingLd) jsonld.aggregateRating = aggregateRatingLd;
 
   if (custom && typeof custom === 'object') {
     jsonld.custom = { ...custom };

@@ -736,6 +736,208 @@ describe('convertToJsonLD', () => {
     });
   });
 
+  describe('aggregateRating', () => {
+    it('emits AggregateRating on the Product node with numeric coercion + defaults', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '4.6', reviewCount: '228' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.deepStrictEqual(parsed.aggregateRating, {
+        '@type': 'AggregateRating',
+        ratingValue: 4.6,
+        reviewCount: 228,
+        bestRating: 5,
+        worstRating: 1,
+      });
+    });
+
+    it('includes ratingCount and honors provided bestRating/worstRating', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: {
+          ratingValue: '4', ratingCount: '50', reviewCount: '30', bestRating: '10', worstRating: '0',
+        },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.deepStrictEqual(parsed.aggregateRating, {
+        '@type': 'AggregateRating',
+        ratingValue: 4,
+        ratingCount: 50,
+        reviewCount: 30,
+        bestRating: 10,
+        worstRating: 0,
+      });
+    });
+
+    it('omits aggregateRating when there is no positive count', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '4.6', reviewCount: '0', ratingCount: '0' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('omits aggregateRating when ratingValue is missing', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { reviewCount: '228' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('omits aggregateRating when not provided', () => {
+      const product = {
+        sku: 'AR-SKU', name: 'Rated Product', images: [], variants: [],
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('lets jsonldExtensions override the generated aggregateRating', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '4.6', reviewCount: '228' },
+        jsonldExtensions: {
+          aggregateRating: { '@type': 'AggregateRating', ratingValue: '3.1', reviewCount: '5' },
+        },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating.ratingValue, '3.1');
+      assert.strictEqual(parsed.aggregateRating.reviewCount, '5');
+    });
+
+    it('does not emit aggregateRating on a full jsonld override', () => {
+      const product = {
+        sku: 'AR-SKU',
+        aggregateRating: { ratingValue: '4.6', reviewCount: '228' },
+        jsonld: { '@context': 'https://schema.org', '@type': 'Product', name: 'Override' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('omits aggregateRating when the value is not an object', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: 'not-an-object',
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('omits aggregateRating when ratingValue is an empty string', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '', reviewCount: '5' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('omits aggregateRating when ratingValue is non-numeric', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: 'abc', reviewCount: '5' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('emits ratingCount only when reviewCount is absent', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '4.6', ratingCount: '120' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.deepStrictEqual(parsed.aggregateRating, {
+        '@type': 'AggregateRating',
+        ratingValue: 4.6,
+        ratingCount: 120,
+        bestRating: 5,
+        worstRating: 1,
+      });
+      assert.strictEqual('reviewCount' in parsed.aggregateRating, false);
+    });
+
+    it('treats empty-string and non-numeric counts as absent (omits the aggregate)', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '4.6', ratingCount: '', reviewCount: 'abc' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('defaults best/worst rating when they are empty or non-numeric', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: {
+          ratingValue: '4.6', reviewCount: '10', bestRating: '', worstRating: 'xyz',
+        },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating.bestRating, 5);
+      assert.strictEqual(parsed.aggregateRating.worstRating, 1);
+    });
+
+    it('emits aggregateRating at Product level alongside variant offers', () => {
+      const product = {
+        sku: 'AR-PARENT',
+        name: 'Configurable Rated Product',
+        images: [],
+        variants: [
+          {
+            sku: 'V1', name: 'V1', price: { currency: 'USD', final: '29.99' }, availability: 'InStock',
+          },
+          {
+            sku: 'V2', name: 'V2', price: { currency: 'USD', final: '39.99' }, availability: 'InStock',
+          },
+        ],
+        aggregateRating: { ratingValue: '4.6', reviewCount: '228' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating.reviewCount, 228);
+      assert.strictEqual(parsed.offers.length, 2);
+      assert.strictEqual(parsed.offers[0].aggregateRating, undefined);
+    });
+  });
+
   describe('weight', () => {
     it('emits Product.weight as a QuantitativeValue with UN/CEFACT unitCode', () => {
       const product = {
