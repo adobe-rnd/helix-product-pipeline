@@ -737,7 +737,7 @@ describe('convertToJsonLD', () => {
   });
 
   describe('aggregateRating', () => {
-    it('emits AggregateRating on the Product node with numeric coercion + defaults', () => {
+    it('emits AggregateRating on the Product node with numeric coercion', () => {
       const product = {
         sku: 'AR-SKU',
         name: 'Rated Product',
@@ -750,8 +750,6 @@ describe('convertToJsonLD', () => {
         '@type': 'AggregateRating',
         ratingValue: 4.6,
         reviewCount: 228,
-        bestRating: 5,
-        worstRating: 1,
       });
     });
 
@@ -883,8 +881,6 @@ describe('convertToJsonLD', () => {
         '@type': 'AggregateRating',
         ratingValue: 4.6,
         ratingCount: 120,
-        bestRating: 5,
-        worstRating: 1,
       });
       assert.strictEqual('reviewCount' in parsed.aggregateRating, false);
     });
@@ -901,7 +897,7 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.aggregateRating, undefined);
     });
 
-    it('defaults best/worst rating when they are empty or non-numeric', () => {
+    it('treats empty/non-numeric best/worst as absent (validated against defaults, not emitted)', () => {
       const product = {
         sku: 'AR-SKU',
         name: 'Rated Product',
@@ -912,8 +908,11 @@ describe('convertToJsonLD', () => {
         },
       };
       const parsed = JSON.parse(convertToJsonLD(mockState, product));
-      assert.strictEqual(parsed.aggregateRating.bestRating, 5);
-      assert.strictEqual(parsed.aggregateRating.worstRating, 1);
+      assert.deepStrictEqual(parsed.aggregateRating, {
+        '@type': 'AggregateRating',
+        ratingValue: 4.6,
+        reviewCount: 10,
+      });
     });
 
     it('omits aggregateRating when ratingValue exceeds bestRating', () => {
@@ -954,7 +953,6 @@ describe('convertToJsonLD', () => {
         ratingValue: 88,
         ratingCount: 20,
         bestRating: 100,
-        worstRating: 1,
       });
     });
 

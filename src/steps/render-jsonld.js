@@ -156,19 +156,20 @@ function renderAggregateRating(rating) {
     const n = Number(v);
     return Number.isNaN(n) ? null : n;
   };
-  const bestRating = toNum(rating.bestRating) ?? 5;
-  const worstRating = toNum(rating.worstRating) ?? 1;
-  // Omit an aggregate whose value falls outside its own scale; an out-of-range
-  // ratingValue is invalid for rich results (and would flag in Search Console).
-  if (ratingValue < worstRating || ratingValue > bestRating) return null;
+  const bestRating = toNum(rating.bestRating);
+  const worstRating = toNum(rating.worstRating);
+  // Validate against the effective scale (schema.org assumes 5/1 when omitted),
+  // but only emit best/worst when the source provides them so we don't assert a
+  // scale it didn't specify. An out-of-range value is invalid for rich results.
+  if (ratingValue < (worstRating ?? 1) || ratingValue > (bestRating ?? 5)) return null;
 
   return {
     '@type': 'AggregateRating',
     ratingValue,
     ...(ratingCount != null && { ratingCount }),
     ...(reviewCount != null && { reviewCount }),
-    bestRating,
-    worstRating,
+    ...(bestRating != null && { bestRating }),
+    ...(worstRating != null && { worstRating }),
   };
 }
 
