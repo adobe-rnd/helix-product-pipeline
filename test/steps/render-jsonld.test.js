@@ -916,6 +916,48 @@ describe('convertToJsonLD', () => {
       assert.strictEqual(parsed.aggregateRating.worstRating, 1);
     });
 
+    it('omits aggregateRating when ratingValue exceeds bestRating', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '9', reviewCount: '10' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('omits aggregateRating when ratingValue is below worstRating', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '0.5', reviewCount: '10' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.strictEqual(parsed.aggregateRating, undefined);
+    });
+
+    it('accepts a ratingValue within a custom bestRating scale', () => {
+      const product = {
+        sku: 'AR-SKU',
+        name: 'Rated Product',
+        images: [],
+        variants: [],
+        aggregateRating: { ratingValue: '88', ratingCount: '20', bestRating: '100' },
+      };
+      const parsed = JSON.parse(convertToJsonLD(mockState, product));
+      assert.deepStrictEqual(parsed.aggregateRating, {
+        '@type': 'AggregateRating',
+        ratingValue: 88,
+        ratingCount: 20,
+        bestRating: 100,
+        worstRating: 1,
+      });
+    });
+
     it('emits aggregateRating at Product level alongside variant offers', () => {
       const product = {
         sku: 'AR-PARENT',

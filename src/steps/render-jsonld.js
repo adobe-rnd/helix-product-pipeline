@@ -156,14 +156,19 @@ function renderAggregateRating(rating) {
     const n = Number(v);
     return Number.isNaN(n) ? null : n;
   };
+  const bestRating = toNum(rating.bestRating) ?? 5;
+  const worstRating = toNum(rating.worstRating) ?? 1;
+  // Omit an aggregate whose value falls outside its own scale; an out-of-range
+  // ratingValue is invalid for rich results (and would flag in Search Console).
+  if (ratingValue < worstRating || ratingValue > bestRating) return null;
 
   return {
     '@type': 'AggregateRating',
     ratingValue,
     ...(ratingCount != null && { ratingCount }),
     ...(reviewCount != null && { reviewCount }),
-    bestRating: toNum(rating.bestRating) ?? 5,
-    worstRating: toNum(rating.worstRating) ?? 1,
+    bestRating,
+    worstRating,
   };
 }
 
