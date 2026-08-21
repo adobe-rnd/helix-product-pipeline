@@ -1,3 +1,15 @@
+# [2.11.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.2...v2.11.0) (2026-08-21)
+
+
+### Bug Fixes
+
+* **jsonld:** omit aggregateRating when ratingValue is outside its scale ([83c629d](https://github.com/adobe-rnd/helix-product-pipeline/commit/83c629d450dc6278e25bc2796024233f110ee349))
+
+
+### Features
+
+* render aggregateRating in product JSON-LD ([c3e0f9f](https://github.com/adobe-rnd/helix-product-pipeline/commit/c3e0f9f528fd1ce9a0f6ed9dabc33ef6cf7bccc3))
+
 ## [2.10.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.1...v2.10.2) (2026-08-19)
 
 
