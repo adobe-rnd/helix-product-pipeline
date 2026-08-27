@@ -62,7 +62,10 @@ export default async function render(state) {
     head.children.push(h('meta', { name: 'type', content: type }));
   }
 
-  // Add product metadata to the head
+  // Add product metadata to the head.
+  // Authored metadata takes precedence over PB-generated values: if a meta
+  // tag with the same name was already emitted above, replace its content
+  // instead of emitting a duplicate.
   if (metadata) {
     Object.entries(metadata).forEach(([key, value]) => {
       if (key.toLowerCase().startsWith(HREFLANG_PREFIX)) {
@@ -73,7 +76,17 @@ export default async function render(state) {
         }
         return;
       }
-      head.children.push(h('meta', { name: key, content: value }));
+
+      const existing = head.children.find(
+        (child) => child.type === 'element'
+          && child.tagName === 'meta'
+          && child.properties?.name === key,
+      );
+      if (existing) {
+        existing.properties.content = value;
+      } else {
+        head.children.push(h('meta', { name: key, content: value }));
+      }
     });
   }
 

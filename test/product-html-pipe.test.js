@@ -681,6 +681,18 @@ describe('Product HTML Pipe Test', () => {
       'Should have og:title from product data, not authored content',
     );
 
+    // Verify exactly one description meta tag is rendered, and authored wins
+    const descriptionMatches = resp.body.match(/<meta name="description"/g) || [];
+    assert.strictEqual(
+      descriptionMatches.length,
+      1,
+      'Should render exactly one description meta tag',
+    );
+    assert.ok(
+      resp.body.includes('<meta name="description" content="Authored description that should win.">'),
+      'Authored description should take precedence over PB-generated description',
+    );
+
     // Verify authored main content is included
     assert.ok(
       resp.body.includes('Product Details'),
