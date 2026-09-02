@@ -32,6 +32,20 @@ export function getOriginalHost(headers) {
 }
 
 /**
+ * Rewrite media bus URLs to include the `/content-images/` prefix.
+ * The prefix is the signal the Mixer uses to route an image request back to Edge
+ * (aem.live) instead of the product media bus. Applies to every `/media_<hash>.<ext>`
+ * occurrence in the given string.
+ * @param {string} url - The URL (or HTML string) to rewrite
+ * @returns {string} The rewritten value
+ */
+export function rewriteMediaUrl(url) {
+  /* c8 ignore next */
+  if (!url) return url;
+  return url.replace(/\/(media_[a-f0-9]+\.\w+)/g, '/content-images/$1');
+}
+
+/**
  * Guess if a string is HTML by checking if it starts or ends with a tag.
  * Written to be fast but not perfect in terms of accuracy.
  * @param {string} str

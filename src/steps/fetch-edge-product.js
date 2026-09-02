@@ -15,8 +15,8 @@ import { extractLastModified, recordLastModified } from '../utils/last-modified.
 
 /**
  * Loads the content from the content-bus and stores the response in `state.content.edgeResponse`.
- * The body is not consumed here — the fallback path streams it through directly,
- * while the rendering path decodes it lazily via `.text()` when needed.
+ * The body is not consumed here — both the fallback path and the rendering path decode it
+ * lazily via `.text()` when needed.
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {PipelineResponse} res
@@ -61,8 +61,7 @@ export default async function fetchEdgeContent(state, req, res) {
 
     if (contentRes.status === 200) {
       // Store the response without consuming the body yet.
-      // The fallback path passes the body through directly;
-      // the rendering path decodes it lazily when needed.
+      // Both the fallback and rendering paths decode it lazily via `.text()` when needed.
       state.content.edgeResponse = contentRes;
 
       // Track last-modified for caching

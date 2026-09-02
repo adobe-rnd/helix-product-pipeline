@@ -64,9 +64,11 @@ export async function fetchCatalogPriceRules(state, req) {
 
     const now = Date.now();
 
-    // Pre-filter rules whose end is already past; remove promotions with no remaining rules
+    // Pre-filter: drop conditional promotions (evaluated at cart/order time, not during rendering)
+    // then drop rules whose end is already past; remove promotions with no remaining rules
     state.catalogPriceRules = {
       promotions: rules.promotions
+        .filter((promotion) => !promotion.conditions)
         .map((promotion) => ({
           ...promotion,
           rules: promotion.rules.filter((rule) => !rule.end || new Date(rule.end).getTime() > now),

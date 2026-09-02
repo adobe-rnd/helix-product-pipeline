@@ -1,3 +1,43 @@
+# [2.11.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.2...v2.11.0) (2026-08-21)
+
+
+### Bug Fixes
+
+* **jsonld:** omit aggregateRating when ratingValue is outside its scale ([83c629d](https://github.com/adobe-rnd/helix-product-pipeline/commit/83c629d450dc6278e25bc2796024233f110ee349))
+
+
+### Features
+
+* render aggregateRating in product JSON-LD ([c3e0f9f](https://github.com/adobe-rnd/helix-product-pipeline/commit/c3e0f9f528fd1ce9a0f6ed9dabc33ef6cf7bccc3))
+
+## [2.10.2](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.1...v2.10.2) (2026-08-19)
+
+
+### Bug Fixes
+
+* **jsonld:** add [@id](https://github.com/id) (canonical URL) to Product schema ([e484c4f](https://github.com/adobe-rnd/helix-product-pipeline/commit/e484c4f87a27fcda42198d3aa7cbbf057f065075)), closes [#91](https://github.com/adobe-rnd/helix-product-pipeline/issues/91)
+
+## [2.10.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.0...v2.10.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* rewrite media bus image URLs in edge content fallback ([#89](https://github.com/adobe-rnd/helix-product-pipeline/issues/89)) ([5aafb36](https://github.com/adobe-rnd/helix-product-pipeline/commit/5aafb3605acc1c0339b8d94305e444b9cc7d0536)), closes [#88](https://github.com/adobe-rnd/helix-product-pipeline/issues/88)
+
+# [2.10.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.9.1...v2.10.0) (2026-05-29)
+
+
+### Features
+
+* render `weight` and `shippingDetails` in product JSON-LD ([893adf9](https://github.com/adobe-rnd/helix-product-pipeline/commit/893adf95722996bd73c0c47fb0beff5387906bac))
+
+## [2.9.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.9.0...v2.9.1) (2026-05-25)
+
+
+### Bug Fixes
+
+* add conditional catalog rules ([#84](https://github.com/adobe-rnd/helix-product-pipeline/issues/84)) ([b6f0c03](https://github.com/adobe-rnd/helix-product-pipeline/commit/b6f0c036c621df081cd3e985b87b7ace304553b2))
+
 # [2.9.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.8.3...v2.9.0) (2026-05-08)
 
 

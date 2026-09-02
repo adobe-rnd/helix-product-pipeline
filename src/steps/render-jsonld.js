@@ -16,7 +16,56 @@ import { h } from 'hastscript';
 import { constructImageUrl } from './create-pictures.js';
 import { stripHTML } from './utils.js';
 
-function renderOffer(state, variant, simple = false) {
+const WEIGHT_UNIT_CODES = {
+  kg: 'KGM', g: 'GRM', lb: 'LBR', oz: 'ONZ',
+};
+const DIMENSIONS_UNIT_CODES = {
+  cm: 'CMT', mm: 'MMT', in: 'INH',
+};
+
+function quantitativeWeight(weight) {
+  if (!weight || typeof weight.value !== 'number' || !weight.unit) return null;
+  const unitCode = WEIGHT_UNIT_CODES[weight.unit];
+  if (!unitCode) return null;
+  return {
+    '@type': 'QuantitativeValue',
+    value: weight.value,
+    unitCode,
+    unitText: weight.unit,
+  };
+}
+
+function quantitativeDimension(value, unitCode) {
+  return {
+    '@type': 'QuantitativeValue',
+    value,
+    unitCode,
+  };
+}
+
+function renderShippingDetails(shippingDimensions) {
+  if (!shippingDimensions || typeof shippingDimensions !== 'object') return null;
+  const {
+    weight, height, width, depth, dimensionsUnit,
+  } = shippingDimensions;
+
+  const details = { '@type': 'OfferShippingDetails' };
+  const weightQv = quantitativeWeight(weight);
+  if (weightQv) details.weight = weightQv;
+
+  const dimUnitCode = dimensionsUnit ? DIMENSIONS_UNIT_CODES[dimensionsUnit] : null;
+  if (dimUnitCode) {
+    if (typeof height === 'number') details.height = quantitativeDimension(height, dimUnitCode);
+    if (typeof width === 'number') details.width = quantitativeDimension(width, dimUnitCode);
+    if (typeof depth === 'number') details.depth = quantitativeDimension(depth, dimUnitCode);
+  }
+
+  // Only emit shippingDetails if it carries at least one measurement
+  if (!details.weight && !details.height && !details.width && !details.depth) return null;
+  return details;
+}
+
+function renderOffer(state, variant, simple = false, fallbackShippingDimensions = null) {
   const {
     sku,
     name,
@@ -29,7 +78,10 @@ function renderOffer(state, variant, simple = false) {
     custom,
     gtin,
     jsonldExtensions,
+    shippingDimensions,
   } = variant;
+
+  const shippingDetails = renderShippingDetails(shippingDimensions ?? fallbackShippingDimensions);
 
   const resolvedImages = Array.isArray(images)
     ? images.map((img) => img.url && constructImageUrl(state, img.url)).filter(Boolean)
@@ -62,6 +114,7 @@ function renderOffer(state, variant, simple = false) {
     ...(url && { url }),
     ...(options && { options }),
     ...(priceSpecification && { priceSpecification }),
+    ...(shippingDetails && { shippingDetails }),
     ...(!simple && custom && { custom }),
   };
 
@@ -70,6 +123,54 @@ function renderOffer(state, variant, simple = false) {
   }
 
   return offer;
+}
+
+/**
+ * Build a schema.org AggregateRating node from Product Bus rating data.
+ * Values are stored as numeric strings and coerced to numbers here. Returns
+ * null (so the field is omitted) when there is no rating value or no positive
+ * count, since an empty aggregate is invalid for Google rich results.
+ * @param {any} rating
+ * @returns {object|null}
+ */
+function renderAggregateRating(rating) {
+  if (!rating || typeof rating !== 'object') return null;
+
+  const ratingValue = rating.ratingValue != null && rating.ratingValue !== ''
+    ? Number(rating.ratingValue)
+    : null;
+  if (ratingValue == null || Number.isNaN(ratingValue)) return null;
+
+  const toCount = (v) => {
+    if (v == null || v === '') return null;
+    const n = parseInt(v, 10);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const ratingCount = toCount(rating.ratingCount);
+  const reviewCount = toCount(rating.reviewCount);
+  // Google requires at least one of ratingCount / reviewCount, with a positive value.
+  if (ratingCount == null && reviewCount == null) return null;
+
+  const toNum = (v) => {
+    if (v == null || v === '') return null;
+    const n = Number(v);
+    return Number.isNaN(n) ? null : n;
+  };
+  const bestRating = toNum(rating.bestRating);
+  const worstRating = toNum(rating.worstRating);
+  // Validate against the effective scale (schema.org assumes 5/1 when omitted),
+  // but only emit best/worst when the source provides them so we don't assert a
+  // scale it didn't specify. An out-of-range value is invalid for rich results.
+  if (ratingValue < (worstRating ?? 1) || ratingValue > (bestRating ?? 5)) return null;
+
+  return {
+    '@type': 'AggregateRating',
+    ratingValue,
+    ...(ratingCount != null && { ratingCount }),
+    ...(reviewCount != null && { reviewCount }),
+    ...(bestRating != null && { bestRating }),
+    ...(worstRating != null && { worstRating }),
+  };
 }
 
 export function convertToJsonLD(state, product) {
@@ -93,18 +194,25 @@ export function convertToJsonLD(state, product) {
     custom,
     gtin,
     jsonldExtensions,
+    weight,
+    shippingDimensions,
+    aggregateRating,
   } = product;
+
+  const weightQv = quantitativeWeight(weight);
 
   /** @type {any} */
   const jsonld = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    ...(url && { '@id': url }),
     ...(sku && { sku }),
     ...(name || metaTitle ? { name: name || metaTitle } : {}),
     ...(metaDescription || description ? { description: metaDescription || stripHTML(description).trim() } : {}),
     ...(gtin && { gtin }),
     ...(url && { url }),
     ...(brand && { brand: { '@type': 'Brand', name: brand } }),
+    ...(weightQv && { weight: weightQv }),
   };
 
   const resolvedImages = images
@@ -113,9 +221,12 @@ export function convertToJsonLD(state, product) {
   if (resolvedImages.length) jsonld.image = resolvedImages;
 
   const resolvedOffers = variants.length
-    ? variants.map((v) => renderOffer(state, v))
+    ? variants.map((v) => renderOffer(state, v, false, shippingDimensions))
     : [renderOffer(state, product, true)];
   jsonld.offers = resolvedOffers;
+
+  const aggregateRatingLd = renderAggregateRating(aggregateRating);
+  if (aggregateRatingLd) jsonld.aggregateRating = aggregateRatingLd;
 
   if (custom && typeof custom === 'object') {
     jsonld.custom = { ...custom };
