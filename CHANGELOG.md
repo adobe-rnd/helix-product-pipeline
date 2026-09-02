@@ -1,3 +1,10 @@
+# [2.12.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.11.0...v2.12.0) (2026-09-02)
+
+
+### Features
+
+* **merchant-feed:** serialize sale_price, availability_date and additional images ([#90](https://github.com/adobe-rnd/helix-product-pipeline/issues/90)) ([e11331f](https://github.com/adobe-rnd/helix-product-pipeline/commit/e11331fb021e4e94f2240ddd3c4d74e83aaddb85)), closes [adobe-rnd/helix-product-indexer#41](https://github.com/adobe-rnd/helix-product-indexer/issues/41)
+
 # [2.11.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.10.2...v2.11.0) (2026-08-21)
 
 
