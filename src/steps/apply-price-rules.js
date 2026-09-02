@@ -15,11 +15,13 @@
 import { recordLastModified } from '../utils/last-modified.js';
 
 /**
- * @param {{ start?: string, end?: string }} rule
+ * @param {{ enabled?: boolean, start?: string, end?: string }} rule
  * @param {number} now
  * @returns {boolean}
  */
 function isActive(rule, now) {
+  // A rule is enabled unless explicitly disabled (absent flag = enabled).
+  if (rule.enabled === false) return false;
   if (rule.start && new Date(rule.start).getTime() > now) return false;
   if (rule.end && new Date(rule.end).getTime() < now) return false;
   return true;
