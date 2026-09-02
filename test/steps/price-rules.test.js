@@ -134,6 +134,44 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(state.content.data.price.final, '50.00');
   });
 
+  it('does not apply a disabled rule (enabled: false)', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '25.00', { enabled: false })])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00');
+  });
+
+  it('applies a rule with enabled: true', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '25.00', { enabled: true })])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '25.00');
+  });
+
+  it('does not apply a disabled variant rule and inherits nothing from it', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [
+        rule('/us/en/my-product', '25.00', {
+          enabled: false,
+          variants: { SKU1: { sku: 'SKU1', price: '10.00' } },
+        }),
+      ])),
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: 'SKU1', price: { final: '40.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00');
+    assert.strictEqual(state.content.data.variants[0].price.final, '40.00');
+  });
+
   it('applies the lowest price when multiple promotions match', () => {
     const state = makeState({
       catalogPriceRules: catalogRules(
@@ -469,6 +507,15 @@ describe('applyCatalogPriceRules', () => {
     };
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['key-a'].data.price, '25.00');
+  });
+
+  it('does not apply a disabled rule (enabled: false) in index entry', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', { enabled: false })])),
+      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
   });
 
   it('does not apply rule when price is not lower than current price', () => {
