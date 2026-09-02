@@ -140,3 +140,20 @@ export async function setSitemapCacheHeaders(state, req, resp) {
   setCachingHeaders(req, resp, keys);
   if (state.stagePricing) resp.headers.set('cache-control', 'no-store');
 }
+
+/**
+ * Sets the cache headers for a merchant-center feed resource.
+ * Like the sitemap, the feed is a per-site aggregate whose prices change with catalog
+ * price rules, so it carries the shared price-rules key and is purged on rule edges.
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {PipelineResponse} resp
+ * @returns {Promise<void>}
+ */
+export async function setMerchantFeedCacheHeaders(state, req, resp) {
+  const { org, site, info } = state;
+  const keys = await computeSitemapKeys(org, site, info.path);
+  keys.push(computePriceRulesKey(org, site));
+  setCachingHeaders(req, resp, keys);
+  if (state.stagePricing) resp.headers.set('cache-control', 'no-store');
+}

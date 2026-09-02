@@ -18,6 +18,7 @@ import {
   setProductCacheHeaders,
   setIndexCacheHeaders,
   setSitemapCacheHeaders,
+  setMerchantFeedCacheHeaders,
 } from '../../src/steps/set-cache-headers.js';
 
 describe('setCachingHeaders', () => {
@@ -833,6 +834,57 @@ describe('setSitemapCacheHeaders', () => {
     const req = createRequest('https://example.com/products/sitemap.xml', { 'x-byo-cdn-type': 'cloudflare' });
     const resp = createResponse();
     await setSitemapCacheHeaders(state, req, resp);
+    assert.strictEqual(resp.headers.get('cache-control'), 'no-store');
+  });
+});
+
+describe('setMerchantFeedCacheHeaders', () => {
+  const createRequest = (url, headers = {}) => {
+    const req = new PipelineRequest(new URL(url));
+    Object.entries(headers).forEach(([key, value]) => {
+      req.headers.set(key, value);
+    });
+    return req;
+  };
+
+  const createResponse = (status = 200) => {
+    const resp = new PipelineResponse('', { status });
+    if (status < 300) {
+      resp.ok = true;
+    }
+    return resp;
+  };
+
+  it('sets cache-control and exactly three cache tags (path key + site key + pricerules key)', async () => {
+    const state = {
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/merchant-center-feed.xml' },
+    };
+    const req = createRequest('https://example.com/products/merchant-center-feed.xml', {
+      'x-byo-cdn-type': 'cloudflare',
+    });
+    const resp = createResponse();
+
+    await setMerchantFeedCacheHeaders(state, req, resp);
+
+    assert.strictEqual(resp.headers.get('cache-control'), 'max-age=7200, must-revalidate');
+    const tags = resp.headers.get('cache-tag').split(',');
+    assert.strictEqual(tags.length, 3);
+    assert.ok(tags.includes('main--test-site--test-org'));
+    assert.ok(tags.includes('main--test-site--test-org_pricerules'));
+  });
+
+  it('overrides cache-control to no-store when state.stagePricing is true', async () => {
+    const state = {
+      stagePricing: true,
+      org: 'test-org',
+      site: 'test-site',
+      info: { path: '/products/merchant-center-feed.xml' },
+    };
+    const req = createRequest('https://example.com/products/merchant-center-feed.xml', { 'x-byo-cdn-type': 'cloudflare' });
+    const resp = createResponse();
+    await setMerchantFeedCacheHeaders(state, req, resp);
     assert.strictEqual(resp.headers.get('cache-control'), 'no-store');
   });
 });
