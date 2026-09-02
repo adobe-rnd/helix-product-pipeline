@@ -1,3 +1,10 @@
+# [2.13.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.12.0...v2.13.0) (2026-09-02)
+
+
+### Features
+
+* **price-rules:** honor enabled flag when applying catalog price rules ([#94](https://github.com/adobe-rnd/helix-product-pipeline/issues/94)) ([06079d5](https://github.com/adobe-rnd/helix-product-pipeline/commit/06079d51dcd8cace958dca4fa34b680cc27d5653))
+
 # [2.12.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.11.0...v2.12.0) (2026-09-02)
 
 
