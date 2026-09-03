@@ -223,3 +223,113 @@ export function applyCatalogPriceRules(state, res) {
     recordLastModified(state, res, 'price-rules', new Date(newestStartMs).toUTCString());
   }
 }
+
+/**
+ * Parse a merchant-feed price string (e.g. "179.95 CAD") into amount + currency.
+ * @param {unknown} price
+ * @returns {{ amount: number, currency: string } | null}
+ */
+function parseFeedPrice(price) {
+  if (typeof price !== 'string') return null;
+  const match = price.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*(.*)$/);
+  if (!match) return null;
+  return { amount: parseFloat(match[1]), currency: match[2].trim() };
+}
+
+/**
+ * Google merchant `sale_price_effective_date` is an ISO 8601 interval `start/end`.
+ * Only emitted when the rule carries both bounds.
+ * @param {{ start?: string, end?: string }} rule
+ * @returns {string | null}
+ */
+function feedEffectiveDate(rule) {
+  return rule.start && rule.end ? `${rule.start}/${rule.end}` : null;
+}
+
+/**
+ * Apply a catalog price rule to a single merchant-feed entry, writing the discounted
+ * value to `sale_price` (leaving `price` as the regular price) and, when the rule has a
+ * window, `sale_price_effective_date`. Variants (object keyed by SKU) get variant-specific
+ * pricing when present, otherwise inherit the parent rule's price.
+ * @param {object} data - the feed entry data (has `price`, optional `variants`)
+ * @param {SharedTypes.CatalogPriceRule} rule
+ * @param {number} now
+ */
+function applyRuleToFeedEntry(data, rule, now) {
+  // rule comes from bestRuleByPath, which already filtered out non-numeric prices.
+  const effective = feedEffectiveDate(rule);
+  const ruleAmount = parseFloat(rule.price);
+  const parent = parseFeedPrice(data.price);
+
+  if (parent && ruleAmount < parent.amount) {
+    data.sale_price = parent.currency ? `${rule.price} ${parent.currency}` : `${rule.price}`;
+    if (effective) data.sale_price_effective_date = effective;
+  }
+
+  if (data.variants) {
+    for (const variant of Object.values(data.variants)) {
+      const vPrice = parseFeedPrice(variant.price);
+      if (!vPrice) continue;
+      const variantRule = rule.variants?.[variant.sku];
+      let salePrice = null;
+      let vEffective = effective;
+      if (variantRule && isActive(variantRule, now) && variantRule.price != null
+        && parseFloat(variantRule.price) < vPrice.amount) {
+        salePrice = String(variantRule.price);
+        vEffective = feedEffectiveDate(variantRule) ?? effective;
+      } else if (ruleAmount < vPrice.amount) {
+        salePrice = rule.price;
+      }
+      if (salePrice != null) {
+        variant.sale_price = vPrice.currency ? `${salePrice} ${vPrice.currency}` : `${salePrice}`;
+        if (vEffective) variant.sale_price_effective_date = vEffective;
+      }
+    }
+  }
+}
+
+/**
+ * Apply catalog price rules to a stored merchant feed (keyed by product path at the top
+ * level, each entry `{ data }`). For each path, the lowest active rule wins; the discount
+ * is written to `sale_price`/`sale_price_effective_date` so `g:price` stays the regular
+ * price. Also records the newest active rule start as a last-modified source.
+ * @param {PipelineState} state
+ * @param {PipelineResponse} [res]
+ */
+export function applyMerchantFeedPriceRules(state, res) {
+  const { catalogPriceRules, content } = state;
+  if (!catalogPriceRules?.promotions?.length || !content?.data) return;
+
+  const now = Date.now();
+
+  /** @type {Map<string, SharedTypes.CatalogPriceRule>} */
+  const bestRuleByPath = new Map();
+  for (const promotion of catalogPriceRules.promotions) {
+    for (const rule of promotion.rules) {
+      if (!isActive(rule, now)) continue;
+      const price = parseFloat(rule.price);
+      if (Number.isNaN(price)) continue;
+      const current = bestRuleByPath.get(rule.path);
+      if (!current || price < parseFloat(current.price)) {
+        bestRuleByPath.set(rule.path, rule);
+      }
+    }
+  }
+
+  let newestStartMs = 0;
+  for (const [path, entry] of Object.entries(content.data)) {
+    const data = entry?.data;
+    if (!data) continue;
+    const rule = bestRuleByPath.get(path);
+    if (!rule) continue;
+    applyRuleToFeedEntry(data, rule, now);
+    if (rule.start) {
+      const ms = new Date(rule.start).getTime();
+      if (ms > newestStartMs) newestStartMs = ms;
+    }
+  }
+
+  if (newestStartMs && res) {
+    recordLastModified(state, res, 'price-rules', new Date(newestStartMs).toUTCString());
+  }
+}

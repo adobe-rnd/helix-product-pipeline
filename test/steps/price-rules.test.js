@@ -12,7 +12,11 @@
 
 /* eslint-env mocha */
 import assert from 'assert';
-import { applyProductPriceRule, applyCatalogPriceRules } from '../../src/steps/apply-price-rules.js';
+import {
+  applyProductPriceRule,
+  applyCatalogPriceRules,
+  applyMerchantFeedPriceRules,
+} from '../../src/steps/apply-price-rules.js';
 import { fetchCatalogPriceRules } from '../../src/steps/fetch-price-rules.js';
 
 // ---------------------------------------------------------------------------
@@ -717,6 +721,189 @@ describe('applyCatalogPriceRules', () => {
       content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
     };
     assert.doesNotThrow(() => applyCatalogPriceRules(state));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// applyMerchantFeedPriceRules
+// ---------------------------------------------------------------------------
+
+describe('applyMerchantFeedPriceRules', () => {
+  const feed = (entries) => ({ content: { data: entries } });
+
+  it('no-ops when catalogPriceRules is absent', () => {
+    const state = feed({ '/p/a': { data: { price: '50.00 CAD' } } });
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.sale_price, undefined);
+  });
+
+  it('no-ops when content.data is absent', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '9.99')])),
+      content: {},
+    };
+    assert.doesNotThrow(() => applyMerchantFeedPriceRules(state));
+  });
+
+  it('handles prices without a currency suffix and skips non-string prices', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/plain', '29.99'), rule('/numeric', '9.99')])),
+      content: {
+        data: {
+          '/plain': { data: { price: '50.00' } }, // no currency suffix
+          '/numeric': { data: { price: 50 } }, // non-string price
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/plain'].data.sale_price, '29.99');
+    assert.strictEqual(state.content.data['/numeric'].data.sale_price, undefined);
+  });
+
+  it('skips rules with a non-numeric price and entries without data', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [
+        rule('/p/a', 'not-a-number'),
+        rule('/p/b', '10.00'),
+      ])),
+      content: {
+        data: {
+          '/p/a': { data: { price: '50.00 CAD' } },
+          '/p/b': {}, // no data
+        },
+      },
+    };
+    assert.doesNotThrow(() => applyMerchantFeedPriceRules(state));
+    assert.strictEqual(state.content.data['/p/a'].data.sale_price, undefined);
+  });
+
+  it('sets sale_price (keeping price) when an active rule is lower', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '29.99')])),
+      content: { data: { '/p/a': { data: { price: '50.00 CAD' } } } },
+    };
+    applyMerchantFeedPriceRules(state);
+    const { data } = state.content.data['/p/a'];
+    assert.strictEqual(data.price, '50.00 CAD');
+    assert.strictEqual(data.sale_price, '29.99 CAD');
+  });
+
+  it('does not set sale_price when the rule is not lower', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '60.00')])),
+      content: { data: { '/p/a': { data: { price: '50.00 CAD' } } } },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.sale_price, undefined);
+  });
+
+  it('does not apply a rule whose start is in the future', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '29.99', { start: FUTURE })])),
+      content: { data: { '/p/a': { data: { price: '50.00 CAD' } } } },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.sale_price, undefined);
+  });
+
+  it('sets sale_price_effective_date when the rule has both bounds', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '29.99', { start: PAST, end: FUTURE })])),
+      content: { data: { '/p/a': { data: { price: '50.00 CAD' } } } },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.sale_price_effective_date, `${PAST}/${FUTURE}`);
+  });
+
+  it('picks the lowest active rule for a path', () => {
+    const state = {
+      catalogPriceRules: catalogRules(
+        promo('p1', [rule('/p/a', '30.00')]),
+        promo('p2', [rule('/p/a', '25.00')]),
+      ),
+      content: { data: { '/p/a': { data: { price: '50.00 CAD' } } } },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.sale_price, '25.00 CAD');
+  });
+
+  it('applies variant-specific pricing and inherits the parent price otherwise', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '20.00', {
+        variants: { SKU1: { sku: 'SKU1', price: '15.00' } },
+      })])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00 CAD',
+              variants: {
+                SKU1: { sku: 'SKU1', price: '40.00 CAD' },
+                SKU2: { sku: 'SKU2', price: '45.00 CAD' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    const { variants } = state.content.data['/p/a'].data;
+    assert.strictEqual(variants.SKU1.sale_price, '15.00 CAD'); // variant-specific
+    assert.strictEqual(variants.SKU2.sale_price, '20.00 CAD'); // inherited parent rule
+  });
+
+  it('handles variant edge cases (currency-less, unparseable, effective date)', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '20.00', {
+        start: PAST,
+        end: FUTURE,
+        variants: {
+          SKU1: {
+            sku: 'SKU1', price: '15.00', start: PAST, end: FUTURE,
+          },
+        },
+      })])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00 CAD',
+              variants: {
+                SKU1: { sku: 'SKU1', price: '40.00' }, // no currency; variant-specific rule w/ window
+                BAD: { sku: 'BAD', price: 'N/A' }, // unparseable -> skipped
+              },
+            },
+          },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    const { variants } = state.content.data['/p/a'].data;
+    assert.strictEqual(variants.SKU1.sale_price, '15.00'); // no currency suffix
+    assert.strictEqual(variants.SKU1.sale_price_effective_date, `${PAST}/${FUTURE}`);
+    assert.strictEqual(variants.BAD.sale_price, undefined);
+  });
+
+  it('leaves entries without a matching rule untouched', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '10.00')])),
+      content: { data: { '/p/b': { data: { price: '50.00 CAD' } } } },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/p/b'].data.sale_price, undefined);
+  });
+
+  it('records price-rules last-modified from the newest active start', () => {
+    const state = {
+      log: { warn: () => {} },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '29.99', { start: PAST })])),
+      content: { data: { '/p/a': { data: { price: '50.00 CAD' } } } },
+    };
+    const res = { lastModifiedSources: {} };
+    applyMerchantFeedPriceRules(state, res);
+    assert.strictEqual(state.content.data['/p/a'].data.sale_price, '29.99 CAD');
+    assert.ok(res.lastModifiedSources['price-rules']);
+    assert.strictEqual(res.lastModifiedSources['price-rules'].date, new Date(PAST).toUTCString());
   });
 });
 

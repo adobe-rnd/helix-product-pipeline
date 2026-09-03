@@ -67,7 +67,7 @@ describe('Product Merchant Feed Pipe Test', () => {
 
     assert.deepStrictEqual(body, merchantXMLExpected);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
-      // 'cache-control': 'max-age=7200, must-revalidate',
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/xml',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
     });
@@ -104,7 +104,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     const merchantXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
     assert.deepStrictEqual(body, merchantXMLExpected);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
-      // 'cache-control': 'max-age=7200, must-revalidate',
+      'cache-control': 'max-age=7200, must-revalidate',
       'content-type': 'application/xml',
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
     });

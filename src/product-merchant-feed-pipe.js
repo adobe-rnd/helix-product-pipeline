@@ -15,8 +15,10 @@ import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
+import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
+import { applyMerchantFeedPriceRules } from './steps/apply-price-rules.js';
 import { setLastModified } from './utils/last-modified.js';
-import { set404CacheHeaders } from './steps/set-cache-headers.js';
+import { set404CacheHeaders, setMerchantFeedCacheHeaders } from './steps/set-cache-headers.js';
 import { getIncludes } from './steps/utils.js';
 
 /**
@@ -217,10 +219,14 @@ export async function productMerchantFeedPipe(state, req) {
       throw new PipelineStatusError(res.status, res.error);
     }
 
-    // TODO: set surrogate keys
-    // const keys = await computeJSONSurrogateKeys(state);
-    // setCachingHeaders(state, req, res, keys);
+    // Apply catalog price rules so promotions surface as g:sale_price (same source of
+    // truth as the site's HTML/JSON/index outputs).
+    await fetchCatalogPriceRules(state, req);
+    applyMerchantFeedPriceRules(state, res);
 
+    // Tag with the shared price-rules key (plus path + site keys) so the feed is purged
+    // on price-rule edges alongside index and sitemap.
+    await setMerchantFeedCacheHeaders(state, req, res);
     setLastModified(state, res);
 
     res.body = toFeedXML(state, req, state.content.data);
