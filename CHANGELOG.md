@@ -1,3 +1,10 @@
+# [2.14.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.13.0...v2.14.0) (2026-09-03)
+
+
+### Features
+
+* **merchant-feed:** apply catalog price rules and tag for price-rule purge ([#95](https://github.com/adobe-rnd/helix-product-pipeline/issues/95)) ([b7e1c63](https://github.com/adobe-rnd/helix-product-pipeline/commit/b7e1c633b30a06d4db3e23c3dc859cb8c17cae30))
+
 # [2.13.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.12.0...v2.13.0) (2026-09-02)
 
 
