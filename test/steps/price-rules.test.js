@@ -482,7 +482,7 @@ describe('applyProductPriceRule', () => {
 
 describe('applyCatalogPriceRules', () => {
   it('no-ops when catalogPriceRules is absent', () => {
-    const state = { content: { data: { '/p/a': { data: { path: '/p/a', price: '10.00' } } } } };
+    const state = { content: { data: { '/p/a': { data: { price: '10.00' } } } } };
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['/p/a'].data.price, '10.00');
   });
@@ -490,10 +490,10 @@ describe('applyCatalogPriceRules', () => {
   it('no-ops when catalogPriceRules has no promotions', () => {
     const state = {
       catalogPriceRules: { promotions: [] },
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
   it('no-ops when content.data is absent', () => {
@@ -507,28 +507,28 @@ describe('applyCatalogPriceRules', () => {
   it('sets flat product.price from rule in index entry', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '25.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '25.00');
   });
 
   it('does not apply a disabled rule (enabled: false) in index entry', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', { enabled: false })])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
   it('does not apply rule when price is not lower than current price', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '60.00')])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
   it('applies the lowest price when multiple promotions match the same path', () => {
@@ -537,34 +537,79 @@ describe('applyCatalogPriceRules', () => {
         promo('p1', [rule('/p/a', '30.00')]),
         promo('p2', [rule('/p/a', '25.00')]),
       ),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '25.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '25.00');
   });
 
   it('skips index entry with no matching rule', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/other', '25.00')])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
-  it('skips entries with no data or no path', () => {
+  it('skips entries with no data', () => {
     const state = {
-      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00'), rule('/p/b', '25.00')])),
       content: {
         data: {
-          'key-null': null,
-          'key-no-data': {},
-          'key-no-path': { data: { price: '10.00' } },
+          '/p/a': null,
+          '/p/b': {},
+        },
+      },
+    };
+    assert.doesNotThrow(() => applyCatalogPriceRules(state));
+    assert.strictEqual(state.content.data['/p/a'], null);
+    assert.deepStrictEqual(state.content.data['/p/b'], {});
+  });
+
+  it('matches rules on the index key, not a data.path field (stored index shape)', () => {
+    // Real stored index entries are keyed by path and carry no `path` in `data`.
+    const state = {
+      catalogPriceRules: catalogRules(promo('us-fall-flash-sale', [
+        rule('/us/en_us/products/e320', '199.95', { start: PAST }),
+      ])),
+      content: {
+        data: {
+          '/us/en_us/products/e320': {
+            data: {
+              sku: 'E320',
+              url: 'https://www.vitamix.com/us/en_us/products/e320',
+              urlKey: 'e320',
+              price: '379.95',
+              regularPrice: '379.95',
+              variants: {
+                '076047': { sku: '076047', price: '379.95', regularPrice: '379.95' },
+                '076048': { sku: '076048', price: '379.95', regularPrice: '379.95' },
+              },
+            },
+          },
+          '/us/en_us/products/e310': {
+            data: { sku: 'E310', urlKey: 'e310', price: '379.95' },
+          },
         },
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-no-path'].data.price, '10.00');
+    const e320 = state.content.data['/us/en_us/products/e320'].data;
+    assert.strictEqual(e320.price, '199.95');
+    assert.strictEqual(e320.regularPrice, '379.95');
+    assert.strictEqual(e320.variants['076047'].price, '199.95');
+    assert.strictEqual(e320.variants['076048'].price, '199.95');
+    assert.strictEqual(state.content.data['/us/en_us/products/e310'].data.price, '379.95');
+  });
+
+  it('ignores a stray data.path that disagrees with the index key', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/other', '25.00')])),
+      content: { data: { '/p/a': { data: { path: '/p/other', price: '50.00' } } } },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
   it('sets flat variant.price from variant rule in index entry', () => {
@@ -574,9 +619,8 @@ describe('applyCatalogPriceRules', () => {
       })])),
       content: {
         data: {
-          'key-a': {
+          '/p/a': {
             data: {
-              path: '/p/a',
               price: '50.00',
               variants: { 'sku-a': { sku: 'sku-a', price: '50.00' } },
             },
@@ -585,7 +629,7 @@ describe('applyCatalogPriceRules', () => {
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '20.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].price, '20.00');
   });
 
   it('inherits parent price to index variant without a variant rule', () => {
@@ -593,9 +637,8 @@ describe('applyCatalogPriceRules', () => {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
       content: {
         data: {
-          'key-a': {
+          '/p/a': {
             data: {
-              path: '/p/a',
               price: '50.00',
               variants: { 'sku-a': { sku: 'sku-a', price: '50.00' } },
             },
@@ -604,7 +647,7 @@ describe('applyCatalogPriceRules', () => {
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '25.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].price, '25.00');
   });
 
   it('does not raise an index variant price when inherited parent rule price is higher', () => {
@@ -613,9 +656,8 @@ describe('applyCatalogPriceRules', () => {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '40.00')])),
       content: {
         data: {
-          'key-a': {
+          '/p/a': {
             data: {
-              path: '/p/a',
               price: '50.00',
               variants: { 'sku-a': { sku: 'sku-a', price: '30.00' } },
             },
@@ -624,35 +666,35 @@ describe('applyCatalogPriceRules', () => {
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '40.00', 'product price should be lowered');
-    assert.strictEqual(state.content.data['key-a'].data.variants['sku-a'].price, '30.00', 'index variant must not be raised');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '40.00', 'product price should be lowered');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].price, '30.00', 'index variant must not be raised');
   });
 
   it('skips rule with non-numeric price', () => {
     const state = {
-      catalogPriceRules: catalogRules(promo('p', [{ path: '/p/a', price: 'not-a-number' }])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      catalogPriceRules: catalogRules(promo('p', [{ price: 'not-a-number' }])),
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
   it('skips inactive rule in index mode', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', { end: PAST })])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, '50.00');
+    assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
   it('skips product when its price is non-numeric', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: 'free' } } } },
+      content: { data: { '/p/a': { data: { price: 'free' } } } },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['key-a'].data.price, 'free');
+    assert.strictEqual(state.content.data['/p/a'].data.price, 'free');
   });
 
   it('records last-modified at newest rule start among index products', () => {
@@ -668,8 +710,8 @@ describe('applyCatalogPriceRules', () => {
       ),
       content: {
         data: {
-          'key-a': { data: { path: '/p/a', price: '50.00' } },
-          'key-b': { data: { path: '/p/b', price: '50.00' } },
+          '/p/a': { data: { price: '50.00' } },
+          '/p/b': { data: { price: '50.00' } },
         },
       },
     };
@@ -689,7 +731,7 @@ describe('applyCatalogPriceRules', () => {
         promo('p1', [rule('/p/a', '30.00', { start: OLDER })]),
         promo('p2', [rule('/p/a', '35.00', { start: NEWER })]),
       ),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state, res);
     assert.strictEqual(res.lastModifiedSources['price-rules'].time, new Date(new Date(NEWER).toUTCString()).getTime());
@@ -699,7 +741,7 @@ describe('applyCatalogPriceRules', () => {
     const res = { lastModifiedSources: {}, headers: { set: () => {} } };
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state, res);
     assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
@@ -709,7 +751,7 @@ describe('applyCatalogPriceRules', () => {
     const res = { lastModifiedSources: {}, headers: { set: () => {} } };
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/other', '25.00', { start: PAST })])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     applyCatalogPriceRules(state, res);
     assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
@@ -718,7 +760,7 @@ describe('applyCatalogPriceRules', () => {
   it('does not throw when res is omitted', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', { start: PAST })])),
-      content: { data: { 'key-a': { data: { path: '/p/a', price: '50.00' } } } },
+      content: { data: { '/p/a': { data: { price: '50.00' } } } },
     };
     assert.doesNotThrow(() => applyCatalogPriceRules(state));
   });
