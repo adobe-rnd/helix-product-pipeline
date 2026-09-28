@@ -168,6 +168,8 @@ export function applyProductPriceRule(state, res) {
 
 /**
  * Apply catalog price rules to the stored index (index request).
+ * The stored index is keyed by product path (`{ [path]: { data } }`); entry data carries no
+ * `path` field, so the key is what gets matched against rule paths.
  * For each product, finds the lowest active promotion price and applies it only
  * if it is less than the product's current price. Also records the most recently
  * started active rule's start time (across all paths in the index) as a last-modified source.
@@ -204,18 +206,17 @@ export function applyCatalogPriceRules(state, res) {
   }
 
   let newestStartMs = 0;
-  for (const entry of Object.values(content.data)) {
+  for (const [path, entry] of Object.entries(content.data)) {
     const product = entry?.data;
-    // eslint-disable-next-line no-continue
-    if (!product?.path) continue;
-    const rule = bestRuleByPath.get(product.path);
+    if (!product) continue;
+    const rule = bestRuleByPath.get(path);
     if (!rule) continue;
     const rulePrice = parseFloat(rule.price);
     const productPrice = parseFloat(product.price);
     if (!Number.isNaN(productPrice) && rulePrice < productPrice) {
       applyRuleToProduct(product, rule, now, true);
     }
-    const startMs = newestStartMsByPath.get(product.path) ?? 0;
+    const startMs = newestStartMsByPath.get(path) ?? 0;
     if (startMs > newestStartMs) newestStartMs = startMs;
   }
 
