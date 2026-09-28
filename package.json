@@ -1,6 +1,6 @@
 {
   "name": "@dylandepass/helix-product-pipeline",
-  "version": "2.14.0",
+  "version": "2.14.1",
   "description": "Helix Product Pipeline",
   "main": "src/index.js",
   "types": "src/index.d.ts",

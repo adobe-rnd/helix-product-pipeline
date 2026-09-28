@@ -1,3 +1,10 @@
+## [2.14.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.14.0...v2.14.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **price-rules:** match index entries on path key, not data.path ([#97](https://github.com/adobe-rnd/helix-product-pipeline/issues/97)) ([106394d](https://github.com/adobe-rnd/helix-product-pipeline/commit/106394df46039b8ac02b06c07f7cc5ed61dd5a02))
+
 # [2.14.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.13.0...v2.14.0) (2026-09-03)
 
 
