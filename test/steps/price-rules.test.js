@@ -364,6 +364,47 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(state.content.data.variants[0].price.final, '50.00', 'variant should be discounted');
   });
 
+  it('inherits a qualifying parent promotion independently per variant', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '25.00')])),
+      content: {
+        data: {
+          price: { final: '20.00', regular: '50.00' },
+          variants: [{ sku: 'sku-a', price: { final: '50.00', regular: '50.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '20.00');
+    assert.strictEqual(state.content.data.variants[0].price.final, '25.00');
+  });
+
+  it('chooses the lowest effective price per sku across overlapping promotions', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(
+        promo('a', [rule('/us/en/my-product', '20.00', {
+          variants: { 'sku-a': { sku: 'sku-a', price: '30.00' } },
+        })]),
+        promo('b', [rule('/us/en/my-product', '25.00', {
+          variants: { 'sku-a': { sku: 'sku-a', price: '10.00' } },
+        })]),
+      ),
+      content: {
+        data: {
+          price: { final: '50.00', regular: '50.00' },
+          variants: [
+            { sku: 'sku-a', price: { final: '50.00', regular: '50.00' } },
+            { sku: 'sku-b', price: { final: '50.00', regular: '50.00' } },
+          ],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '20.00');
+    assert.strictEqual(state.content.data.variants[0].price.final, '10.00');
+    assert.strictEqual(state.content.data.variants[1].price.final, '20.00');
+  });
+
   it('applies a rule with no product price when its variant-specific price is lower', () => {
     // rule has only a variant-specific price (no product-level price)
     //   — product unchanged, variant discounted
@@ -830,6 +871,49 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '20.00');
   });
 
+  it('chooses the lowest effective price per sku across overlapping promotions in index mode', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(
+        promo('a', [rule('/p/a', '20.00', {
+          variants: { 'sku-a': { sku: 'sku-a', price: '30.00' } },
+        })]),
+        promo('b', [rule('/p/a', '25.00', {
+          variants: { 'sku-a': { sku: 'sku-a', price: '10.00' } },
+        })]),
+      ),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '50.00',
+              variants: {
+                'sku-a': { sku: 'sku-a', variantFinalPrice: '50.00' },
+                'sku-b': { sku: 'sku-b', variantFinalPrice: '50.00' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    const row = state.content.data['/p/a'].data;
+    assert.strictEqual(row.finalPrice, '20.00');
+    assert.strictEqual(row.variants['sku-a'].variantFinalPrice, '10.00');
+    assert.strictEqual(row.variants['sku-b'].variantFinalPrice, '20.00');
+  });
+
   it('inherits the parent rule to variants when the parent has no indexed final price', () => {
     const state = {
       config: {
@@ -1277,6 +1361,19 @@ describe('applyMerchantFeedPriceRules', () => {
     assert.strictEqual(state.content.data['/numeric'].data.sale_price, undefined);
   });
 
+  it('retains sale-price currency when the feed lacks a regular price field', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/sale-only', '19.99')])),
+      content: {
+        data: {
+          '/sale-only': { data: { sale_price: '29.99 CAD' } },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/sale-only'].data.sale_price, '19.99 CAD');
+  });
+
   it('skips rules with a non-numeric price and entries without data', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [
@@ -1367,6 +1464,91 @@ describe('applyMerchantFeedPriceRules', () => {
     const { variants } = state.content.data['/p/a'].data;
     assert.strictEqual(variants.SKU1.sale_price, '15.00 CAD'); // variant-specific
     assert.strictEqual(variants.SKU2.sale_price, '20.00 CAD'); // inherited parent rule
+  });
+
+  it('chooses the lowest effective price per sku across overlapping promotions in merchant feed mode', () => {
+    const state = {
+      catalogPriceRules: catalogRules(
+        promo('a', [rule('/p/a', '20.00', {
+          variants: { SKU1: { sku: 'SKU1', price: '30.00' } },
+        })]),
+        promo('b', [rule('/p/a', '25.00', {
+          variants: { SKU1: { sku: 'SKU1', price: '10.00' } },
+        })]),
+      ),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00 CAD',
+              variants: {
+                SKU1: { sku: 'SKU1', price: '50.00 CAD' },
+                SKU2: { sku: 'SKU2', price: '50.00 CAD' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    const { data } = state.content.data['/p/a'];
+    assert.strictEqual(data.sale_price, '20.00 CAD');
+    assert.strictEqual(data.variants.SKU1.sale_price, '10.00 CAD');
+    assert.strictEqual(data.variants.SKU2.sale_price, '20.00 CAD');
+  });
+
+  it('does not fall back to the parent price for an active invalid variant override', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '20.00', {
+        variants: { SKU1: { sku: 'SKU1', price: '60.00' } },
+      })])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00 CAD',
+              variants: {
+                SKU1: { sku: 'SKU1', price: '50.00 CAD' },
+                SKU2: { sku: 'SKU2', price: '50.00 CAD' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    const { variants } = state.content.data['/p/a'].data;
+    assert.strictEqual(variants.SKU1.sale_price, undefined);
+    assert.strictEqual(variants.SKU2.sale_price, '20.00 CAD');
+  });
+
+  it('preserves an existing lower sale_price in merchant feed mode', () => {
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '20.00', {
+        variants: { SKU1: { sku: 'SKU1', price: '60.00' } },
+      })])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00 CAD',
+              sale_price: '10.00 CAD',
+              variants: {
+                SKU1: {
+                  sku: 'SKU1',
+                  price: '50.00 CAD',
+                  sale_price: '15.00 CAD',
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    const { data } = state.content.data['/p/a'];
+    assert.strictEqual(data.sale_price, '10.00 CAD');
+    assert.strictEqual(data.variants.SKU1.sale_price, '15.00 CAD');
   });
 
   it('handles variant edge cases (currency-less, unparseable, effective date)', () => {
