@@ -1,3 +1,10 @@
+# [2.15.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.14.1...v2.15.0) (2026-09-29)
+
+
+### Features
+
+* **meta:** support dedicated product social images ([27e4744](https://github.com/adobe-rnd/helix-product-pipeline/commit/27e47446cef1aeb734ba6590db07ae30620f1f3a))
+
 ## [2.14.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.14.0...v2.14.1) (2026-09-28)
 
 
