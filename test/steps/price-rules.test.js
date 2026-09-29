@@ -1191,6 +1191,48 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '60.00');
   });
 
+  it('does not let an active null-price override block a later real variant discount in index mode', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(
+        promo('p1', [{
+          path: '/p/a',
+          price: '20.00',
+          variants: { 'sku-a': { sku: 'sku-a', price: null } },
+        }]),
+        promo('p2', [{
+          path: '/p/a',
+          price: '25.00',
+          variants: { 'sku-a': { sku: 'sku-a', price: '10.00' } },
+        }]),
+      ),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '50.00',
+              variants: { 'sku-a': { sku: 'sku-a', variantFinalPrice: '50.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '20.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '10.00');
+  });
+
   it('inherits parent price to index variant without a variant rule', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
