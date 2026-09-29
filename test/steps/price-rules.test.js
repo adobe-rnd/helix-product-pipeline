@@ -218,51 +218,27 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(state.content.data.price.final, '50.00');
   });
 
-  it('applies a country-scoped promotion when the product country matches', () => {
+  it('scopes promotions by exact path for country-specific product routes', () => {
     const state = makeState({
-      info: { path: '/us/en_us/my-product.json' },
-      catalogPriceRules: catalogRules({
-        id: 'p',
-        name: 'CA Promo',
-        country: 'ca',
-        rules: [rule('/us/en_us/my-product', '25.00')],
-      }),
-      content: { data: { country: 'ca', price: { final: '50.00' } } },
-    });
-    applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.price.final, '25.00');
-  });
-
-  it('does not infer country from en_us path when product country differs', () => {
-    const state = makeState({
-      info: { path: '/us/en_us/my-product.json' },
-      catalogPriceRules: catalogRules({
-        id: 'p',
-        name: 'US Promo',
-        country: 'us',
-        rules: [rule('/us/en_us/my-product', '25.00')],
-      }),
-      content: { data: { country: 'ca', price: { final: '50.00' } } },
-    });
-    applyProductPriceRule(state);
-    assert.strictEqual(state.content.data.price.final, '50.00');
-  });
-
-  it('publishes only global promotions when product country is missing', () => {
-    const state = makeState({
+      info: { path: '/ca/en_us/my-product.json' },
       catalogPriceRules: catalogRules(
-        {
-          id: 'scoped',
-          name: 'Scoped',
-          country: 'ca',
-          rules: [rule('/us/en/my-product', '20.00')],
-        },
-        promo('global', [rule('/us/en/my-product', '25.00')]),
+        promo('ca', [rule('/ca/en_us/my-product', '25.00')]),
+        promo('us', [rule('/us/en_us/my-product', '20.00')]),
       ),
       content: { data: { price: { final: '50.00' } } },
     });
     applyProductPriceRule(state);
     assert.strictEqual(state.content.data.price.final, '25.00');
+  });
+
+  it('does not infer country from locale-like path segments', () => {
+    const state = makeState({
+      info: { path: '/ca/en_us/my-product.json' },
+      catalogPriceRules: catalogRules(promo('us', [rule('/us/en_us/my-product', '20.00')])),
+      content: { data: { price: { final: '50.00' } } },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.price.final, '50.00');
   });
 
   it('inherits parent price to array variants without a variant rule', () => {
@@ -555,16 +531,12 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
   });
 
-  it('does not record last-modified for country-scoped rules that do not apply to the product country', () => {
+  it('does not record last-modified for rules on other country-specific paths', () => {
     const res = { lastModifiedSources: {}, headers: { set: () => {} } };
     const state = makeState({
-      catalogPriceRules: catalogRules({
-        id: 'ca',
-        name: 'CA Promo',
-        country: 'ca',
-        rules: [rule('/us/en/my-product', '29.99', { start: PAST })],
-      }),
-      content: { data: { country: 'us', price: { final: '50.00' } } },
+      info: { path: '/ca/en_us/my-product.json' },
+      catalogPriceRules: catalogRules(promo('us', [rule('/us/en_us/my-product', '29.99', { start: PAST })])),
+      content: { data: { price: { final: '50.00' } } },
     });
     applyProductPriceRule(state, res);
     assert.strictEqual(res.lastModifiedSources['price-rules'], undefined);
@@ -789,29 +761,22 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['/p/a'].data.price, '50.00');
   });
 
-  it('filters country-scoped promotions per index entry metadata', () => {
+  it('scopes index promotions by exact country-specific paths', () => {
     const state = {
       catalogPriceRules: catalogRules(
-        {
-          id: 'ca',
-          name: 'CA',
-          country: 'ca',
-          rules: [rule('/p/ca', '25.00'), rule('/p/us', '25.00')],
-        },
-        promo('global', [rule('/p/missing', '30.00')]),
+        promo('ca', [rule('/ca/en_us/p/a', '25.00')]),
+        promo('us', [rule('/us/en_us/p/a', '20.00')]),
       ),
       content: {
         data: {
-          '/p/ca': { metadata: { country: 'ca' }, data: { price: '50.00' } },
-          '/p/us': { metadata: { country: 'us' }, data: { price: '50.00' } },
-          '/p/missing': { data: { price: '50.00' } },
+          '/ca/en_us/p/a': { data: { price: '50.00' } },
+          '/us/en_us/p/a': { data: { price: '50.00' } },
         },
       },
     };
     applyCatalogPriceRules(state);
-    assert.strictEqual(state.content.data['/p/ca'].data.price, '25.00');
-    assert.strictEqual(state.content.data['/p/us'].data.price, '50.00');
-    assert.strictEqual(state.content.data['/p/missing'].data.price, '30.00');
+    assert.strictEqual(state.content.data['/ca/en_us/p/a'].data.price, '25.00');
+    assert.strictEqual(state.content.data['/us/en_us/p/a'].data.price, '20.00');
   });
 
   it('skips entries with no data', () => {
@@ -1751,29 +1716,22 @@ describe('applyMerchantFeedPriceRules', () => {
     assert.strictEqual(state.content.data['/p/b'].data.sale_price, undefined);
   });
 
-  it('filters country-scoped promotions per merchant feed entry metadata', () => {
+  it('scopes merchant-feed promotions by exact country-specific paths', () => {
     const state = {
       catalogPriceRules: catalogRules(
-        {
-          id: 'ca',
-          name: 'CA',
-          country: 'ca',
-          rules: [rule('/p/ca', '20.00'), rule('/p/us', '20.00')],
-        },
-        promo('global', [rule('/p/missing', '30.00')]),
+        promo('ca', [rule('/ca/en_us/p/a', '20.00')]),
+        promo('us', [rule('/us/en_us/p/a', '15.00')]),
       ),
       content: {
         data: {
-          '/p/ca': { metadata: { country: 'ca' }, data: { price: '50.00 CAD' } },
-          '/p/us': { metadata: { country: 'us' }, data: { price: '50.00 CAD' } },
-          '/p/missing': { data: { price: '50.00 CAD' } },
+          '/ca/en_us/p/a': { data: { price: '50.00 CAD' } },
+          '/us/en_us/p/a': { data: { price: '50.00 CAD' } },
         },
       },
     };
     applyMerchantFeedPriceRules(state);
-    assert.strictEqual(state.content.data['/p/ca'].data.sale_price, '20.00 CAD');
-    assert.strictEqual(state.content.data['/p/us'].data.sale_price, undefined);
-    assert.strictEqual(state.content.data['/p/missing'].data.sale_price, '30.00 CAD');
+    assert.strictEqual(state.content.data['/ca/en_us/p/a'].data.sale_price, '20.00 CAD');
+    assert.strictEqual(state.content.data['/us/en_us/p/a'].data.sale_price, '15.00 CAD');
   });
 
   it('records price-rules last-modified from the newest active start', () => {

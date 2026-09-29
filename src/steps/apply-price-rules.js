@@ -133,21 +133,6 @@ function getVariantList(product) {
 }
 
 /**
- * @param {{ country?: string }} promotion
- * @param {string | undefined} productCountry
- * @returns {boolean}
- */
-function promotionAppliesToCountry(promotion, productCountry) {
-  if (!promotion.country) {
-    return true;
-  }
-  if (!productCountry) {
-    return false;
-  }
-  return promotion.country.toLowerCase() === productCountry.toLowerCase();
-}
-
-/**
  * @param {object} record
  * @param {boolean} isIndex
  * @param {{
@@ -277,14 +262,10 @@ export function applyProductPriceRule(state, res) {
 
   const productPath = info.path.replace(/\.(json|html)$/, '');
   const now = Date.now();
-  const productCountry = content.data.country;
 
   if (res) {
     let newestStartMs = 0;
     for (const promotion of catalogPriceRules.promotions) {
-      if (!promotionAppliesToCountry(promotion, productCountry)) {
-        continue;
-      }
       for (const r of promotion.rules) {
         if (r.path !== productPath || !isActive(r, now)) continue;
         applyRuleToProduct(content.data, r, now, false);
@@ -301,9 +282,6 @@ export function applyProductPriceRule(state, res) {
   }
 
   for (const promotion of catalogPriceRules.promotions) {
-    if (!promotionAppliesToCountry(promotion, productCountry)) {
-      continue;
-    }
     for (const r of promotion.rules) {
       if (r.path !== productPath || !isActive(r, now)) continue;
       applyRuleToProduct(content.data, r, now, false);
@@ -333,7 +311,7 @@ export function applyCatalogPriceRules(state, res) {
     for (const rule of promotion.rules) {
       if (!isActive(rule, now)) continue;
       const entry = content.data[rule.path];
-      if (entry?.data && promotionAppliesToCountry(promotion, entry.metadata?.country)) {
+      if (entry?.data) {
         applyRuleToProduct(entry.data, rule, now, true, indexPriceTargets);
         if (rule.start) {
           const startMs = new Date(rule.start).getTime();
@@ -460,7 +438,7 @@ export function applyMerchantFeedPriceRules(state, res) {
     for (const rule of promotion.rules) {
       if (!isActive(rule, now)) continue;
       const entry = content.data[rule.path];
-      if (entry?.data && promotionAppliesToCountry(promotion, entry.metadata?.country)) {
+      if (entry?.data) {
         applyRuleToFeedEntry(entry.data, rule, now);
         if (rule.start) {
           const ms = new Date(rule.start).getTime();
