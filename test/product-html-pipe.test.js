@@ -17,6 +17,7 @@ import { PipelineRequest, PipelineState, PipelineStatusError } from '@adobe/heli
 import fetchMock from 'fetch-mock';
 import { readFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
+import { JSDOM } from 'jsdom';
 import path from 'path';
 import { FileS3Loader } from './FileS3Loader.js';
 import { productHTMLPipe } from '../src/index.js';
@@ -39,6 +40,19 @@ const DEFAULT_STATE = (config = DEFAULT_CONFIG, opts = {}) => (new PipelineState
   s3Loader: new FileS3Loader(),
   ...opts,
 }));
+
+function assertSocialImageTags(html, expected) {
+  const { document } = new JSDOM(html).window;
+  for (const [selector, label] of [
+    ['head meta[property="og:image"]', 'og:image'],
+    ['head meta[name="twitter:image"]', 'twitter:image'],
+  ]) {
+    const tags = document.querySelectorAll(selector);
+    assert.strictEqual(tags.length, 1, `expected one ${label} tag`);
+    assert.strictEqual(tags[0].getAttribute('content'), expected, `${label} URL`);
+  }
+  return document;
+}
 
 describe('Product HTML Pipe Test', () => {
   it('returns 404 for invalid path info', async () => {
@@ -90,6 +104,89 @@ describe('Product HTML Pipe Test', () => {
       'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
     });
     fetchMock.unmockGlobal();
+  });
+
+  it('uses metaImage for social metadata without changing the product JSON-LD image', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    const product = {
+      sku: 'meta-image',
+      name: 'Social image test',
+      url: 'https://www.blendify.com/us/en_us/products/meta-image',
+      images: [{ url: './media_gallery.jpg' }],
+      metaImage: './media_social.jpg',
+      variants: [],
+    };
+    fetchMockGlobal.get('https://main--site--org.aem.live/us/en_us/products/meta-image', { status: 404 });
+
+    const s3Loader = new FileS3Loader();
+    s3Loader.override('meta-image.json', JSON.stringify(product));
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/us/en_us/products/meta-image',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/us/en_us/products/meta-image');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL(product.url), {
+        headers: new Map([['host', 'www.blendify.com']]),
+      }),
+    );
+
+    fetchMock.unmockGlobal();
+    assert.strictEqual(resp.status, 200);
+    const document = assertSocialImageTags(
+      resp.body,
+      'https://www.blendify.com/us/en_us/products/media_social.jpg',
+    );
+    const jsonld = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent);
+    assert.deepStrictEqual(jsonld.image, [
+      'https://www.blendify.com/us/en_us/products/media_gallery.jpg',
+    ]);
+  });
+
+  it('falls back from an empty metaImage to the first gallery image for social metadata', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+    const product = {
+      sku: 'meta-image',
+      name: 'Social image test',
+      url: 'https://www.blendify.com/us/en_us/products/meta-image',
+      images: [{ url: './media_gallery.jpg' }],
+      metaImage: '',
+      variants: [],
+    };
+    fetchMockGlobal.get('https://main--site--org.aem.live/us/en_us/products/meta-image', { status: 404 });
+
+    const s3Loader = new FileS3Loader();
+    s3Loader.override('meta-image.json', JSON.stringify(product));
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/us/en_us/products/meta-image',
+      partition: 'live',
+      timer: { update: () => {} },
+    });
+    state.info = getPathInfo('/us/en_us/products/meta-image');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL(product.url), {
+        headers: new Map([['host', 'www.blendify.com']]),
+      }),
+    );
+
+    fetchMock.unmockGlobal();
+    assert.strictEqual(resp.status, 200);
+    assertSocialImageTags(resp.body, 'https://www.blendify.com/us/en_us/products/media_gallery.jpg');
   });
 
   it('transforms image URLs with filename in rendered HTML', async () => {

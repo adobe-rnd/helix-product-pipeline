@@ -36,11 +36,12 @@ export default async function render(state) {
     url,
     sku,
     images = [],
+    metaImage,
     type,
     metadata,
   } = content.data;
 
-  const ogImage = constructImageUrl(state, images[0]?.url);
+  const ogImage = constructImageUrl(state, metaImage || images[0]?.url);
   const head = select('head', hast);
   const headDescription = metaDescription || limitWords(stripHTML(description));
   head.children = [

@@ -159,8 +159,10 @@ describe('Rendering', () => {
       await testRender('custom-metadata', 'html', 200);
     });
 
-    it('renders no images', async () => {
-      await testRender('no-images', 'html', 200);
+    it('renders no images or metaImage', async () => {
+      const response = await testRender('no-images', 'html', 200);
+      assert.ok(response.body.includes('<meta property="og:image" content="">'));
+      assert.ok(response.body.includes('<meta name="twitter:image" content="">'));
     });
 
     it('renders image props correctly', async () => {
