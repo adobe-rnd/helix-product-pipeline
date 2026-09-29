@@ -863,6 +863,78 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '25.00');
   });
 
+  it('inherits the parent rule when a variant override is disabled and the parent has no indexed final price', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              name: 'name',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        price: '25.00',
+        variants: { 'sku-a': { sku: 'sku-a', price: '10.00', enabled: false } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              name: 'Configurable',
+              variants: {
+                'sku-a': { sku: 'sku-a', variantFinalPrice: '50.00' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '25.00');
+  });
+
+  it('inherits the parent rule when a variant override is not yet active and the parent has no indexed final price', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              name: 'name',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        price: '25.00',
+        variants: { 'sku-a': { sku: 'sku-a', price: '10.00', start: FUTURE } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              name: 'Configurable',
+              variants: {
+                'sku-a': { sku: 'sku-a', variantFinalPrice: '50.00' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '25.00');
+  });
+
   it('applies variant-only discounts in index mode when no parent price is present on the rule', () => {
     const state = {
       config: {

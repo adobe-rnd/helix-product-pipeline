@@ -246,10 +246,7 @@ function findBestIndexRule(rules, now, product, indexPriceTargets) {
     const lowersVariantPrice = Array.from(variantCurrentPrices.entries())
       .some(([sku, currentVPrice]) => {
         const variantRule = rule.variants?.[sku];
-        if (variantRule) {
-          if (!isActive(variantRule, now) || variantRule.price == null) {
-            return false;
-          }
+        if (variantRule && isActive(variantRule, now) && variantRule.price != null) {
           return parseFloat(variantRule.price) < currentVPrice;
         }
         return !Number.isNaN(p) && p < currentVPrice;
