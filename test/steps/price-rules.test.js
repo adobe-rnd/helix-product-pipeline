@@ -1551,6 +1551,36 @@ describe('applyMerchantFeedPriceRules', () => {
     assert.strictEqual(data.variants.SKU1.sale_price, '15.00 CAD');
   });
 
+  it('clears an old sale_price_effective_date when a lower evergreen rule wins', () => {
+    const state = {
+      catalogPriceRules: catalogRules(
+        promo('p1', [rule('/p/a', '30.00', { start: PAST, end: FUTURE })]),
+        promo('p2', [rule('/p/a', '20.00')]),
+      ),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00 CAD',
+              variants: {
+                SKU1: { sku: 'SKU1', price: '50.00 CAD' },
+                SKU2: { sku: 'SKU2', price: '50.00 CAD' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    const { data } = state.content.data['/p/a'];
+    assert.strictEqual(data.sale_price, '20.00 CAD');
+    assert.strictEqual(data.sale_price_effective_date, undefined);
+    assert.strictEqual(data.variants.SKU1.sale_price, '20.00 CAD');
+    assert.strictEqual(data.variants.SKU1.sale_price_effective_date, undefined);
+    assert.strictEqual(data.variants.SKU2.sale_price, '20.00 CAD');
+    assert.strictEqual(data.variants.SKU2.sale_price_effective_date, undefined);
+  });
+
   it('handles variant edge cases (currency-less, unparseable, effective date)', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '20.00', {

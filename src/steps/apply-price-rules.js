@@ -306,8 +306,7 @@ export function applyCatalogPriceRules(state, res) {
   const now = Date.now();
   const indexPriceTargets = getIndexPriceTargets(state);
 
-  /** @type {Map<string, number>} */
-  const newestStartMsByPath = new Map();
+  let newestStartMs = 0;
   for (const promotion of catalogPriceRules.promotions) {
     for (const rule of promotion.rules) {
       if (!isActive(rule, now)) continue;
@@ -316,15 +315,14 @@ export function applyCatalogPriceRules(state, res) {
         applyRuleToProduct(entry, rule, now, true, indexPriceTargets);
         if (rule.start) {
           const startMs = new Date(rule.start).getTime();
-          if (startMs > (newestStartMsByPath.get(rule.path) ?? 0)) {
-            newestStartMsByPath.set(rule.path, startMs);
+          if (startMs > newestStartMs) {
+            newestStartMs = startMs;
           }
         }
       }
     }
   }
 
-  const newestStartMs = Math.max(0, ...newestStartMsByPath.values());
   if (newestStartMs && res) {
     recordLastModified(state, res, 'price-rules', new Date(newestStartMs).toUTCString());
   }
@@ -392,6 +390,8 @@ function applyRuleToFeedEntry(data, rule, now) {
     const effective = feedEffectiveDate(rule);
     if (effective) {
       data.sale_price_effective_date = effective;
+    } else {
+      delete data.sale_price_effective_date;
     }
   }
 
@@ -411,6 +411,8 @@ function applyRuleToFeedEntry(data, rule, now) {
         : feedEffectiveDate(rule);
       if (effective) {
         variant.sale_price_effective_date = effective;
+      } else {
+        delete variant.sale_price_effective_date;
       }
     }
   }
