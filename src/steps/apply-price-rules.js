@@ -243,11 +243,17 @@ function findBestIndexRule(rules, now, product, indexPriceTargets) {
   for (const rule of rules) {
     const p = parseFloat(rule.price);
     const lowersProductPrice = !Number.isNaN(p) && p < currentPrice;
-    const lowersVariantPrice = Object.entries(rule.variants ?? {}).some(([sku, vr]) => {
-      if (!isActive(vr, now) || vr.price == null) return false;
-      const currentVPrice = variantCurrentPrices.get(sku);
-      return currentVPrice !== undefined && parseFloat(vr.price) < currentVPrice;
-    });
+    const lowersVariantPrice = Array.from(variantCurrentPrices.entries())
+      .some(([sku, currentVPrice]) => {
+        const variantRule = rule.variants?.[sku];
+        if (variantRule) {
+          if (!isActive(variantRule, now) || variantRule.price == null) {
+            return false;
+          }
+          return parseFloat(variantRule.price) < currentVPrice;
+        }
+        return !Number.isNaN(p) && p < currentVPrice;
+      });
 
     if (!lowersProductPrice && !lowersVariantPrice) continue;
 
