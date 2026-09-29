@@ -578,6 +578,42 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(variant.variantRegularPrice, '60.00');
   });
 
+  it('does not fall back to price when the variant price field stores regular price', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.regular': 'price',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '50.00',
+              variants: {
+                'sku-a': {
+                  sku: 'sku-a',
+                  price: '60.00',
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '25.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].price, '60.00');
+  });
+
   it('no-ops when no final-price column is mapped or stored', () => {
     const state = {
       config: {
@@ -750,6 +786,213 @@ describe('applyCatalogPriceRules', () => {
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['/p/a'].data.price, '999.00');
     assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '25.00');
+  });
+
+  it('applies variant-specific discounts even when the parent price would not be lowered', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        price: '40.00',
+        variants: { 'sku-a': { sku: 'sku-a', price: '20.00' } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '30.00',
+              variants: { 'sku-a': { sku: 'sku-a', variantFinalPrice: '60.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '30.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '20.00');
+  });
+
+  it('applies variant-only discounts in index mode when no parent price is present on the rule', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        variants: { 'sku-a': { sku: 'sku-a', price: '45.00' } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '30.00',
+              variants: { 'sku-a': { sku: 'sku-a', variantFinalPrice: '60.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '30.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '45.00');
+  });
+
+  it('ignores malformed index variants without a sku when selecting variant discounts', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        variants: { 'sku-a': { sku: 'sku-a', price: '45.00' } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '30.00',
+              variants: {
+                broken: { variantFinalPrice: '999.00' },
+                'sku-a': { sku: 'sku-a', variantFinalPrice: '60.00' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.variants.broken.variantFinalPrice, '999.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '45.00');
+  });
+
+  it('supports array-shaped variants in index mode when selecting variant discounts', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        variants: { 'sku-a': { sku: 'sku-a', price: '45.00' } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '30.00',
+              variants: [{ sku: 'sku-a', variantFinalPrice: '60.00' }],
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.variants[0].variantFinalPrice, '45.00');
+  });
+
+  it('ignores disabled variant-only rules in index mode', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        variants: { 'sku-a': { sku: 'sku-a', price: '45.00', enabled: false } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '30.00',
+              variants: { 'sku-a': { sku: 'sku-a', variantFinalPrice: '60.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '30.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '60.00');
+  });
+
+  it('ignores variant-only rules with null prices in index mode', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [{
+        path: '/p/a',
+        variants: { 'sku-a': { sku: 'sku-a', price: null } },
+      }])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '30.00',
+              variants: { 'sku-a': { sku: 'sku-a', variantFinalPrice: '60.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '30.00');
+    assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].variantFinalPrice, '60.00');
   });
 
   it('inherits parent price to index variant without a variant rule', () => {

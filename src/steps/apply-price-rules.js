@@ -43,6 +43,18 @@ function getMappedFields(properties, sourceKey) {
 }
 
 /**
+ * Use the legacy flat `price` field only when it is not explicitly mapped from
+ * `price.regular`. If it is, treating it as a final-price column would corrupt
+ * the stored regular price when promotions are applied.
+ *
+ * @param {Record<string, any> | undefined} properties
+ * @returns {string[]}
+ */
+function getLegacyIndexPriceFallback(properties) {
+  return getMappedFields(properties, 'price.regular').includes('price') ? [] : ['price'];
+}
+
+/**
  * Resolve the index columns that carry the final price for products and variants.
  * Mirrors the indexer config model: variants use `properties.variants ?? properties`.
  * When no explicit `price.final` mapping exists, fall back to the legacy `price`
@@ -57,8 +69,8 @@ function getIndexPriceTargets(state) {
   const product = getMappedFields(properties, 'price.final');
   const variant = getMappedFields(variantProperties, 'price.final');
   return {
-    product: product.length ? product : ['price'],
-    variant: variant.length ? variant : ['price'],
+    product: product.length ? product : getLegacyIndexPriceFallback(properties),
+    variant: variant.length ? variant : getLegacyIndexPriceFallback(variantProperties),
   };
 }
 
@@ -100,7 +112,10 @@ function setIndexPrice(record, fields, price) {
 function applyRuleToProduct(product, rule, now, isIndex = false, indexPriceTargets = { product: ['price'], variant: ['price'] }) {
   if (rule.price != null) {
     if (isIndex) {
-      setIndexPrice(product, indexPriceTargets.product, rule.price);
+      const currentProductPrice = getCurrentIndexPrice(product, indexPriceTargets.product);
+      if (parseFloat(rule.price) < currentProductPrice) {
+        setIndexPrice(product, indexPriceTargets.product, rule.price);
+      }
     } else if (product.price && parseFloat(rule.price) < parseFloat(product.price.final)) {
       product.price.final = rule.price;
     }
@@ -196,6 +211,57 @@ function findBestRule(catalogPriceRules, productPath, now, product) {
 }
 
 /**
+ * Find the best active promotion rule for an index row using the resolved
+ * final-price columns for the product and its variants.
+ *
+ * @param {SharedTypes.CatalogPriceRule[]} rules
+ * @param {number} now
+ * @param {object} product
+ * @param {{ product: string[], variant: string[] }} indexPriceTargets
+ * @returns {SharedTypes.CatalogPriceRule | null}
+ */
+function findBestIndexRule(rules, now, product, indexPriceTargets) {
+  const currentPrice = getCurrentIndexPrice(product, indexPriceTargets.product);
+
+  const variantCurrentPrices = new Map();
+  const variantList = Array.isArray(product.variants)
+    ? product.variants
+    : Object.values(product.variants ?? {});
+  for (const variant of variantList) {
+    if (!variant?.sku) {
+      continue;
+    }
+    const price = getCurrentIndexPrice(variant, indexPriceTargets.variant);
+    if (!Number.isNaN(price)) {
+      variantCurrentPrices.set(variant.sku, price);
+    }
+  }
+
+  let bestRule = null;
+  let bestRuleProductPrice = Infinity;
+
+  for (const rule of rules) {
+    const p = parseFloat(rule.price);
+    const lowersProductPrice = !Number.isNaN(p) && p < currentPrice;
+    const lowersVariantPrice = Object.entries(rule.variants ?? {}).some(([sku, vr]) => {
+      if (!isActive(vr, now) || vr.price == null) return false;
+      const currentVPrice = variantCurrentPrices.get(sku);
+      return currentVPrice !== undefined && parseFloat(vr.price) < currentVPrice;
+    });
+
+    if (!lowersProductPrice && !lowersVariantPrice) continue;
+
+    const ruleProductPrice = Number.isNaN(p) ? Infinity : p;
+    if (!bestRule || ruleProductPrice < bestRuleProductPrice) {
+      bestRuleProductPrice = ruleProductPrice;
+      bestRule = rule;
+    }
+  }
+
+  return bestRule;
+}
+
+/**
  * Apply catalog price rules to state.content.data (single product request).
  * Finds the lowest active promotion price for the product path and applies it only
  * if it is less than the product's current price. Also records the most recently
@@ -244,20 +310,17 @@ export function applyCatalogPriceRules(state, res) {
   const now = Date.now();
   const indexPriceTargets = getIndexPriceTargets(state);
 
-  // Build a path → best rule map and a path → newest start map across all promotions
-  /** @type {Map<string, SharedTypes.CatalogPriceRule>} */
-  const bestRuleByPath = new Map();
+  // Build a path → active rules map and a path → newest start map across all promotions
+  /** @type {Map<string, SharedTypes.CatalogPriceRule[]>} */
+  const rulesByPath = new Map();
   /** @type {Map<string, number>} */
   const newestStartMsByPath = new Map();
   for (const promotion of catalogPriceRules.promotions) {
     for (const rule of promotion.rules) {
       if (!isActive(rule, now)) continue;
-      const price = parseFloat(rule.price);
-      if (Number.isNaN(price)) continue;
-      const current = bestRuleByPath.get(rule.path);
-      if (!current || price < parseFloat(current.price)) {
-        bestRuleByPath.set(rule.path, rule);
-      }
+      const rules = rulesByPath.get(rule.path) ?? [];
+      rules.push(rule);
+      rulesByPath.set(rule.path, rules);
       if (rule.start) {
         const startMs = new Date(rule.start).getTime();
         if (startMs > (newestStartMsByPath.get(rule.path) ?? 0)) {
@@ -271,13 +334,9 @@ export function applyCatalogPriceRules(state, res) {
   for (const [path, entry] of Object.entries(content.data)) {
     const product = entry?.data;
     if (!product) continue;
-    const rule = bestRuleByPath.get(path);
+    const rule = findBestIndexRule(rulesByPath.get(path) ?? [], now, product, indexPriceTargets);
     if (!rule) continue;
-    const rulePrice = parseFloat(rule.price);
-    const productPrice = getCurrentIndexPrice(product, indexPriceTargets.product);
-    if (!Number.isNaN(productPrice) && rulePrice < productPrice) {
-      applyRuleToProduct(product, rule, now, true, indexPriceTargets);
-    }
+    applyRuleToProduct(product, rule, now, true, indexPriceTargets);
     const startMs = newestStartMsByPath.get(path) ?? 0;
     if (startMs > newestStartMs) newestStartMs = startMs;
   }
