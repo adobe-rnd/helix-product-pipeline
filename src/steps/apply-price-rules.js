@@ -28,20 +28,79 @@ function isActive(rule, now) {
 }
 
 /**
+ * @param {Record<string, any> | undefined} properties
+ * @param {string} sourceKey
+ * @returns {string[]}
+ */
+function getMappedFields(properties, sourceKey) {
+  if (!properties || typeof properties !== 'object') {
+    return [];
+  }
+  return Object.entries(properties)
+    .filter(([key, value]) => key === sourceKey && typeof value === 'string')
+    .map(([_, value]) => value)
+    .filter((value, index, arr) => arr.indexOf(value) === index);
+}
+
+/**
+ * Resolve the index columns that carry the final price for products and variants.
+ * Mirrors the indexer config model: variants use `properties.variants ?? properties`.
+ * When no explicit `price.final` mapping exists, fall back to the legacy `price`
+ * column so existing indices keep working.
+ *
+ * @param {PipelineState} state
+ * @returns {{ product: string[], variant: string[] }}
+ */
+function getIndexPriceTargets(state) {
+  const properties = state.config?.public?.productIndexerConfig?.properties;
+  const variantProperties = properties?.variants ?? properties;
+  const product = getMappedFields(properties, 'price.final');
+  const variant = getMappedFields(variantProperties, 'price.final');
+  return {
+    product: product.length ? product : ['price'],
+    variant: variant.length ? variant : ['price'],
+  };
+}
+
+/**
+ * @param {object} record
+ * @param {string[]} fields
+ * @returns {number}
+ */
+function getCurrentIndexPrice(record, fields) {
+  const prices = fields
+    .map((field) => parseFloat(record?.[field]))
+    .filter((price) => !Number.isNaN(price));
+  return prices.length ? Math.min(...prices) : NaN;
+}
+
+/**
+ * @param {object} record
+ * @param {string[]} fields
+ * @param {string} price
+ */
+function setIndexPrice(record, fields, price) {
+  fields.forEach((field) => {
+    record[field] = price;
+  });
+}
+
+/**
  * Apply a catalog price rule to a product object.
- * In product mode, mutates price.final. In index mode, mutates the flat price field.
- * Variant rules are only applied in product mode (index entries are flat).
+ * In product mode, mutates price.final. In index mode, mutates the column(s)
+ * mapped from `price.final` (falling back to the legacy flat `price` field).
  * In non-index mode, the product price is only written if the rule price is lower
  * (a rule may be selected purely for variant benefit without improving the product price).
  * @param {object} product
  * @param {SharedTypes.CatalogPriceRule} rule
  * @param {number} now
  * @param {boolean} isIndex
+ * @param {{ product: string[], variant: string[] }} [indexPriceTargets]
  */
-function applyRuleToProduct(product, rule, now, isIndex = false) {
+function applyRuleToProduct(product, rule, now, isIndex = false, indexPriceTargets = { product: ['price'], variant: ['price'] }) {
   if (rule.price != null) {
     if (isIndex) {
-      product.price = rule.price;
+      setIndexPrice(product, indexPriceTargets.product, rule.price);
     } else if (product.price && parseFloat(rule.price) < parseFloat(product.price.final)) {
       product.price.final = rule.price;
     }
@@ -59,21 +118,23 @@ function applyRuleToProduct(product, rule, now, isIndex = false) {
   }
 
   for (const variant of variantList) {
-    const currentVariantPrice = isIndex ? variant.price : variant.price?.final;
+    const currentVariantPrice = isIndex
+      ? getCurrentIndexPrice(variant, indexPriceTargets.variant)
+      : parseFloat(variant.price?.final);
     const variantRule = rule.variants?.[variant.sku];
     if (variantRule && isActive(variantRule, now)) {
       if (variantRule.price != null
-        && parseFloat(variantRule.price) < parseFloat(currentVariantPrice)) {
+        && parseFloat(variantRule.price) < currentVariantPrice) {
         if (isIndex) {
-          variant.price = variantRule.price;
+          setIndexPrice(variant, indexPriceTargets.variant, variantRule.price);
         } else if (variant.price) {
           variant.price.final = variantRule.price;
         }
       }
-    } else if (rule.price != null && parseFloat(rule.price) < parseFloat(currentVariantPrice)) {
+    } else if (rule.price != null && parseFloat(rule.price) < currentVariantPrice) {
       // inherit parent product price only if lower than variant's current price
       if (isIndex) {
-        variant.price = rule.price;
+        setIndexPrice(variant, indexPriceTargets.variant, rule.price);
       } else if (variant.price) {
         variant.price.final = rule.price;
       }
@@ -181,6 +242,7 @@ export function applyCatalogPriceRules(state, res) {
   if (!catalogPriceRules?.promotions?.length || !content?.data) return;
 
   const now = Date.now();
+  const indexPriceTargets = getIndexPriceTargets(state);
 
   // Build a path → best rule map and a path → newest start map across all promotions
   /** @type {Map<string, SharedTypes.CatalogPriceRule>} */
@@ -212,9 +274,9 @@ export function applyCatalogPriceRules(state, res) {
     const rule = bestRuleByPath.get(path);
     if (!rule) continue;
     const rulePrice = parseFloat(rule.price);
-    const productPrice = parseFloat(product.price);
+    const productPrice = getCurrentIndexPrice(product, indexPriceTargets.product);
     if (!Number.isNaN(productPrice) && rulePrice < productPrice) {
-      applyRuleToProduct(product, rule, now, true);
+      applyRuleToProduct(product, rule, now, true, indexPriceTargets);
     }
     const startMs = newestStartMsByPath.get(path) ?? 0;
     if (startMs > newestStartMs) newestStartMs = startMs;

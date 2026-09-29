@@ -513,6 +513,97 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['/p/a'].data.price, '25.00');
   });
 
+  it('applies the rule to columns mapped from price.final', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              'price.regular': 'regularPrice',
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      content: {
+        data: {
+          '/p/a': { data: { finalPrice: '50.00', regularPrice: '60.00' } },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '25.00');
+    assert.strictEqual(state.content.data['/p/a'].data.regularPrice, '60.00');
+  });
+
+  it('applies the rule to variant columns mapped from price.final', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              'price.final': 'finalPrice',
+              variants: {
+                'price.final': 'variantFinalPrice',
+                'price.regular': 'variantRegularPrice',
+              },
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', {
+        variants: { 'sku-a': { sku: 'sku-a', price: '20.00' } },
+      })])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              finalPrice: '50.00',
+              variants: {
+                'sku-a': {
+                  sku: 'sku-a',
+                  variantFinalPrice: '50.00',
+                  variantRegularPrice: '60.00',
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    const variant = state.content.data['/p/a'].data.variants['sku-a'];
+    assert.strictEqual(variant.variantFinalPrice, '20.00');
+    assert.strictEqual(variant.variantRegularPrice, '60.00');
+  });
+
+  it('no-ops when no final-price column is mapped or stored', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              name: 'name',
+              'price.regular': 'regularPrice',
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      content: {
+        data: {
+          '/p/a': { data: { name: 'Product A', regularPrice: '60.00' } },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.deepStrictEqual(state.content.data['/p/a'].data, {
+      name: 'Product A',
+      regularPrice: '60.00',
+    });
+  });
+
   it('does not apply a disabled rule (enabled: false) in index entry', () => {
     const state = {
       catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', { enabled: false })])),
@@ -630,6 +721,35 @@ describe('applyCatalogPriceRules', () => {
     };
     applyCatalogPriceRules(state);
     assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].price, '20.00');
+  });
+
+  it('treats price.final mappings as authoritative over stored legacy price values', () => {
+    const state = {
+      config: {
+        public: {
+          productIndexerConfig: {
+            properties: {
+              price: 'price',
+              'price.final': 'finalPrice',
+            },
+          },
+        },
+      },
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00')])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '999.00',
+              finalPrice: '50.00',
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.price, '999.00');
+    assert.strictEqual(state.content.data['/p/a'].data.finalPrice, '25.00');
   });
 
   it('inherits parent price to index variant without a variant rule', () => {
