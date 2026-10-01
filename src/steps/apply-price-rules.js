@@ -133,6 +133,18 @@ function getVariantList(product) {
 }
 
 /**
+ * @param {SharedTypes.CatalogPriceRule} rule
+ * @param {string | undefined} sku
+ * @returns {SharedTypes.CatalogPriceRule['variants'][string] | undefined}
+ */
+function getVariantOverride(rule, sku) {
+  if (!sku || !rule.variants || !Object.hasOwn(rule.variants, sku)) {
+    return undefined;
+  }
+  return rule.variants[sku];
+}
+
+/**
  * @param {object} record
  * @param {boolean} isIndex
  * @param {{
@@ -241,7 +253,12 @@ function applyRuleToProduct(product, rule, now, isIndex = false, indexPriceTarge
 
   for (const variant of getVariantList(product)) {
     const variantPriceInfo = getPriceInfo(variant, isIndex, indexPriceTargets, true);
-    const candidate = getCandidatePrice(rule, rule.variants?.[variant.sku], now, variantPriceInfo);
+    const candidate = getCandidatePrice(
+      rule,
+      getVariantOverride(rule, variant.sku),
+      now,
+      variantPriceInfo,
+    );
     if (candidate && candidate.amount < variantPriceInfo.finalAmount) {
       variantPriceInfo.setFinal(candidate.raw);
     }
@@ -250,9 +267,9 @@ function applyRuleToProduct(product, rule, now, isIndex = false, indexPriceTarge
 
 /**
  * Apply catalog price rules to state.content.data (single product request).
- * Finds the lowest active promotion price for the product path and applies it only
- * if it is less than the product's current price. Also records the most recently
- * started active rule's start time as a last-modified source.
+ * Applies every active rule for the matched product path, reducing prices per
+ * SKU without ever raising an existing lower final price. Also records the most
+ * recently started active rule's start time as a last-modified source.
  * @param {PipelineState} state
  * @param {PipelineResponse} [res]
  */
@@ -293,9 +310,10 @@ export function applyProductPriceRule(state, res) {
  * Apply catalog price rules to the stored index (index request).
  * The stored index is keyed by product path (`{ [path]: { data } }`); entry data carries no
  * `path` field, so the key is what gets matched against rule paths.
- * For each product, finds the lowest active promotion price and applies it only
- * if it is less than the product's current price. Also records the most recently
- * started active rule's start time (across all paths in the index) as a last-modified source.
+ * For each product, applies every active rule for that path and reduces prices
+ * per SKU without ever raising an existing lower final price. Also records the
+ * most recently started active rule's start time (across all paths in the
+ * index) as a last-modified source.
  * @param {PipelineState} state
  * @param {PipelineResponse} [res]
  */
@@ -398,7 +416,7 @@ function applyRuleToFeedEntry(data, rule, now) {
   if (data.variants) {
     for (const variant of Object.values(data.variants)) {
       const variantInfo = getFeedPriceInfo(variant);
-      const variantRule = rule.variants?.[variant.sku];
+      const variantRule = getVariantOverride(rule, variant.sku);
       const candidate = getCandidatePrice(rule, variantRule, now, variantInfo);
       if (!candidate || !(candidate.amount < variantInfo.finalAmount)) {
         continue;

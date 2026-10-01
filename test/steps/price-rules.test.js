@@ -255,6 +255,22 @@ describe('applyProductPriceRule', () => {
     assert.strictEqual(state.content.data.variants[0].price.final, '20.00');
   });
 
+  it('inherits parent price for reserved-name skus that are not explicit overrides', () => {
+    const state = makeState({
+      catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00', {
+        variants: { 'sku-a': { sku: 'sku-a', price: '15.00' } },
+      })])),
+      content: {
+        data: {
+          price: { final: '50.00' },
+          variants: [{ sku: '__proto__', price: { final: '30.00' } }],
+        },
+      },
+    });
+    applyProductPriceRule(state);
+    assert.strictEqual(state.content.data.variants[0].price.final, '20.00');
+  });
+
   it('applies variant-specific rule from array variants', () => {
     const state = makeState({
       catalogPriceRules: catalogRules(promo('p', [rule('/us/en/my-product', '20.00', {
@@ -1303,6 +1319,27 @@ describe('applyCatalogPriceRules', () => {
     assert.strictEqual(state.content.data['/p/a'].data.variants['sku-a'].price, '25.00');
   });
 
+  it('inherits parent price for reserved-name skus in index mode', () => {
+    const reservedSku = '__proto__';
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '25.00', {
+        variants: { 'sku-a': { sku: 'sku-a', price: '15.00' } },
+      })])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00',
+              variants: { [reservedSku]: { sku: reservedSku, price: '30.00' } },
+            },
+          },
+        },
+      },
+    };
+    applyCatalogPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.variants[reservedSku].price, '25.00');
+  });
+
   it('does not raise an index variant price when inherited parent rule price is higher', () => {
     // product $50 → $40 via rule; index variant is already $30 — must stay $30
     const state = {
@@ -1558,6 +1595,29 @@ describe('applyMerchantFeedPriceRules', () => {
     const { variants } = state.content.data['/p/a'].data;
     assert.strictEqual(variants.SKU1.sale_price, '15.00 CAD'); // variant-specific
     assert.strictEqual(variants.SKU2.sale_price, '20.00 CAD'); // inherited parent rule
+  });
+
+  it('inherits parent sale pricing for reserved-name skus in merchant feed mode', () => {
+    const reservedSku = '__proto__';
+    const state = {
+      catalogPriceRules: catalogRules(promo('p', [rule('/p/a', '20.00', {
+        variants: { SKU1: { sku: 'SKU1', price: '15.00' } },
+      })])),
+      content: {
+        data: {
+          '/p/a': {
+            data: {
+              price: '50.00 CAD',
+              variants: {
+                [reservedSku]: { sku: reservedSku, price: '45.00 CAD' },
+              },
+            },
+          },
+        },
+      },
+    };
+    applyMerchantFeedPriceRules(state);
+    assert.strictEqual(state.content.data['/p/a'].data.variants[reservedSku].sale_price, '20.00 CAD');
   });
 
   it('chooses the lowest effective price per sku across overlapping promotions in merchant feed mode', () => {
