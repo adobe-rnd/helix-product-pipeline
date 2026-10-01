@@ -70,7 +70,7 @@ declare global {
     };
 
     productIndexerConfig?: {
-      properties: Record<string, string>;
+      properties: Record<string, string | Record<string, string>>;
     }
 
     productSitemapConfig?: {

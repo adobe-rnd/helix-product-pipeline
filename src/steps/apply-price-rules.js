@@ -28,117 +28,248 @@ function isActive(rule, now) {
 }
 
 /**
- * Apply a catalog price rule to a product object.
- * In product mode, mutates price.final. In index mode, mutates the flat price field.
- * Variant rules are only applied in product mode (index entries are flat).
- * In non-index mode, the product price is only written if the rule price is lower
- * (a rule may be selected purely for variant benefit without improving the product price).
+ * @param {Record<string, any> | undefined} properties
+ * @param {string} sourceKey
+ * @returns {string[]}
+ */
+function getMappedFields(properties, sourceKey) {
+  if (!properties || typeof properties !== 'object') {
+    return [];
+  }
+  return Object.entries(properties)
+    .filter(([key, value]) => key === sourceKey && typeof value === 'string')
+    .map(([_, value]) => value)
+    .filter((value, index, arr) => arr.indexOf(value) === index);
+}
+
+/**
+ * Use the legacy flat `price` field only when it is not explicitly mapped from
+ * `price.regular`. If it is, treating it as a final-price column would corrupt
+ * the stored regular price when promotions are applied.
+ *
+ * @param {Record<string, any> | undefined} properties
+ * @returns {string[]}
+ */
+function getLegacyIndexPriceFallback(properties) {
+  return getMappedFields(properties, 'price.regular').includes('price') ? [] : ['price'];
+}
+
+/**
+ * Resolve the index columns that carry the final and regular price for products
+ * and variants. Mirrors the indexer config model: variants use
+ * `properties.variants ?? properties`. When no explicit `price.final` mapping
+ * exists, fall back to the legacy `price` column so existing indices keep
+ * working.
+ *
+ * @param {PipelineState} state
+ * @returns {{
+ *   final: { product: string[], variant: string[] },
+ *   regular: { product: string[], variant: string[] },
+ * }}
+ */
+function getIndexPriceTargets(state) {
+  const properties = state.config?.public?.productIndexerConfig?.properties;
+  const variantProperties = properties?.variants ?? properties;
+  const productFinal = getMappedFields(properties, 'price.final');
+  const variantFinal = getMappedFields(variantProperties, 'price.final');
+  return {
+    final: {
+      product: productFinal.length ? productFinal : getLegacyIndexPriceFallback(properties),
+      variant: variantFinal.length ? variantFinal : getLegacyIndexPriceFallback(variantProperties),
+    },
+    regular: {
+      product: getMappedFields(properties, 'price.regular'),
+      variant: getMappedFields(variantProperties, 'price.regular'),
+    },
+  };
+}
+
+/**
+ * @param {object} record
+ * @param {string[]} fields
+ * @returns {number}
+ */
+function getCurrentIndexPrice(record, fields) {
+  const prices = fields
+    .map((field) => parseFloat(record?.[field]))
+    .filter((price) => !Number.isNaN(price));
+  return prices.length ? Math.min(...prices) : NaN;
+}
+
+/**
+ * @param {object} record
+ * @param {string[]} fields
+ * @param {string} price
+ */
+function setIndexPrice(record, fields, price) {
+  fields.forEach((field) => {
+    record[field] = price;
+  });
+}
+
+/**
+ * @param {object} record
+ * @param {string[]} fields
+ * @returns {string | undefined}
+ */
+function getIndexFieldValue(record, fields) {
+  return fields.find((field) => record?.[field] != null)
+    ? String(record[fields.find((field) => record?.[field] != null)])
+    : undefined;
+}
+
+/**
+ * @param {object} product
+ * @returns {SharedTypes.ProductBusVariant[]}
+ */
+function getVariantList(product) {
+  if (Array.isArray(product.variants)) {
+    return product.variants;
+  }
+  if (product.variants) {
+    return Object.values(product.variants);
+  }
+  return [];
+}
+
+/**
+ * @param {SharedTypes.CatalogPriceRule} rule
+ * @param {string | undefined} sku
+ * @returns {SharedTypes.CatalogPriceRule['variants'][string] | undefined}
+ */
+function getVariantOverride(rule, sku) {
+  if (!sku || !rule.variants || !Object.hasOwn(rule.variants, sku)) {
+    return undefined;
+  }
+  return rule.variants[sku];
+}
+
+/**
+ * @param {object} record
+ * @param {boolean} isIndex
+ * @param {{
+ *   final: { product: string[], variant: string[] },
+ *   regular: { product: string[], variant: string[] },
+ * }} indexPriceTargets
+ * @param {boolean} isVariant
+ * @returns {{
+ *   finalAmount: number,
+ *   regularAmount: number,
+ *   regularRaw: string | undefined,
+ *   setFinal: (price: string) => void,
+ * }}
+ */
+function getPriceInfo(record, isIndex, indexPriceTargets, isVariant = false) {
+  if (isIndex) {
+    const finalFields = isVariant
+      ? indexPriceTargets.final.variant
+      : indexPriceTargets.final.product;
+    const regularFields = isVariant
+      ? indexPriceTargets.regular.variant
+      : indexPriceTargets.regular.product;
+    return {
+      finalAmount: getCurrentIndexPrice(record, finalFields),
+      regularAmount: parseFloat(getIndexFieldValue(record, regularFields)),
+      regularRaw: getIndexFieldValue(record, regularFields),
+      setFinal: (price) => setIndexPrice(record, finalFields, price),
+    };
+  }
+
+  return {
+    finalAmount: parseFloat(record.price?.final),
+    regularAmount: parseFloat(record.price?.regular),
+    regularRaw: record.price?.regular,
+    setFinal: (price) => {
+      if (record.price) {
+        record.price.final = price;
+      }
+    },
+  };
+}
+
+/**
+ * @param {SharedTypes.CatalogPriceRule} rule
+ * @param {SharedTypes.CatalogPriceRule['variants'][string] | undefined} variantRule
+ * @param {number} now
+ * @param {{ regularAmount: number, regularRaw: string | undefined }} priceInfo
+ * @returns {{ amount: number, raw: string } | null}
+ */
+function getCandidatePrice(rule, variantRule, now, priceInfo) {
+  let raw;
+  let amount;
+
+  if (variantRule && isActive(variantRule, now)) {
+    if (variantRule.price == null) {
+      return null;
+    }
+    raw = String(variantRule.price);
+    amount = parseFloat(variantRule.price);
+  } else if (rule.price != null) {
+    raw = String(rule.price);
+    amount = parseFloat(rule.price);
+  } else {
+    return null;
+  }
+
+  if (Number.isNaN(amount)) {
+    return null;
+  }
+
+  if (!Number.isNaN(priceInfo.regularAmount) && amount > priceInfo.regularAmount) {
+    return {
+      amount: priceInfo.regularAmount,
+      raw: priceInfo.regularRaw,
+    };
+  }
+
+  return { amount, raw };
+}
+
+/**
+ * Apply one catalog price rule to a product object.
+ * In product mode, mutates `price.final`; in index mode, mutates the column(s)
+ * mapped from `price.final` (falling back to the legacy flat `price` field).
+ * Each SKU is evaluated independently: an active variant override replaces the
+ * parent candidate for that SKU, otherwise the parent rule price is inherited.
+ *
  * @param {object} product
  * @param {SharedTypes.CatalogPriceRule} rule
  * @param {number} now
  * @param {boolean} isIndex
+ * @param {{
+ *   final: { product: string[], variant: string[] },
+ *   regular: { product: string[], variant: string[] },
+ * }} [indexPriceTargets]
  */
-function applyRuleToProduct(product, rule, now, isIndex = false) {
-  if (rule.price != null) {
-    if (isIndex) {
-      product.price = rule.price;
-    } else if (product.price && parseFloat(rule.price) < parseFloat(product.price.final)) {
-      product.price.final = rule.price;
+function applyRuleToProduct(product, rule, now, isIndex = false, indexPriceTargets = {
+  final: { product: ['price'], variant: ['price'] },
+  regular: { product: [], variant: [] },
+}) {
+  const productPriceInfo = getPriceInfo(product, isIndex, indexPriceTargets, false);
+  const productCandidate = getCandidatePrice(rule, undefined, now, productPriceInfo);
+  if (productCandidate && productCandidate.amount < productPriceInfo.finalAmount) {
+    productPriceInfo.setFinal(productCandidate.raw);
+  }
+
+  for (const variant of getVariantList(product)) {
+    const variantPriceInfo = getPriceInfo(variant, isIndex, indexPriceTargets, true);
+    const candidate = getCandidatePrice(
+      rule,
+      getVariantOverride(rule, variant.sku),
+      now,
+      variantPriceInfo,
+    );
+    if (candidate && candidate.amount < variantPriceInfo.finalAmount) {
+      variantPriceInfo.setFinal(candidate.raw);
     }
   }
-
-  // Variants may be an array (product JSON) or an object keyed by SKU (stored index)
-  /** @type {SharedTypes.ProductBusVariant[]} */
-  let variantList;
-  if (Array.isArray(product.variants)) {
-    variantList = product.variants;
-  } else if (product.variants) {
-    variantList = Object.values(product.variants);
-  } else {
-    variantList = [];
-  }
-
-  for (const variant of variantList) {
-    const currentVariantPrice = isIndex ? variant.price : variant.price?.final;
-    const variantRule = rule.variants?.[variant.sku];
-    if (variantRule && isActive(variantRule, now)) {
-      if (variantRule.price != null
-        && parseFloat(variantRule.price) < parseFloat(currentVariantPrice)) {
-        if (isIndex) {
-          variant.price = variantRule.price;
-        } else if (variant.price) {
-          variant.price.final = variantRule.price;
-        }
-      }
-    } else if (rule.price != null && parseFloat(rule.price) < parseFloat(currentVariantPrice)) {
-      // inherit parent product price only if lower than variant's current price
-      if (isIndex) {
-        variant.price = rule.price;
-      } else if (variant.price) {
-        variant.price.final = rule.price;
-      }
-    }
-  }
-}
-
-/**
- * Find the best active promotion rule for a product across all promotions.
- * A rule qualifies if its price is lower than the product's current price OR if any of
- * its active variant-specific prices are lower than the corresponding variant's current price.
- * Among qualifying rules, the one with the lowest product-level price wins.
- * @param {SharedTypes.CatalogPriceRules} catalogPriceRules
- * @param {string} productPath
- * @param {number} now
- * @param {object} product - the product object (used to read current price and variant prices)
- * @returns {SharedTypes.CatalogPriceRule | null}
- */
-function findBestRule(catalogPriceRules, productPath, now, product) {
-  const currentPrice = parseFloat(product.price?.final ?? 'Infinity');
-
-  const variantCurrentPrices = new Map();
-  const variantList = Array.isArray(product.variants)
-    ? product.variants
-    : Object.values(product.variants ?? {});
-  for (const v of variantList) {
-    if (v.sku && v.price?.final != null) {
-      variantCurrentPrices.set(v.sku, parseFloat(v.price.final));
-    }
-  }
-
-  let bestRule = null;
-  let bestRuleProductPrice = Infinity;
-
-  for (const promotion of catalogPriceRules.promotions) {
-    for (const rule of promotion.rules) {
-      if (rule.path !== productPath) continue;
-      if (!isActive(rule, now)) continue;
-
-      const p = parseFloat(rule.price);
-      const lowersProductPrice = !Number.isNaN(p) && p < currentPrice;
-      const lowersVariantPrice = Object.entries(rule.variants ?? {}).some(([sku, vr]) => {
-        if (!isActive(vr, now) || vr.price == null) return false;
-        const currentVPrice = variantCurrentPrices.get(sku);
-        return currentVPrice !== undefined && parseFloat(vr.price) < currentVPrice;
-      });
-
-      if (!lowersProductPrice && !lowersVariantPrice) continue;
-
-      const ruleProductPrice = Number.isNaN(p) ? Infinity : p;
-      if (!bestRule || ruleProductPrice < bestRuleProductPrice) {
-        bestRuleProductPrice = ruleProductPrice;
-        bestRule = rule;
-      }
-    }
-  }
-
-  return bestRule;
 }
 
 /**
  * Apply catalog price rules to state.content.data (single product request).
- * Finds the lowest active promotion price for the product path and applies it only
- * if it is less than the product's current price. Also records the most recently
- * started active rule's start time as a last-modified source.
+ * Applies every active rule for the matched product path, reducing prices per
+ * SKU without ever raising an existing lower final price. Also records the most
+ * recently started active rule's start time as a last-modified source.
  * @param {PipelineState} state
  * @param {PipelineResponse} [res]
  */
@@ -148,20 +279,29 @@ export function applyProductPriceRule(state, res) {
 
   const productPath = info.path.replace(/\.(json|html)$/, '');
   const now = Date.now();
-  const rule = findBestRule(catalogPriceRules, productPath, now, content.data);
-  if (rule) applyRuleToProduct(content.data, rule, now, false);
 
   if (res) {
     let newestStartMs = 0;
     for (const promotion of catalogPriceRules.promotions) {
       for (const r of promotion.rules) {
-        if (r.path !== productPath || !isActive(r, now) || !r.start) continue;
-        const ms = new Date(r.start).getTime();
-        if (ms > newestStartMs) newestStartMs = ms;
+        if (r.path !== productPath || !isActive(r, now)) continue;
+        applyRuleToProduct(content.data, r, now, false);
+        if (r.start) {
+          const ms = new Date(r.start).getTime();
+          if (ms > newestStartMs) newestStartMs = ms;
+        }
       }
     }
     if (newestStartMs) {
       recordLastModified(state, res, 'price-rules', new Date(newestStartMs).toUTCString());
+    }
+    return;
+  }
+
+  for (const promotion of catalogPriceRules.promotions) {
+    for (const r of promotion.rules) {
+      if (r.path !== productPath || !isActive(r, now)) continue;
+      applyRuleToProduct(content.data, r, now, false);
     }
   }
 }
@@ -170,9 +310,10 @@ export function applyProductPriceRule(state, res) {
  * Apply catalog price rules to the stored index (index request).
  * The stored index is keyed by product path (`{ [path]: { data } }`); entry data carries no
  * `path` field, so the key is what gets matched against rule paths.
- * For each product, finds the lowest active promotion price and applies it only
- * if it is less than the product's current price. Also records the most recently
- * started active rule's start time (across all paths in the index) as a last-modified source.
+ * For each product, applies every active rule for that path and reduces prices
+ * per SKU without ever raising an existing lower final price. Also records the
+ * most recently started active rule's start time (across all paths in the
+ * index) as a last-modified source.
  * @param {PipelineState} state
  * @param {PipelineResponse} [res]
  */
@@ -181,43 +322,23 @@ export function applyCatalogPriceRules(state, res) {
   if (!catalogPriceRules?.promotions?.length || !content?.data) return;
 
   const now = Date.now();
+  const indexPriceTargets = getIndexPriceTargets(state);
 
-  // Build a path → best rule map and a path → newest start map across all promotions
-  /** @type {Map<string, SharedTypes.CatalogPriceRule>} */
-  const bestRuleByPath = new Map();
-  /** @type {Map<string, number>} */
-  const newestStartMsByPath = new Map();
+  let newestStartMs = 0;
   for (const promotion of catalogPriceRules.promotions) {
     for (const rule of promotion.rules) {
       if (!isActive(rule, now)) continue;
-      const price = parseFloat(rule.price);
-      if (Number.isNaN(price)) continue;
-      const current = bestRuleByPath.get(rule.path);
-      if (!current || price < parseFloat(current.price)) {
-        bestRuleByPath.set(rule.path, rule);
-      }
-      if (rule.start) {
-        const startMs = new Date(rule.start).getTime();
-        if (startMs > (newestStartMsByPath.get(rule.path) ?? 0)) {
-          newestStartMsByPath.set(rule.path, startMs);
+      const entry = content.data[rule.path];
+      if (entry?.data) {
+        applyRuleToProduct(entry.data, rule, now, true, indexPriceTargets);
+        if (rule.start) {
+          const startMs = new Date(rule.start).getTime();
+          if (startMs > newestStartMs) {
+            newestStartMs = startMs;
+          }
         }
       }
     }
-  }
-
-  let newestStartMs = 0;
-  for (const [path, entry] of Object.entries(content.data)) {
-    const product = entry?.data;
-    if (!product) continue;
-    const rule = bestRuleByPath.get(path);
-    if (!rule) continue;
-    const rulePrice = parseFloat(rule.price);
-    const productPrice = parseFloat(product.price);
-    if (!Number.isNaN(productPrice) && rulePrice < productPrice) {
-      applyRuleToProduct(product, rule, now, true);
-    }
-    const startMs = newestStartMsByPath.get(path) ?? 0;
-    if (startMs > newestStartMs) newestStartMs = startMs;
   }
 
   if (newestStartMs && res) {
@@ -228,13 +349,13 @@ export function applyCatalogPriceRules(state, res) {
 /**
  * Parse a merchant-feed price string (e.g. "179.95 CAD") into amount + currency.
  * @param {unknown} price
- * @returns {{ amount: number, currency: string } | null}
+ * @returns {{ amount: number, currency: string, raw: string } | null}
  */
 function parseFeedPrice(price) {
   if (typeof price !== 'string') return null;
   const match = price.match(/^\s*([0-9]+(?:\.[0-9]+)?)\s*(.*)$/);
   if (!match) return null;
-  return { amount: parseFloat(match[1]), currency: match[2].trim() };
+  return { amount: parseFloat(match[1]), currency: match[2].trim(), raw: match[1] };
 }
 
 /**
@@ -248,6 +369,29 @@ function feedEffectiveDate(rule) {
 }
 
 /**
+ * @param {{ price?: string, sale_price?: string }} entry
+ * @returns {{
+ *   finalAmount: number,
+ *   regularAmount: number,
+ *   regularRaw: string | undefined,
+ *   currency: string,
+ * }}
+ */
+function getFeedPriceInfo(entry) {
+  const regular = parseFeedPrice(entry.price);
+  const currentSale = parseFeedPrice(entry.sale_price);
+  const current = currentSale && regular && currentSale.amount < regular.amount
+    ? currentSale
+    : regular ?? currentSale;
+  return {
+    finalAmount: current?.amount ?? NaN,
+    regularAmount: regular?.amount ?? NaN,
+    regularRaw: regular?.raw,
+    currency: regular?.currency ?? current?.currency ?? '',
+  };
+}
+
+/**
  * Apply a catalog price rule to a single merchant-feed entry, writing the discounted
  * value to `sale_price` (leaving `price` as the regular price) and, when the rule has a
  * window, `sale_price_effective_date`. Variants (object keyed by SKU) get variant-specific
@@ -257,33 +401,36 @@ function feedEffectiveDate(rule) {
  * @param {number} now
  */
 function applyRuleToFeedEntry(data, rule, now) {
-  // rule comes from bestRuleByPath, which already filtered out non-numeric prices.
-  const effective = feedEffectiveDate(rule);
-  const ruleAmount = parseFloat(rule.price);
-  const parent = parseFeedPrice(data.price);
-
-  if (parent && ruleAmount < parent.amount) {
-    data.sale_price = parent.currency ? `${rule.price} ${parent.currency}` : `${rule.price}`;
-    if (effective) data.sale_price_effective_date = effective;
+  const parentInfo = getFeedPriceInfo(data);
+  const parentCandidate = getCandidatePrice(rule, undefined, now, parentInfo);
+  if (parentCandidate && parentCandidate.amount < parentInfo.finalAmount) {
+    data.sale_price = parentInfo.currency ? `${parentCandidate.raw} ${parentInfo.currency}` : parentCandidate.raw;
+    const effective = feedEffectiveDate(rule);
+    if (effective) {
+      data.sale_price_effective_date = effective;
+    } else {
+      delete data.sale_price_effective_date;
+    }
   }
 
   if (data.variants) {
     for (const variant of Object.values(data.variants)) {
-      const vPrice = parseFeedPrice(variant.price);
-      if (!vPrice) continue;
-      const variantRule = rule.variants?.[variant.sku];
-      let salePrice = null;
-      let vEffective = effective;
-      if (variantRule && isActive(variantRule, now) && variantRule.price != null
-        && parseFloat(variantRule.price) < vPrice.amount) {
-        salePrice = String(variantRule.price);
-        vEffective = feedEffectiveDate(variantRule) ?? effective;
-      } else if (ruleAmount < vPrice.amount) {
-        salePrice = rule.price;
+      const variantInfo = getFeedPriceInfo(variant);
+      const variantRule = getVariantOverride(rule, variant.sku);
+      const candidate = getCandidatePrice(rule, variantRule, now, variantInfo);
+      if (!candidate || !(candidate.amount < variantInfo.finalAmount)) {
+        continue;
       }
-      if (salePrice != null) {
-        variant.sale_price = vPrice.currency ? `${salePrice} ${vPrice.currency}` : `${salePrice}`;
-        if (vEffective) variant.sale_price_effective_date = vEffective;
+      variant.sale_price = variantInfo.currency
+        ? `${candidate.raw} ${variantInfo.currency}`
+        : candidate.raw;
+      const effective = variantRule && isActive(variantRule, now)
+        ? feedEffectiveDate(variantRule) ?? feedEffectiveDate(rule)
+        : feedEffectiveDate(rule);
+      if (effective) {
+        variant.sale_price_effective_date = effective;
+      } else {
+        delete variant.sale_price_effective_date;
       }
     }
   }
@@ -291,9 +438,10 @@ function applyRuleToFeedEntry(data, rule, now) {
 
 /**
  * Apply catalog price rules to a stored merchant feed (keyed by product path at the top
- * level, each entry `{ data }`). For each path, the lowest active rule wins; the discount
- * is written to `sale_price`/`sale_price_effective_date` so `g:price` stays the regular
- * price. Also records the newest active rule start as a last-modified source.
+ * level, each entry `{ data }`). Discounts are reduced per SKU across all active
+ * promotions and written to `sale_price`/`sale_price_effective_date` so `g:price`
+ * stays the regular price. Also records the newest active rule start as a
+ * last-modified source.
  * @param {PipelineState} state
  * @param {PipelineResponse} [res]
  */
@@ -302,31 +450,19 @@ export function applyMerchantFeedPriceRules(state, res) {
   if (!catalogPriceRules?.promotions?.length || !content?.data) return;
 
   const now = Date.now();
+  let newestStartMs = 0;
 
-  /** @type {Map<string, SharedTypes.CatalogPriceRule>} */
-  const bestRuleByPath = new Map();
   for (const promotion of catalogPriceRules.promotions) {
     for (const rule of promotion.rules) {
       if (!isActive(rule, now)) continue;
-      const price = parseFloat(rule.price);
-      if (Number.isNaN(price)) continue;
-      const current = bestRuleByPath.get(rule.path);
-      if (!current || price < parseFloat(current.price)) {
-        bestRuleByPath.set(rule.path, rule);
+      const entry = content.data[rule.path];
+      if (entry?.data) {
+        applyRuleToFeedEntry(entry.data, rule, now);
+        if (rule.start) {
+          const ms = new Date(rule.start).getTime();
+          if (ms > newestStartMs) newestStartMs = ms;
+        }
       }
-    }
-  }
-
-  let newestStartMs = 0;
-  for (const [path, entry] of Object.entries(content.data)) {
-    const data = entry?.data;
-    if (!data) continue;
-    const rule = bestRuleByPath.get(path);
-    if (!rule) continue;
-    applyRuleToFeedEntry(data, rule, now);
-    if (rule.start) {
-      const ms = new Date(rule.start).getTime();
-      if (ms > newestStartMs) newestStartMs = ms;
     }
   }
 
