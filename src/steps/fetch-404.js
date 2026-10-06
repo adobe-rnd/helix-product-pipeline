@@ -12,6 +12,7 @@
 import { PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
 import { setProduct404CacheHeaders } from './set-cache-headers.js';
+import { AEM_LIVE_USER_AGENT } from './utils.js';
 
 /**
  * Loads the 404.html from code-bus and stores it in `res.body`
@@ -26,7 +27,9 @@ export default async function fetch404(state, req, res) {
   } = state;
 
   /** @type {Record<string, string>} */
-  const headers = {};
+  const headers = {
+    'user-agent': AEM_LIVE_USER_AGENT,
+  };
   const authorization = req.headers.get('authorization');
   if (authorization) {
     headers.authorization = authorization;
