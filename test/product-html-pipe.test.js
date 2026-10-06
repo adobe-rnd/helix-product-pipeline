@@ -520,20 +520,19 @@ describe('Product HTML Pipe Test', () => {
     assert.strictEqual(resp.headers.get('x-error'), 'no response document');
   });
 
-  it('forwards authorization header to edge content fetch', async () => {
+  it('forwards authorization header and sets user-agent on edge content fetch', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    fetchMock.clearHistory();
     const fetchMockGlobal = fetchMock.mockGlobal();
 
     // Mock the fetch call for edge content (extensionless URL)
-    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-configurable', (url, opts) => {
-      // Verify that authorization header was forwarded with 'token ' prefix
-      assert.strictEqual(opts.headers.authorization, 'token my-auth-token');
-      return {
-        body: '<!DOCTYPE html><html><head><title>Test</title></head><body><main><div><p>Edge content</p></div></main></body></html>',
-        headers: {
-          'content-type': 'text/html',
-          'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
-        },
-      };
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-configurable', {
+      body: '<!DOCTYPE html><html><head><title>Test</title></head><body><main><div><p>Edge content</p></div></main></body></html>',
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
     });
 
     const s3Loader = new FileS3Loader();
@@ -559,26 +558,30 @@ describe('Product HTML Pipe Test', () => {
     );
 
     assert.strictEqual(resp.status, 200);
+    const edgeCall = fetchMockGlobal.callHistory.calls()
+      .find((c) => c.url.includes('aem.live/products/product-configurable'));
+    assert.ok(edgeCall, 'should have made edge fetch call');
+    assert.strictEqual(edgeCall.options.headers.authorization, 'my-auth-token');
+    assert.strictEqual(edgeCall.options.headers['user-agent'], 'adobe/helix-product-pipeline');
     fetchMock.unmockGlobal();
   });
 
-  it('forwards authorization header to 404 fetch', async () => {
+  it('forwards authorization header and sets user-agent on 404 fetch', async () => {
     const dirname = path.dirname(fileURLToPath(import.meta.url));
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    fetchMock.clearHistory();
     const fetchMockGlobal = fetchMock.mockGlobal();
     const html404 = await readFile(path.join(dirname, 'fixtures', 'product', '404.html'));
 
-    // Mock the 404 fetch and verify authorization header
-    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', (url, opts) => {
-      // Verify that authorization header was forwarded with 'token ' prefix
-      assert.strictEqual(opts.headers.authorization, 'token my-auth-token');
-      return {
-        body: html404,
-        headers: {
-          'cache-control': 'max-age=7200, must-revalidate',
-          'Content-Type': 'text/html; charset=utf-8',
-          'Last-Modified': 'Fri, 30 Apr 2025 03:47:18 GMT',
-        },
-      };
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-404', { status: 404 });
+    fetchMockGlobal.get('https://main--site--org.aem.live/404.html', {
+      body: html404,
+      headers: {
+        'cache-control': 'max-age=7200, must-revalidate',
+        'Content-Type': 'text/html; charset=utf-8',
+        'Last-Modified': 'Fri, 30 Apr 2025 03:47:18 GMT',
+      },
     });
 
     const s3Loader = new FileS3Loader();
@@ -604,6 +607,11 @@ describe('Product HTML Pipe Test', () => {
     );
 
     assert.strictEqual(resp.status, 404);
+    const notFoundCall = fetchMockGlobal.callHistory.calls()
+      .find((c) => c.url.endsWith('aem.live/404.html'));
+    assert.ok(notFoundCall, 'should have made 404 fetch call');
+    assert.strictEqual(notFoundCall.options.headers.authorization, 'my-auth-token');
+    assert.strictEqual(notFoundCall.options.headers['user-agent'], 'adobe/helix-product-pipeline');
     fetchMock.unmockGlobal();
   });
 

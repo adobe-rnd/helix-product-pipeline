@@ -13,6 +13,12 @@
 /* eslint-disable no-continue */
 
 /**
+ * User-Agent sent on subrequests to the aem.live origin, so they can be
+ * attributed to this service (Workers' fetch() sends no User-Agent by default).
+ */
+export const AEM_LIVE_USER_AGENT = 'adobe/helix-product-pipeline';
+
+/**
  * Returns the original host name from the request to the outer CDN.
  * @param {object} headers The request headers
  * @returns {string} The original host

@@ -12,6 +12,7 @@
 
 import { PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { extractLastModified, recordLastModified } from '../utils/last-modified.js';
+import { AEM_LIVE_USER_AGENT } from './utils.js';
 
 /**
  * Loads the content from the content-bus and stores the response in `state.content.edgeResponse`.
@@ -31,7 +32,9 @@ export default async function fetchEdgeContent(state, req, res) {
   const contentUrl = `https://${ref}--${site}--${org}.aem.live${originalPath}`;
   try {
     /** @type {Record<string, string>} */
-    const headers = {};
+    const headers = {
+      'user-agent': AEM_LIVE_USER_AGENT,
+    };
     const authorization = req.headers.get('authorization');
     if (authorization) {
       headers.authorization = authorization;
