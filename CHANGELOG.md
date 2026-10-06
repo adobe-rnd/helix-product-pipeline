@@ -1,3 +1,10 @@
+## [2.15.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.15.0...v2.15.1) (2026-10-06)
+
+
+### Bug Fixes
+
+* identify aem.live subrequests with user-agent adobe/helix-product-pipeline ([#101](https://github.com/adobe-rnd/helix-product-pipeline/issues/101)) ([9803782](https://github.com/adobe-rnd/helix-product-pipeline/commit/9803782c5aa98632c9bb884b73120f730e74d650))
+
 # [2.15.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.14.1...v2.15.0) (2026-09-29)
 
 
