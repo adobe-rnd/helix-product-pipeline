@@ -20,6 +20,27 @@ import { limitWords, stripHTML } from './utils.js';
 
 const HREFLANG_PREFIX = 'hreflang-';
 
+const DESCRIPTION_NAMES = new Set(['description', 'og:description', 'twitter:description']);
+
+/**
+ * Collects explicitly set description metadata (authored on the page, or set on the product).
+ * Names are matched case-insensitively; later entries win, and empty values count as not set.
+ *
+ * @param {Record<string, string>|undefined} metadata
+ * @returns {Record<string, string>}
+ */
+function explicitDescriptions(metadata) {
+  /** @type {Record<string, string>} */
+  const explicit = {};
+  Object.entries(metadata ?? {}).forEach(([key, value]) => {
+    const name = key.toLowerCase();
+    if (DESCRIPTION_NAMES.has(name) && value) {
+      explicit[name] = value;
+    }
+  });
+  return explicit;
+}
+
 /**
  * @param {PipelineState} state
  * @returns {Promise<void>}
@@ -43,18 +64,32 @@ export default async function render(state) {
 
   const ogImage = constructImageUrl(state, metaImage || images[0]?.url);
   const head = select('head', hast);
-  const headDescription = metaDescription || limitWords(stripHTML(description));
+
+  // Description precedence: explicitly authored metadata, then the Product Bus
+  // metaDescription, then the shortened Product Bus description, and only as a last
+  // resort the description the HTML pipeline generated from the authored page body.
+  // og:description inherits the description, and twitter:description inherits
+  // og:description, unless they were set explicitly.
+  const explicit = explicitDescriptions(metadata);
+  const headDescription = explicit.description
+    || metaDescription
+    || limitWords(stripHTML(description))
+    || content.implicitDescription
+    || '';
+  const ogDescription = explicit['og:description'] || headDescription;
+  const twitterDescription = explicit['twitter:description'] || ogDescription;
+
   head.children = [
     h('title', metaTitle || name),
     h('link', { rel: 'canonical', href: url }),
     h('meta', { name: 'description', content: headDescription }),
     h('meta', { property: 'og:title', content: metaTitle || name }),
-    h('meta', { property: 'og:description', content: headDescription }),
+    h('meta', { property: 'og:description', content: ogDescription }),
     h('meta', { property: 'og:url', content: url }),
     h('meta', { property: 'og:image', content: ogImage }),
     h('meta', { name: 'twitter:card', content: 'summary_large_image' }),
     h('meta', { name: 'twitter:title', content: metaTitle || name }),
-    h('meta', { name: 'twitter:description', content: headDescription }),
+    h('meta', { name: 'twitter:description', content: twitterDescription }),
     h('meta', { name: 'twitter:image', content: ogImage }),
     h('meta', { name: 'sku', content: sku }),
   ];
@@ -64,12 +99,18 @@ export default async function render(state) {
   }
 
   // Add product metadata to the head.
-  // Authored metadata takes precedence over PB-generated values: if a meta
-  // tag with the same name was already emitted above, replace its content
-  // instead of emitting a duplicate.
+  // Metadata takes precedence over PB-generated values: if a meta tag with the
+  // same name was already emitted above, replace its content instead of emitting
+  // a duplicate. Names are compared case-insensitively, as HTML meta names are.
+  // Descriptions were already resolved above.
   if (metadata) {
     Object.entries(metadata).forEach(([key, value]) => {
-      if (key.toLowerCase().startsWith(HREFLANG_PREFIX)) {
+      const lowerKey = key.toLowerCase();
+      if (DESCRIPTION_NAMES.has(lowerKey)) {
+        return;
+      }
+
+      if (lowerKey.startsWith(HREFLANG_PREFIX)) {
         const localeRaw = key.substring(HREFLANG_PREFIX.length);
         if (localeRaw && value) {
           const hreflang = localeRaw.replaceAll('_', '-').toLowerCase();
@@ -78,11 +119,12 @@ export default async function render(state) {
         return;
       }
 
-      const existing = head.children.find(
-        (child) => child.type === 'element'
-          && child.tagName === 'meta'
-          && child.properties?.name === key,
-      );
+      const existing = head.children.find((child) => {
+        const metaName = child.type === 'element' && child.tagName === 'meta'
+          ? child.properties?.name
+          : undefined;
+        return typeof metaName === 'string' && metaName.toLowerCase() === lowerKey;
+      });
       if (existing) {
         existing.properties.content = value;
       } else {

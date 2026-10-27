@@ -35,6 +35,7 @@ Helix Product Pipeline is the shared rendering engine that powers both `helix-pr
 - Fetches product data from Product Bus storage
 - Optionally merges with authored content from Edge Delivery Services
 - Extracts metadata from authored content head and merges into product head
+- Resolves the meta description from, in order: an explicitly authored description, the Product Bus `metaDescription`, the shortened Product Bus `description`, and finally the description Edge Delivery generated from the authored page body. `og:description` and `twitter:description` inherit it unless set explicitly
 - Generates responsive picture elements with multiple breakpoints (600px, 750px/2000px)
 - Creates schema.org JSON-LD structured data for rich search results
 - Adds heading IDs for navigation and anchor links

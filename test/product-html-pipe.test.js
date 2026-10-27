@@ -797,6 +797,16 @@ describe('Product HTML Pipe Test', () => {
       resp.body.includes('<meta name="description" content="Authored description that should win.">'),
       'Authored description should take precedence over PB-generated description',
     );
+    assert.ok(
+      resp.body.includes('<meta property="og:description" content="Authored description that should win.">'),
+      'og:description should inherit the authored description',
+    );
+    assert.ok(
+      resp.body.includes('<meta name="twitter:description" content="Authored description that should win.">'),
+      'twitter:description should inherit the authored description',
+    );
+    assert.strictEqual((resp.body.match(/og:description/g) || []).length, 1, 'Exactly one og:description');
+    assert.strictEqual((resp.body.match(/twitter:description/g) || []).length, 1, 'Exactly one twitter:description');
 
     // Verify authored main content is included
     assert.ok(
@@ -812,6 +822,70 @@ describe('Product HTML Pipe Test', () => {
     // (we only extract main children)
     const headerCount = (resp.body.match(/<header><\/header>/g) || []).length;
     assert.strictEqual(headerCount, 1, 'Should have exactly one header (from product template, not authored)');
+  });
+
+  it('prefers the Product Bus metaDescription over a description generated from the authored body', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // modeled on a real aem.live product page: no metadata block, so the HTML pipeline
+    // generated the description from the first long paragraph of the body
+    const excerpt = 'The BlitzMax travel cup keeps hot and cold drinks at the right temperature on the go, and pairs with any BlitzMax blade base for quick ...';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-with-authored-metadata', {
+      body: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>BlitzMax Travel Cup</title>
+    <meta name="description" content="${excerpt}">
+    <meta property="og:description" content="${excerpt}">
+    <meta name="twitter:description" content="${excerpt}">
+    <meta name="nav" content="/nav">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <h2>Features</h2>
+        <p>The BlitzMax travel cup keeps hot and cold drinks at the right temperature on the go, and pairs with any BlitzMax blade base for quick single-serve blending at home or at work.</p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>`,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-with-authored-metadata',
+      partition: 'live',
+      timer: { update: () => { } },
+    });
+    state.info = getPathInfo('/products/product-with-authored-metadata');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-with-authored-metadata')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const pbDescription = 'This is the default product description from the product bus.';
+    assert.strictEqual((resp.body.match(/<meta name="description"/g) || []).length, 1);
+    assert.ok(resp.body.includes(`<meta name="description" content="${pbDescription}">`));
+    assert.ok(resp.body.includes(`<meta property="og:description" content="${pbDescription}">`));
+    assert.ok(resp.body.includes(`<meta name="twitter:description" content="${pbDescription}">`));
+    assert.ok(!resp.body.includes('content="The BlitzMax travel cup'), 'generated description must not be rendered');
+    // other authored metadata still applies
+    assert.ok(resp.body.includes('<meta name="nav" content="/nav">'));
+
+    fetchMock.unmockGlobal();
   });
 
   it('handles authored content with empty main element', async () => {

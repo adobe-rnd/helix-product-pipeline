@@ -59,6 +59,8 @@ declare global {
     edge?: string;
     edgeResponse?: Response;
     edgeHast?: Root;
+    /** Description the HTML pipeline generated from the authored page body (lowest precedence) */
+    implicitDescription?: string;
     data: ProductBusEntry;
   }
 
