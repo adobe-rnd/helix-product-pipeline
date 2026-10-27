@@ -111,16 +111,6 @@ describe('extract-authored-metadata', () => {
       assert.strictEqual(content.data.metadata, undefined);
     });
 
-    it('restores icons, which the HTML pipeline renders after generating the description', async () => {
-      const content = await run(page({
-        main: `<div><p>Add to <span class="icon icon-cart"></span> today and save on ${words(8)}</p></div>`,
-        description: `Add to :cart: today and save on ${words(8)}`,
-      }));
-
-      assert.strictEqual(content.implicitDescription, `Add to :cart: today and save on ${words(8)}`);
-      assert.strictEqual(content.data.metadata, undefined);
-    });
-
     it('reads paragraph text like the HTML pipeline (inline elements kept, comments ignored)', async () => {
       const content = await run(page({
         main: `<div><p>Blend <span>hot</span> <span class="highlight">soups</span> <!-- note -->and ${words(8)}</p></div>`,

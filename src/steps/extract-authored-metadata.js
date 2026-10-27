@@ -12,6 +12,7 @@
 
 import { selectAll, select } from 'hast-util-select';
 import { fromHtml } from 'hast-util-from-html';
+import { toString } from 'hast-util-to-string';
 import { visit, EXIT, CONTINUE } from 'unist-util-visit';
 
 /**
@@ -72,33 +73,13 @@ function extractMetadataFromHead(head) {
 }
 
 /**
- * Returns the text of a node as the HTML pipeline saw it when it generated the description.
- * The HTML pipeline turns `:name:` icon shortcodes into `<span class="icon icon-name">` only
- * *after* generating the description, so the shortcodes are restored here.
- * Otherwise equivalent to `hast-util-to-string`.
- *
- * @param {import('hast').Nodes} node
- * @returns {string}
- */
-function textBeforeIconRewrite(node) {
-  if (node.type === 'text') {
-    return node.value;
-  }
-  if (node.type === 'element' && node.tagName === 'span') {
-    const classes = /** @type {string[]} */ (node.properties.className || []);
-    const icon = classes.includes('icon') && classes.find((c) => c.startsWith('icon-'));
-    if (icon) {
-      return `:${icon.substring('icon-'.length)}:`;
-    }
-  }
-  return 'children' in node ? node.children.map(textBeforeIconRewrite).join('') : '';
-}
-
-/**
  * Port of `extractDescription()` from helix-html-pipeline (src/steps/extract-metadata.js).
  * When a page has no explicitly authored description, the HTML pipeline generates one from
  * the first `div > p` that has at least 10 words (or a word longer than 25 characters that is
  * not a URL), truncated to 25 words. Keep in sync with the HTML pipeline.
+ *
+ * Known gap: the served HTML loses whitespace around icons and after hard line breaks, so a
+ * paragraph containing either won't match and its excerpt is treated as authored.
  *
  * @param {import('hast').Root} main - The page's main content
  * @returns {string} The description the HTML pipeline would generate, or ''
@@ -107,7 +88,7 @@ function generatedDescription(main) {
   let desc = '';
   visit(main, 'element', (node, idx, parent) => {
     if (parent?.type === 'element' && parent.tagName === 'div' && node.tagName === 'p') {
-      const words = textBeforeIconRewrite(node).trim().split(/\s+/);
+      const words = toString(node).trim().split(/\s+/);
       if (words.length >= 10 || words.some((w) => w.length > 25 && !w.startsWith('http'))) {
         desc = `${words.slice(0, 25).join(' ')}${words.length > 25 ? ' ...' : ''}`;
         return EXIT;
