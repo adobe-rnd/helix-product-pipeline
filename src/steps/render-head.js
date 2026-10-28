@@ -20,21 +20,28 @@ import { limitWords, stripHTML } from './utils.js';
 
 const HREFLANG_PREFIX = 'hreflang-';
 
-const DESCRIPTION_NAMES = new Set(['description', 'og:description', 'twitter:description']);
+/**
+ * Title and description metadata, resolved by precedence below rather than emitted as-is.
+ */
+const RESOLVED_NAMES = new Set([
+  'title', 'og:title', 'twitter:title',
+  'description', 'og:description', 'twitter:description',
+]);
 
 /**
- * Collects explicitly set description metadata (authored on the page, or set on the product).
- * Names are matched case-insensitively; later entries win, and empty values count as not set.
+ * Collects explicitly set title and description metadata (authored on the page, or set on
+ * the product). Names are matched case-insensitively; later entries win, and empty values
+ * count as not set.
  *
  * @param {Record<string, string>|undefined} metadata
  * @returns {Record<string, string>}
  */
-function explicitDescriptions(metadata) {
+function explicitValues(metadata) {
   /** @type {Record<string, string>} */
   const explicit = {};
   Object.entries(metadata ?? {}).forEach(([key, value]) => {
     const name = key.toLowerCase();
-    if (DESCRIPTION_NAMES.has(name) && value) {
+    if (RESOLVED_NAMES.has(name) && value) {
       explicit[name] = value;
     }
   });
@@ -65,12 +72,14 @@ export default async function render(state) {
   const ogImage = constructImageUrl(state, metaImage || images[0]?.url);
   const head = select('head', hast);
 
-  // Description precedence: explicitly authored metadata, then the Product Bus
-  // metaDescription, then the shortened Product Bus description, and only as a last
-  // resort the description the HTML pipeline generated from the authored page body.
-  // og:description inherits the description, and twitter:description inherits
-  // og:description, unless they were set explicitly.
-  const explicit = explicitDescriptions(metadata);
+  // Precedence for title and description: explicitly authored metadata, then Product Bus
+  // data. og:* inherits the resolved value, and twitter:* inherits og:*, unless set
+  // explicitly. Product Bus always has a `name`, so a title generated from the authored page
+  // is never used; a generated description is used only when Product Bus has none.
+  const explicit = explicitValues(metadata);
+  const headTitle = explicit.title || metaTitle || name;
+  const ogTitle = explicit['og:title'] || headTitle;
+  const twitterTitle = explicit['twitter:title'] || ogTitle;
   const headDescription = explicit.description
     || metaDescription
     || limitWords(stripHTML(description))
@@ -80,15 +89,15 @@ export default async function render(state) {
   const twitterDescription = explicit['twitter:description'] || ogDescription;
 
   head.children = [
-    h('title', metaTitle || name),
+    h('title', headTitle),
     h('link', { rel: 'canonical', href: url }),
     h('meta', { name: 'description', content: headDescription }),
-    h('meta', { property: 'og:title', content: metaTitle || name }),
+    h('meta', { property: 'og:title', content: ogTitle }),
     h('meta', { property: 'og:description', content: ogDescription }),
     h('meta', { property: 'og:url', content: url }),
     h('meta', { property: 'og:image', content: ogImage }),
     h('meta', { name: 'twitter:card', content: 'summary_large_image' }),
-    h('meta', { name: 'twitter:title', content: metaTitle || name }),
+    h('meta', { name: 'twitter:title', content: twitterTitle }),
     h('meta', { name: 'twitter:description', content: twitterDescription }),
     h('meta', { name: 'twitter:image', content: ogImage }),
     h('meta', { name: 'sku', content: sku }),
@@ -102,11 +111,11 @@ export default async function render(state) {
   // Metadata takes precedence over PB-generated values: if a meta tag with the
   // same name was already emitted above, replace its content instead of emitting
   // a duplicate. Names are compared case-insensitively, as HTML meta names are.
-  // Descriptions were already resolved above.
+  // Titles and descriptions were already resolved above.
   if (metadata) {
     Object.entries(metadata).forEach(([key, value]) => {
       const lowerKey = key.toLowerCase();
-      if (DESCRIPTION_NAMES.has(lowerKey)) {
+      if (RESOLVED_NAMES.has(lowerKey)) {
         return;
       }
 

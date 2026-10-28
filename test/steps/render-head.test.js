@@ -132,6 +132,23 @@ function metasNamed(children, name) {
 
 /**
  * @param {import('hast').ElementContent[]} children
+ * @returns {{ title: unknown[], og: unknown[], twitter: unknown[] }} text of each <title>,
+ *   and content of each og:title (via `property`) and twitter:title (via `name`) tag
+ */
+function titleTags(children) {
+  const elements = children.filter((c) => c.type === 'element');
+  const contentOf = (match) => elements
+    .filter((c) => c.tagName === 'meta' && match(c.properties))
+    .map((c) => c.properties.content);
+  return {
+    title: elements.filter((c) => c.tagName === 'title').map((c) => c.children[0]?.value),
+    og: contentOf((p) => p.property === 'og:title'),
+    twitter: contentOf((p) => p.name === 'twitter:title'),
+  };
+}
+
+/**
+ * @param {import('hast').ElementContent[]} children
  * @returns {{ description: unknown[], og: unknown[], twitter: unknown[] }} content of each
  *   description tag (og:description via `property`, the others via `name`)
  */
@@ -301,6 +318,106 @@ describe('render-head', () => {
       assert.deepStrictEqual(descriptionTags(children), {
         description: ['Authored'], og: ['Social copy'], twitter: ['Tweet copy'],
       });
+    });
+  });
+
+  describe('title precedence', () => {
+    const PB = { metaTitle: 'PB meta title', name: 'PB name' };
+
+    it('prefers an explicitly authored title, inherited by og and twitter', async () => {
+      const children = await renderHeadChildren({ ...PB, metadata: { title: 'Authored' } });
+
+      assert.deepStrictEqual(titleTags(children), {
+        title: ['Authored'], og: ['Authored'], twitter: ['Authored'],
+      });
+    });
+
+    it('falls back to the Product Bus metaTitle, then name', async () => {
+      assert.deepStrictEqual(titleTags(await renderHeadChildren(PB)), {
+        title: ['PB meta title'], og: ['PB meta title'], twitter: ['PB meta title'],
+      });
+      assert.deepStrictEqual(
+        titleTags(await renderHeadChildren({ metaTitle: undefined, name: 'PB name' })).title,
+        ['PB name'],
+      );
+    });
+
+    it('ignores an empty explicit title', async () => {
+      const children = await renderHeadChildren({ ...PB, metadata: { title: '' } });
+
+      assert.deepStrictEqual(titleTags(children).title, ['PB meta title']);
+    });
+
+    it('lets an explicit og:title override og only, and twitter inherit it', async () => {
+      const children = await renderHeadChildren({ ...PB, metadata: { 'og:title': 'Social title' } });
+
+      assert.deepStrictEqual(titleTags(children), {
+        title: ['PB meta title'], og: ['Social title'], twitter: ['Social title'],
+      });
+    });
+
+    it('lets an explicit twitter:title override twitter only', async () => {
+      const children = await renderHeadChildren({ ...PB, metadata: { 'twitter:title': 'Tweet title' } });
+
+      assert.deepStrictEqual(titleTags(children), {
+        title: ['PB meta title'], og: ['PB meta title'], twitter: ['Tweet title'],
+      });
+    });
+
+    it('does not render title metadata as additional meta tags', async () => {
+      const children = await renderHeadChildren({
+        ...PB,
+        metadata: { Title: 'Authored', 'og:title': 'Social title' },
+      });
+
+      assert.strictEqual(metasNamed(children, 'title').length, 0, 'no <meta name="title">');
+      assert.strictEqual(metasNamed(children, 'og:title').length, 0, 'no <meta name="og:title">');
+      assert.deepStrictEqual(titleTags(children), {
+        title: ['Authored'], og: ['Social title'], twitter: ['Social title'],
+      });
+    });
+  });
+
+  describe('title and description together', () => {
+    const PB = { metaTitle: 'PB title', metaDescription: 'PB description' };
+
+    it('resolves an authored title without affecting the description', async () => {
+      const children = await renderHeadChildren({ ...PB, metadata: { title: 'Authored title' } });
+
+      assert.deepStrictEqual(titleTags(children), {
+        title: ['Authored title'], og: ['Authored title'], twitter: ['Authored title'],
+      });
+      assert.deepStrictEqual(descriptionTags(children), {
+        description: ['PB description'], og: ['PB description'], twitter: ['PB description'],
+      });
+    });
+
+    it('resolves an authored description without affecting the title', async () => {
+      const children = await renderHeadChildren({ ...PB, metadata: { description: 'Authored description' } });
+
+      assert.deepStrictEqual(titleTags(children), {
+        title: ['PB title'], og: ['PB title'], twitter: ['PB title'],
+      });
+      assert.deepStrictEqual(descriptionTags(children), {
+        description: ['Authored description'],
+        og: ['Authored description'],
+        twitter: ['Authored description'],
+      });
+    });
+
+    it('still renders the other metadata once each', async () => {
+      const children = await renderHeadChildren({
+        ...PB,
+        metadata: {
+          title: 'Authored title', description: 'Authored description', robots: 'noindex', keywords: 'blender',
+        },
+      });
+
+      assert.deepStrictEqual(titleTags(children).title, ['Authored title']);
+      assert.deepStrictEqual(descriptionTags(children).description, ['Authored description']);
+      assert.deepStrictEqual(metasNamed(children, 'robots').map((m) => m.properties.content), ['noindex']);
+      assert.deepStrictEqual(metasNamed(children, 'keywords').map((m) => m.properties.content), ['blender']);
+      assert.strictEqual(metasNamed(children, 'title').length, 0);
     });
   });
 });

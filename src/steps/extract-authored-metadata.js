@@ -149,6 +149,65 @@ function extractDescriptions(head, main) {
 }
 
 /**
+ * Mirrors how helix-html-pipeline generates a title when none is authored
+ * (src/steps/extract-metadata.js and get-metadata.js): the text of the first `h1`,
+ * otherwise of the first heading of any level. Keep in sync with the HTML pipeline.
+ *
+ * @param {import('hast').Root} main - The page's main content
+ * @returns {string} The title the HTML pipeline would generate, or ''
+ */
+function generatedTitle(main) {
+  const heading = select('div h1', main) || select('h1, h2, h3, h4, h5, h6', main);
+  return heading ? toString(heading).trim() : '';
+}
+
+/**
+ * Whether `value` is `base`, optionally followed by a suffix. The HTML pipeline appends
+ * `title:suffix` and `html-title:suffix` from bulk metadata after a space, and the suffix
+ * itself is not visible on the page.
+ *
+ * @param {string} value
+ * @param {string} base
+ * @returns {boolean}
+ */
+function isSameOrSuffixed(value, base) {
+  return value === base || value.startsWith(`${base} `);
+}
+
+/**
+ * Separates explicitly authored titles from the ones the HTML pipeline generates.
+ *
+ * Same idea as {@link extractDescriptions}: the title falls back to the first heading
+ * ({@link generatedTitle}), `og:title` to the title, and `twitter:title` to `og:title`.
+ * The generated title is never used, since Product Bus always provides a `name`.
+ *
+ * @param {import('hast').Element|undefined} head
+ * @param {import('hast').Root|undefined} main
+ * @returns {Record<string, string>} The explicitly set title values
+ */
+function extractTitles(head, main) {
+  const titleElement = head && select('title', head);
+  const title = titleElement ? toString(titleElement).trim() : '';
+  const ogTitle = metaContent(head, 'meta[property="og:title"]');
+  const twitterTitle = metaContent(head, 'meta[name="twitter:title"]');
+
+  /** @type {Record<string, string>} */
+  const explicit = {};
+  const generated = main ? generatedTitle(main) : '';
+  if (title && !(generated && isSameOrSuffixed(title, generated))) {
+    explicit.title = title;
+  }
+  // `<title>` may carry an html-title:suffix that og:title doesn't
+  if (ogTitle && !isSameOrSuffixed(title, ogTitle)) {
+    explicit['og:title'] = ogTitle;
+  }
+  if (twitterTitle && twitterTitle !== ogTitle) {
+    explicit['twitter:title'] = twitterTitle;
+  }
+  return explicit;
+}
+
+/**
  * Extract the main element's children as HAST nodes.
  * @param {import('hast').Root} hast - The parsed HTML document
  * @returns {import('hast').Root|undefined} HAST root with main's children,
@@ -182,7 +241,11 @@ export default async function extractAuthoredMetadata(state) {
   const head = select('head', hast);
   const mainContent = extractMainContent(hast);
   const { explicit, implicitDescription } = extractDescriptions(head, mainContent);
-  const authoredMetadata = { ...extractMetadataFromHead(head), ...explicit };
+  const authoredMetadata = {
+    ...extractMetadataFromHead(head),
+    ...explicit,
+    ...extractTitles(head, mainContent),
+  };
 
   // A generated description is only used when product data has none (see render-head).
   if (implicitDescription) {
