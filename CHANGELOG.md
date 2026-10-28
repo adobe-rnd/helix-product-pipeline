@@ -1,3 +1,17 @@
+# [2.16.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.15.1...v2.16.0) (2026-10-28)
+
+
+### Bug Fixes
+
+* dedupe head meta tags, prefer authored over PB-generated ([#86](https://github.com/adobe-rnd/helix-product-pipeline/issues/86)) ([5e54f9b](https://github.com/adobe-rnd/helix-product-pipeline/commit/5e54f9bf53c6751b5bef50e7b59ee347f697b0f4))
+* recognize titles aem.live generated from paragraphs and blocks ([b229680](https://github.com/adobe-rnd/helix-product-pipeline/commit/b229680e27edf7803fcdec8bb31db3997169c090))
+* resolve meta description precedence between authored and Product Bus ([#86](https://github.com/adobe-rnd/helix-product-pipeline/issues/86)) ([ca0b1e2](https://github.com/adobe-rnd/helix-product-pipeline/commit/ca0b1e2d77577b57211c6980d9d53e1b025ec2ac))
+
+
+### Features
+
+* prefer explicitly authored titles over Product Bus titles ([3467183](https://github.com/adobe-rnd/helix-product-pipeline/commit/3467183701839cf016a870be1ee323f33e97b995))
+
 ## [2.15.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.15.0...v2.15.1) (2026-10-06)
 
 
