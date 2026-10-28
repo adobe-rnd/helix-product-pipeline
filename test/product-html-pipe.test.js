@@ -779,12 +779,40 @@ describe('Product HTML Pipe Test', () => {
       'Should have keywords meta tag from authored head',
     );
 
-    // Verify og: and twitter: meta tags from authored content are NOT extracted
-    // (we should have the product's og:title, not the authored one)
+    // The authored title differs from the page's first heading, so it was set
+    // explicitly: it wins over the Product Bus metaTitle and og/twitter inherit it
+    assert.ok(resp.body.includes('<title>Test Product Page</title>'), 'Authored title should win');
     assert.ok(
-      resp.body.includes('<meta property="og:title" content="Test Product Title">'),
-      'Should have og:title from product data, not authored content',
+      resp.body.includes('<meta property="og:title" content="Test Product Page">'),
+      'og:title should inherit the authored title',
     );
+    assert.ok(
+      resp.body.includes('<meta name="twitter:title" content="Test Product Page">'),
+      'twitter:title should inherit the authored title',
+    );
+    assert.strictEqual((resp.body.match(/og:title/g) || []).length, 1, 'Exactly one og:title');
+
+    // Verify exactly one description meta tag is rendered, and authored wins
+    const descriptionMatches = resp.body.match(/<meta name="description"/g) || [];
+    assert.strictEqual(
+      descriptionMatches.length,
+      1,
+      'Should render exactly one description meta tag',
+    );
+    assert.ok(
+      resp.body.includes('<meta name="description" content="Authored description that should win.">'),
+      'Authored description should take precedence over PB-generated description',
+    );
+    assert.ok(
+      resp.body.includes('<meta property="og:description" content="Authored description that should win.">'),
+      'og:description should inherit the authored description',
+    );
+    assert.ok(
+      resp.body.includes('<meta name="twitter:description" content="Authored description that should win.">'),
+      'twitter:description should inherit the authored description',
+    );
+    assert.strictEqual((resp.body.match(/og:description/g) || []).length, 1, 'Exactly one og:description');
+    assert.strictEqual((resp.body.match(/twitter:description/g) || []).length, 1, 'Exactly one twitter:description');
 
     // Verify authored main content is included
     assert.ok(
@@ -800,6 +828,197 @@ describe('Product HTML Pipe Test', () => {
     // (we only extract main children)
     const headerCount = (resp.body.match(/<header><\/header>/g) || []).length;
     assert.strictEqual(headerCount, 1, 'Should have exactly one header (from product template, not authored)');
+  });
+
+  it('prefers Product Bus title and description over the ones generated from the authored body', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // modeled on a real aem.live product page: no metadata block, so the HTML pipeline
+    // generated the description from the first long paragraph of the body
+    const excerpt = 'The BlitzMax travel cup keeps hot and cold drinks at the right temperature on the go, and pairs with any BlitzMax blade base for quick ...';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-with-authored-metadata', {
+      body: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>Features</title>
+    <meta property="og:title" content="Features">
+    <meta name="twitter:title" content="Features">
+    <meta name="description" content="${excerpt}">
+    <meta property="og:description" content="${excerpt}">
+    <meta name="twitter:description" content="${excerpt}">
+    <meta name="nav" content="/nav">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <h2>Features</h2>
+        <p>The BlitzMax travel cup keeps hot and cold drinks at the right temperature on the go, and pairs with any BlitzMax blade base for quick single-serve blending at home or at work.</p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>`,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-with-authored-metadata',
+      partition: 'live',
+      timer: { update: () => { } },
+    });
+    state.info = getPathInfo('/products/product-with-authored-metadata');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-with-authored-metadata')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const pbDescription = 'This is the default product description from the product bus.';
+    assert.strictEqual((resp.body.match(/<meta name="description"/g) || []).length, 1);
+    assert.ok(resp.body.includes(`<meta name="description" content="${pbDescription}">`));
+    assert.ok(resp.body.includes(`<meta property="og:description" content="${pbDescription}">`));
+    assert.ok(resp.body.includes(`<meta name="twitter:description" content="${pbDescription}">`));
+    assert.ok(!resp.body.includes('content="The BlitzMax travel cup'), 'generated description must not be rendered');
+    // the title aem.live generated from the first heading must not replace the Product Bus title
+    assert.ok(resp.body.includes('<title>Test Product Title</title>'));
+    assert.ok(resp.body.includes('<meta property="og:title" content="Test Product Title">'));
+    assert.ok(resp.body.includes('<meta name="twitter:title" content="Test Product Title">'));
+    // other authored metadata still applies
+    assert.ok(resp.body.includes('<meta name="nav" content="/nav">'));
+
+    fetchMock.unmockGlobal();
+  });
+
+  it('uses an authored title with the Product Bus description when only the title is authored', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // metadata block sets Title only; aem.live generated the description from the body
+    const excerpt = 'The BlitzMax travel cup keeps hot and cold drinks at the right temperature on the go, and pairs with any BlitzMax blade base for quick ...';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-with-authored-metadata', {
+      body: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>BlitzMax Travel Cup | Blendify</title>
+    <meta property="og:title" content="BlitzMax Travel Cup | Blendify">
+    <meta name="twitter:title" content="BlitzMax Travel Cup | Blendify">
+    <meta name="description" content="${excerpt}">
+    <meta property="og:description" content="${excerpt}">
+    <meta name="twitter:description" content="${excerpt}">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <h2>Features</h2>
+        <p>The BlitzMax travel cup keeps hot and cold drinks at the right temperature on the go, and pairs with any BlitzMax blade base for quick single-serve blending at home or at work.</p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>`,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-with-authored-metadata',
+      partition: 'live',
+      timer: { update: () => { } },
+    });
+    state.info = getPathInfo('/products/product-with-authored-metadata');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-with-authored-metadata')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    const title = 'BlitzMax Travel Cup | Blendify';
+    assert.ok(resp.body.includes(`<title>${title}</title>`));
+    assert.ok(resp.body.includes(`<meta property="og:title" content="${title}">`));
+    assert.ok(resp.body.includes(`<meta name="twitter:title" content="${title}">`));
+    const pbDescription = 'This is the default product description from the product bus.';
+    assert.strictEqual((resp.body.match(/<meta name="description"/g) || []).length, 1);
+    assert.ok(resp.body.includes(`<meta name="description" content="${pbDescription}">`));
+    assert.ok(resp.body.includes(`<meta property="og:description" content="${pbDescription}">`));
+    assert.ok(resp.body.includes(`<meta name="twitter:description" content="${pbDescription}">`));
+
+    fetchMock.unmockGlobal();
+  });
+
+  it('keeps the Product Bus title when the authored page title came from an opening paragraph', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // no metadata block and no heading: aem.live used the first paragraph as the title
+    const generated = 'Professional performance for every kitchen.';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-with-authored-metadata', {
+      body: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>${generated}</title>
+    <meta property="og:title" content="${generated}">
+    <meta name="twitter:title" content="${generated}">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p>${generated}</p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>`,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-with-authored-metadata',
+      partition: 'live',
+      timer: { update: () => { } },
+    });
+    state.info = getPathInfo('/products/product-with-authored-metadata');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-with-authored-metadata')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    assert.ok(resp.body.includes('<title>Test Product Title</title>'));
+    assert.ok(resp.body.includes('<meta property="og:title" content="Test Product Title">'));
+    assert.ok(resp.body.includes('<meta name="twitter:title" content="Test Product Title">'));
+    assert.ok(!resp.body.includes(`<title>${generated}</title>`), 'generated title must not be rendered');
+
+    fetchMock.unmockGlobal();
   });
 
   it('handles authored content with empty main element', async () => {

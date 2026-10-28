@@ -12,13 +12,17 @@
 
 import { selectAll, select } from 'hast-util-select';
 import { fromHtml } from 'hast-util-from-html';
+import { toString } from 'hast-util-to-string';
+import { visit, EXIT, CONTINUE } from 'unist-util-visit';
 
 /**
  * Set of meta tag names to ignore when extracting authored metadata.
  * These are standard meta tags that we don't want to override.
+ * `description` is handled separately by {@link extractDescriptions}.
  */
 const IGNORED_META_NAMES = new Set([
   'viewport',
+  'description',
 ]);
 
 /**
@@ -69,6 +73,146 @@ function extractMetadataFromHead(head) {
 }
 
 /**
+ * Port of `extractDescription()` from helix-html-pipeline (src/steps/extract-metadata.js).
+ * When a page has no explicitly authored description, the HTML pipeline generates one from
+ * the first `div > p` that has at least 10 words (or a word longer than 25 characters that is
+ * not a URL), truncated to 25 words. Keep in sync with the HTML pipeline.
+ *
+ * Known gap: the served HTML loses whitespace around icons and after hard line breaks, so a
+ * paragraph containing either won't match and its excerpt is treated as authored.
+ *
+ * @param {import('hast').Root} main - The page's main content
+ * @returns {string} The description the HTML pipeline would generate, or ''
+ */
+function generatedDescription(main) {
+  let desc = '';
+  visit(main, 'element', (node, idx, parent) => {
+    if (parent?.type === 'element' && parent.tagName === 'div' && node.tagName === 'p') {
+      const words = toString(node).trim().split(/\s+/);
+      if (words.length >= 10 || words.some((w) => w.length > 25 && !w.startsWith('http'))) {
+        desc = `${words.slice(0, 25).join(' ')}${words.length > 25 ? ' ...' : ''}`;
+        return EXIT;
+      }
+    }
+    return CONTINUE;
+  });
+  return desc;
+}
+
+/**
+ * @param {import('hast').Element|undefined} head
+ * @param {string} selector
+ * @returns {string} The meta tag's content, or '' when missing
+ */
+function metaContent(head, selector) {
+  const content = head && select(selector, head)?.properties?.content;
+  return typeof content === 'string' ? content : '';
+}
+
+/**
+ * Separates explicitly authored descriptions from the ones the HTML pipeline generates.
+ *
+ * The HTML pipeline renders `description`, `og:description` and `twitter:description` whether
+ * or not they were authored:
+ * - `description` falls back to an excerpt of the page body ({@link generatedDescription}),
+ * - `og:description` falls back to `description`,
+ * - `twitter:description` falls back to `og:description`.
+ * A value that differs from its fallback was set explicitly (in the page's metadata block, or
+ * in bulk metadata). Empty values are treated as not set.
+ *
+ * @param {import('hast').Element|undefined} head
+ * @param {import('hast').Root|undefined} main
+ * @returns {{ explicit: Record<string, string>, implicitDescription?: string }}
+ */
+function extractDescriptions(head, main) {
+  const description = metaContent(head, 'meta[name="description"]');
+  const ogDescription = metaContent(head, 'meta[property="og:description"]');
+  const twitterDescription = metaContent(head, 'meta[name="twitter:description"]');
+
+  /** @type {Record<string, string>} */
+  const explicit = {};
+  let implicitDescription;
+  if (description) {
+    if (main && description === generatedDescription(main)) {
+      implicitDescription = description;
+    } else {
+      explicit.description = description;
+    }
+  }
+  if (ogDescription && ogDescription !== description) {
+    explicit['og:description'] = ogDescription;
+  }
+  if (twitterDescription && twitterDescription !== ogDescription) {
+    explicit['twitter:description'] = twitterDescription;
+  }
+  return { explicit, implicitDescription };
+}
+
+/**
+ * Everything helix-html-pipeline may have used as a title when none is authored
+ * (src/steps/extract-metadata.js and get-metadata.js): the first `h1`, otherwise the first
+ * section's heading or, without one, its first paragraph, which can be a block's name
+ * (rendered only as the block's class). Rather than mirror that order exactly, any heading,
+ * paragraph or block name counts, so an unrecognized title errs toward Product Bus.
+ *
+ * @param {import('hast').Root} main - The page's main content
+ * @returns {string[]} Lowercased candidate titles
+ */
+function generatedTitleCandidates(main) {
+  const texts = selectAll('h1, h2, h3, h4, h5, h6, p', main).map((el) => toString(el).trim());
+  const blockNames = selectAll('div[class]', main)
+    .map((el) => String([el.properties.className].flat()[0]).replaceAll('-', ' '));
+  return [...texts, ...blockNames].filter(Boolean).map((text) => text.toLowerCase());
+}
+
+/**
+ * Whether `value` is `base`, optionally followed by a suffix. The HTML pipeline appends
+ * `title:suffix` and `html-title:suffix` from bulk metadata after a space, and the suffix
+ * itself is not visible on the page.
+ *
+ * @param {string} value
+ * @param {string} base
+ * @returns {boolean}
+ */
+function isSameOrSuffixed(value, base) {
+  return value === base || value.startsWith(`${base} `);
+}
+
+/**
+ * Separates explicitly authored titles from the ones the HTML pipeline generates.
+ *
+ * Same idea as {@link extractDescriptions}: the title falls back to text from the page body
+ * ({@link generatedTitleCandidates}), `og:title` to the title, and `twitter:title` to
+ * `og:title`. The generated title is never used, since Product Bus always provides a `name`.
+ *
+ * @param {import('hast').Element|undefined} head
+ * @param {import('hast').Root|undefined} main
+ * @returns {Record<string, string>} The explicitly set title values
+ */
+function extractTitles(head, main) {
+  const titleElement = head && select('title', head);
+  const title = titleElement ? toString(titleElement).trim() : '';
+  const ogTitle = metaContent(head, 'meta[property="og:title"]');
+  const twitterTitle = metaContent(head, 'meta[name="twitter:title"]');
+
+  /** @type {Record<string, string>} */
+  const explicit = {};
+  const candidates = main ? generatedTitleCandidates(main) : [];
+  const lowerTitle = title.toLowerCase();
+  if (title && !candidates.some((candidate) => isSameOrSuffixed(lowerTitle, candidate))) {
+    explicit.title = title;
+  }
+  // `<title>` may carry an html-title:suffix that og:title doesn't
+  if (ogTitle && !isSameOrSuffixed(title, ogTitle)) {
+    explicit['og:title'] = ogTitle;
+  }
+  if (twitterTitle && twitterTitle !== ogTitle) {
+    explicit['twitter:title'] = twitterTitle;
+  }
+  return explicit;
+}
+
+/**
  * Extract the main element's children as HAST nodes.
  * @param {import('hast').Root} hast - The parsed HTML document
  * @returns {import('hast').Root|undefined} HAST root with main's children,
@@ -100,7 +244,18 @@ export default async function extractAuthoredMetadata(state) {
 
   const hast = fromHtml(edge, { fragment: false });
   const head = select('head', hast);
-  const authoredMetadata = extractMetadataFromHead(head);
+  const mainContent = extractMainContent(hast);
+  const { explicit, implicitDescription } = extractDescriptions(head, mainContent);
+  const authoredMetadata = {
+    ...extractMetadataFromHead(head),
+    ...explicit,
+    ...extractTitles(head, mainContent),
+  };
+
+  // A generated description is only used when product data has none (see render-head).
+  if (implicitDescription) {
+    content.implicitDescription = implicitDescription;
+  }
 
   // If metadata was extracted, merge it with existing product metadata
   if (Object.keys(authoredMetadata).length > 0) {
@@ -112,8 +267,7 @@ export default async function extractAuthoredMetadata(state) {
     Object.assign(data.metadata, authoredMetadata);
   }
 
-  // Extract main content as HAST and store for render-body to use directly
-  const mainContent = extractMainContent(hast);
+  // Store main content as HAST for render-body to use directly
   if (mainContent) {
     content.edgeHast = mainContent;
   }
