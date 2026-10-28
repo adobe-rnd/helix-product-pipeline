@@ -965,6 +965,62 @@ describe('Product HTML Pipe Test', () => {
     fetchMock.unmockGlobal();
   });
 
+  it('keeps the Product Bus title when the authored page title came from an opening paragraph', async () => {
+    fetchMock.unmockGlobal();
+    fetchMock.removeRoutes();
+    const fetchMockGlobal = fetchMock.mockGlobal();
+
+    // no metadata block and no heading: aem.live used the first paragraph as the title
+    const generated = 'Professional performance for every kitchen.';
+    fetchMockGlobal.get('https://main--site--org.aem.live/products/product-with-authored-metadata', {
+      body: `<!DOCTYPE html>
+<html>
+  <head>
+    <title>${generated}</title>
+    <meta property="og:title" content="${generated}">
+    <meta name="twitter:title" content="${generated}">
+  </head>
+  <body>
+    <header></header>
+    <main>
+      <div>
+        <p>${generated}</p>
+      </div>
+    </main>
+    <footer></footer>
+  </body>
+</html>`,
+      headers: {
+        'content-type': 'text/html',
+        'last-modified': 'Fri, 30 Apr 2021 03:47:18 GMT',
+      },
+    });
+
+    const s3Loader = new FileS3Loader();
+    const state = DEFAULT_STATE(DEFAULT_CONFIG, {
+      log: console,
+      s3Loader,
+      ref: 'main',
+      path: '/products/product-with-authored-metadata',
+      partition: 'live',
+      timer: { update: () => { } },
+    });
+    state.info = getPathInfo('/products/product-with-authored-metadata');
+
+    const resp = await productHTMLPipe(
+      state,
+      new PipelineRequest(new URL('https://acme.com/products/product-with-authored-metadata')),
+    );
+
+    assert.strictEqual(resp.status, 200);
+    assert.ok(resp.body.includes('<title>Test Product Title</title>'));
+    assert.ok(resp.body.includes('<meta property="og:title" content="Test Product Title">'));
+    assert.ok(resp.body.includes('<meta name="twitter:title" content="Test Product Title">'));
+    assert.ok(!resp.body.includes(`<title>${generated}</title>`), 'generated title must not be rendered');
+
+    fetchMock.unmockGlobal();
+  });
+
   it('handles authored content with empty main element', async () => {
     // Clear any existing mocks and set up fresh
     fetchMock.unmockGlobal();

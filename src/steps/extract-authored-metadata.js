@@ -149,16 +149,20 @@ function extractDescriptions(head, main) {
 }
 
 /**
- * Mirrors how helix-html-pipeline generates a title when none is authored
- * (src/steps/extract-metadata.js and get-metadata.js): the text of the first `h1`,
- * otherwise of the first heading of any level. Keep in sync with the HTML pipeline.
+ * Everything helix-html-pipeline may have used as a title when none is authored
+ * (src/steps/extract-metadata.js and get-metadata.js): the first `h1`, otherwise the first
+ * section's heading or, without one, its first paragraph, which can be a block's name
+ * (rendered only as the block's class). Rather than mirror that order exactly, any heading,
+ * paragraph or block name counts, so an unrecognized title errs toward Product Bus.
  *
  * @param {import('hast').Root} main - The page's main content
- * @returns {string} The title the HTML pipeline would generate, or ''
+ * @returns {string[]} Lowercased candidate titles
  */
-function generatedTitle(main) {
-  const heading = select('div h1', main) || select('h1, h2, h3, h4, h5, h6', main);
-  return heading ? toString(heading).trim() : '';
+function generatedTitleCandidates(main) {
+  const texts = selectAll('h1, h2, h3, h4, h5, h6, p', main).map((el) => toString(el).trim());
+  const blockNames = selectAll('div[class]', main)
+    .map((el) => String([el.properties.className].flat()[0]).replaceAll('-', ' '));
+  return [...texts, ...blockNames].filter(Boolean).map((text) => text.toLowerCase());
 }
 
 /**
@@ -177,9 +181,9 @@ function isSameOrSuffixed(value, base) {
 /**
  * Separates explicitly authored titles from the ones the HTML pipeline generates.
  *
- * Same idea as {@link extractDescriptions}: the title falls back to the first heading
- * ({@link generatedTitle}), `og:title` to the title, and `twitter:title` to `og:title`.
- * The generated title is never used, since Product Bus always provides a `name`.
+ * Same idea as {@link extractDescriptions}: the title falls back to text from the page body
+ * ({@link generatedTitleCandidates}), `og:title` to the title, and `twitter:title` to
+ * `og:title`. The generated title is never used, since Product Bus always provides a `name`.
  *
  * @param {import('hast').Element|undefined} head
  * @param {import('hast').Root|undefined} main
@@ -193,8 +197,9 @@ function extractTitles(head, main) {
 
   /** @type {Record<string, string>} */
   const explicit = {};
-  const generated = main ? generatedTitle(main) : '';
-  if (title && !(generated && isSameOrSuffixed(title, generated))) {
+  const candidates = main ? generatedTitleCandidates(main) : [];
+  const lowerTitle = title.toLowerCase();
+  if (title && !candidates.some((candidate) => isSameOrSuffixed(lowerTitle, candidate))) {
     explicit.title = title;
   }
   // `<title>` may carry an html-title:suffix that og:title doesn't

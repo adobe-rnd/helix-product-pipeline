@@ -225,6 +225,54 @@ describe('extract-authored-metadata', () => {
       assert.strictEqual(content.data.metadata, undefined);
     });
 
+    it('treats a title generated from a paragraph-only page as implicit', async () => {
+      const content = await run(page({
+        main: '<div><p>Professional performance for every kitchen.</p></div>',
+        title: 'Professional performance for every kitchen.',
+      }));
+
+      assert.strictEqual(content.data.metadata, undefined);
+    });
+
+    it('treats a title generated from an intro paragraph before a heading section as implicit', async () => {
+      // aem.live uses the first section's paragraph when that section has no heading
+      const content = await run(page({
+        main: '<div><p>Built to last for decades.</p></div><div><h2>Features</h2><p>Variable speed control.</p></div>',
+        title: 'Built to last for decades.',
+      }));
+
+      assert.strictEqual(content.data.metadata, undefined);
+    });
+
+    it('treats a title generated from the name of an opening block as implicit', async () => {
+      // a block's name is the first paragraph of its section in the page source
+      const content = await run(page({
+        main: '<div><div class="hero"><div><div><picture><img src="./media_1.png"></picture></div></div></div></div><div><h2>Features</h2></div>',
+        title: 'Hero',
+      }));
+
+      assert.strictEqual(content.data.metadata, undefined);
+    });
+
+    it('matches multi-word block names, including a variant', async () => {
+      const content = await run(page({
+        main: '<div><div class="product-hero dark"><div><div><p>Text</p></div></div></div></div>',
+        title: 'Product Hero (dark)',
+      }));
+
+      assert.strictEqual(content.data.metadata, undefined);
+    });
+
+    it('treats a title that matches no heading, paragraph or block on the page as authored', async () => {
+      const content = await run(page({
+        main: `<div><p>Built to last for decades.</p><div class="hero"><div><div><p>Text</p></div></div></div></div>
+          <div><h2>Features</h2><p>Variable speed control.</p></div>`,
+        title: 'BlitzMax 5000 Blender',
+      }));
+
+      assert.deepStrictEqual(content.data.metadata, { title: 'BlitzMax 5000 Blender' });
+    });
+
     it('treats a generated title with a bulk metadata suffix as implicit', async () => {
       const content = await run(page({
         main: '<div><h2>Features</h2></div>',
