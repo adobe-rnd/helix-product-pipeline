@@ -10,7 +10,6 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-env mocha */
 import assert from 'assert';
 import { constructImageUrl, createOptimizedPicture } from '../../src/steps/create-pictures.js';
 
