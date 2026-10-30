@@ -1,3 +1,15 @@
+## [2.16.1](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.16.0...v2.16.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* fail index, sitemap and merchant feed rendering before the response starts ([468fdac](https://github.com/adobe-rnd/helix-product-pipeline/commit/468fdac3595eaa4d90fbdf276153d418fd0e935c))
+
+
+### Performance Improvements
+
+* stream index, sitemap and merchant feed bodies as UTF-8 chunks ([43e9c5d](https://github.com/adobe-rnd/helix-product-pipeline/commit/43e9c5d31a6c70fe42b406135aa1dd1383bc96bb))
+
 # [2.16.0](https://github.com/adobe-rnd/helix-product-pipeline/compare/v2.15.1...v2.16.0) (2026-10-28)
 
 
