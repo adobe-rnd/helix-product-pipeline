@@ -15,6 +15,7 @@ import esmock from 'esmock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { readFile } from 'fs/promises';
 import { FileS3Loader } from './FileS3Loader.js';
+import { bodyText } from './utils.js';
 import { productSitemapPipe } from '../src/index.js';
 import { toSitemapXML } from '../src/product-sitemap-pipe.js';
 import { getPathInfo } from '../src/utils/path.js';
@@ -61,7 +62,7 @@ describe('Product Sitemap Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 200);
 
-    const { body } = resp;
+    const body = await bodyText(resp);
     const sitemapXMLExpected = await readFile(new URL('./fixtures/index/sitemap.xml', import.meta.url), 'utf-8');
 
     assert.deepStrictEqual(body, sitemapXMLExpected);
@@ -373,6 +374,47 @@ describe('Product Sitemap Pipe Test', () => {
     <lastmod>2021-04-30</lastmod>
   </url>
 </urlset>`);
+    });
+  });
+  describe('malformed stores', () => {
+    const run = async (data, url) => {
+      const { productSitemapPipe: pipe } = await esmock('../src/product-sitemap-pipe.js', {
+        '../src/steps/fetch-productbus.js': {
+          default: async (st, req, res) => {
+            res.status = 200;
+            st.content.data = data;
+          },
+        },
+      });
+      const errors = [];
+      const log = {
+        error: (msg) => errors.push(msg), warn: () => {}, info: () => {}, debug: () => {},
+      };
+      const state = DEFAULT_STATE({ log, timer: { update: () => {} } });
+      state.info = getPathInfo(new URL(url).pathname);
+      const resp = await pipe(state, new PipelineRequest(new URL(url)));
+      return { resp, errors };
+    };
+
+    it('returns 500 for a listed entry without data', async () => {
+      const { resp } = await run({ '/products/a': {} }, 'https://acme.com/products/sitemap.xml');
+      assert.strictEqual(resp.status, 500);
+      assert.ok(resp.headers.get('x-error'));
+    });
+
+    it('still skips a noindex entry without data', async () => {
+      const { resp } = await run({
+        '/products/a': { filters: { noindex: true } },
+        '/products/b': { data: { url: 'https://acme.com/products/b' } },
+      }, 'https://acme.com/products/sitemap.xml');
+      assert.strictEqual(resp.status, 200);
+      assert.match(await bodyText(resp), /<loc>https:\/\/acme.com\/products\/b<\/loc>/);
+    });
+
+    it('returns 500 when an entry fails to render (before the response starts)', async () => {
+      const { resp } = await run({ '/products/a': { data: { path: Symbol('p') } } }, 'https://acme.com/products/sitemap.xml');
+      assert.strictEqual(resp.status, 500);
+      assert.match(resp.headers.get('x-error'), /Symbol/);
     });
   });
 });

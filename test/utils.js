@@ -70,3 +70,12 @@ export async function assertHTMLEquals(actualHtml, expectedHtml) {
     diff,
   });
 }
+
+/**
+ * Text of a pipeline response body (a string, or a stream for index / feed outputs).
+ * @param {{ body: any }} resp
+ * @returns {Promise<string>}
+ */
+export async function bodyText(resp) {
+  return typeof resp.body === 'string' ? resp.body : new Response(resp.body).text();
+}

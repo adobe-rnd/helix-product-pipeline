@@ -15,8 +15,10 @@ import esmock from 'esmock';
 import { readFile } from 'fs/promises';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { FileS3Loader } from './FileS3Loader.js';
+import { bodyText } from './utils.js';
 import { productIndexPipe } from '../src/index.js';
-import { toSpreadsheet } from '../src/product-index-pipe.js';
+import { toSpreadsheet, toSpreadsheetJSON } from '../src/product-index-pipe.js';
+import { joinParts } from '../src/utils/body.js';
 import { getPathInfo } from '../src/utils/path.js';
 
 const DEFAULT_CONFIG = {
@@ -64,7 +66,7 @@ describe('Product Index Pipe Test', () => {
     const spreadsheetIndexFixture = JSON.parse(
       await readFile(new URL('./fixtures/index/spreadsheet.json', import.meta.url), 'utf-8'),
     );
-    const body = JSON.parse(resp.body);
+    const body = JSON.parse(await bodyText(resp));
     assert.deepStrictEqual(body, spreadsheetIndexFixture);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
@@ -103,7 +105,7 @@ describe('Product Index Pipe Test', () => {
     const spreadsheetIndexFixture = JSON.parse(
       await readFile(new URL('./fixtures/index/spreadsheet.json', import.meta.url), 'utf-8'),
     );
-    const body = JSON.parse(resp.body);
+    const body = JSON.parse(await bodyText(resp));
     assert.deepStrictEqual(body, spreadsheetIndexFixture);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
       'cache-control': 'max-age=7200, must-revalidate',
@@ -259,7 +261,7 @@ describe('Product Index Pipe Test', () => {
     const spreadsheetIndexFixture = JSON.parse(
       await readFile(new URL('./fixtures/index/spreadsheet.json', import.meta.url), 'utf-8'),
     );
-    const body = JSON.parse(resp.body);
+    const body = JSON.parse(await bodyText(resp));
     assert.deepStrictEqual(body, spreadsheetIndexFixture);
   });
 
@@ -287,7 +289,7 @@ describe('Product Index Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 200);
 
-    const body = JSON.parse(resp.body);
+    const body = JSON.parse(await bodyText(resp));
     assert.strictEqual(body.total, 88);
     assert.strictEqual(body.offset, 0);
     assert.strictEqual(body.limit, 5);
@@ -318,7 +320,7 @@ describe('Product Index Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 200);
 
-    const body = JSON.parse(resp.body);
+    const body = JSON.parse(await bodyText(resp));
     assert.strictEqual(body.total, 88);
     assert.strictEqual(body.offset, 80);
     assert.strictEqual(body.limit, 8); // only 8 items remain after offset 80
@@ -708,6 +710,75 @@ describe('Product Index Pipe Test', () => {
       assert.strictEqual(page1.data[1].sku, 'banana-product');
       assert.strictEqual(page2.data[0].sku, 'mango-product');
       assert.strictEqual(page2.data[1].sku, 'zebra-product');
+    });
+  });
+  describe('toSpreadsheetJSON', () => {
+    const index = {};
+    for (let i = 0; i < 40; i += 1) {
+      const variants = {};
+      for (let v = 0; v < i % 4; v += 1) {
+        variants[`v-${i}-${v}`] = v % 2 ? { sku: `V${i}${v}`, color: 'r€d' } : { price: `${v}` };
+      }
+      index[`/products/p-${(i * 7) % 40}`] = {
+        data: {
+          ...(i % 3 ? { sku: `S${i}` } : {}),
+          title: `Title “${i}”\nline`,
+          ...(i % 5 ? { variants } : {}),
+        },
+        ...(i % 11 === 0 ? { filters: { noindex: true } } : {}),
+      };
+    }
+
+    it('renders the same text as JSON.stringify(toSpreadsheet(...), null, 2)', () => {
+      const cases = [
+        [{}, undefined],
+        [{}, {}],
+        [{ noindex: true }, { hasParams: true }],
+        [{ all: true }, { hasParams: true, limit: 7, offset: 3 }],
+        [{}, { hasParams: true, limit: 5, offset: 60 }],
+        [{}, { hasParams: true, offset: 1000 }],
+        [{}, { hasParams: true, limit: 0 }],
+      ];
+      for (const [includes, pagination] of cases) {
+        assert.strictEqual(
+          joinParts(toSpreadsheetJSON(index, includes, pagination)),
+          JSON.stringify(toSpreadsheet(index, includes, pagination), null, 2),
+          JSON.stringify({ includes, pagination }),
+        );
+      }
+    });
+  });
+  describe('malformed stores', () => {
+    const run = async (data, url) => {
+      const { productIndexPipe: pipe } = await esmock('../src/product-index-pipe.js', {
+        '../src/steps/fetch-productbus.js': {
+          default: async (st, req, res) => {
+            res.status = 200;
+            st.content.data = data;
+          },
+        },
+      });
+      const errors = [];
+      const log = {
+        error: (msg) => errors.push(msg), warn: () => {}, info: () => {}, debug: () => {},
+      };
+      const state = DEFAULT_STATE({ log, timer: { update: () => {} } });
+      state.info = getPathInfo(new URL(url).pathname);
+      const resp = await pipe(state, new PipelineRequest(new URL(url)));
+      return { resp, errors };
+    };
+
+    it('returns 500 for an entry without data (before the response starts)', async () => {
+      const { resp } = await run({ '/products/a': {} }, 'https://acme.com/products/index.json');
+      assert.strictEqual(resp.status, 500);
+      assert.ok(resp.headers.get('x-error'));
+    });
+
+    it('aborts the body and logs when a row fails to render', async () => {
+      const { resp, errors } = await run({ '/products/a': { data: { sku: 'a', n: 1n } } }, 'https://acme.com/products/index.json');
+      assert.strictEqual(resp.status, 200);
+      await assert.rejects(bodyText(resp));
+      assert.ok(errors.some((m) => /index rendering failed mid-response/.test(m)));
     });
   });
 });

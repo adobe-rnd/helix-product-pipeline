@@ -15,6 +15,7 @@ import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { validatePathInfo } from './utils/path.js';
+import { joinParts, renderOnce, toStreamBody } from './utils/body.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
@@ -92,16 +93,29 @@ ${optionalEntry('lastmod', lastmod)}
 /**
  * @param {PipelineState} state
  * @param {SharedTypes.StoredIndex} index
+ * @returns {Generator<string>}
+ */
+export function* sitemapXMLParts(state, index) {
+  yield `\
+<?xml version="1.0" encoding="utf-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">`;
+  for (const key of Object.keys(index)) {
+    const entry = index[key];
+    if (!entry.filters?.noindex) {
+      yield sitemapEntry(state, entry.data);
+    }
+  }
+  yield `
+</urlset>`;
+}
+
+/**
+ * @param {PipelineState} state
+ * @param {SharedTypes.StoredIndex} index
  * @returns {string}
  */
 export function toSitemapXML(state, index) {
-  return `\
-<?xml version="1.0" encoding="utf-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\
-${Object.entries(index)
-    .filter(([_, entry]) => !entry.filters?.noindex)
-    .map(([_, entry]) => sitemapEntry(state, entry.data)).join('')}
-</urlset>`;
+  return joinParts(sitemapXMLParts(state, index));
 }
 
 /**
@@ -155,7 +169,9 @@ export async function productSitemapPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = toSitemapXML(state, state.content.data);
+    // fail here (500), not mid-stream
+    renderOnce(sitemapXMLParts(state, state.content.data));
+    res.body = toStreamBody(sitemapXMLParts(state, state.content.data), { log, name: 'sitemap' });
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */
