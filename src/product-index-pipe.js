@@ -20,6 +20,144 @@ import { set404CacheHeaders, setIndexCacheHeaders } from './steps/set-cache-head
 import { getIncludes, getPaginationParams } from './steps/utils.js';
 import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
 import { applyCatalogPriceRules } from './steps/apply-price-rules.js';
+import { toStreamBody } from './utils/body.js';
+
+/**
+ * Keys of the index entries to list, in output order.
+ * @param {SharedTypes.StoredIndex} index
+ * @param {Record<string, boolean>} includes
+ * @returns {string[]}
+ */
+function listedKeys(index, includes) {
+  return Object.keys(index)
+    .sort((a, b) => a.localeCompare(b))
+    .filter((key) => includes.all || !index[key].filters?.noindex || includes.noindex);
+}
+
+/**
+ * @param {any} product
+ * @returns {[string, any][]} the product's variants, if any
+ */
+function variantEntries(product) {
+  return typeof product.variants === 'object' && product.variants !== null
+    ? Object.entries(product.variants)
+    : [];
+}
+
+/**
+ * Columns and row count of the listed entries, without building rows.
+ * @param {SharedTypes.StoredIndex} index
+ * @param {string[]} keys
+ * @returns {{ columns: string[], total: number }}
+ */
+function scan(index, keys) {
+  const columns = new Set(['sku']);
+  let total = 0;
+  for (const key of keys) {
+    const product = index[key].data;
+    Object.keys(product).forEach((k) => {
+      if (k !== 'variants') {
+        columns.add(k);
+      }
+    });
+    total += 1;
+    const variants = variantEntries(product);
+    if (variants.length) {
+      columns.add('parentSku');
+      columns.add('variantSkus');
+      variants.forEach(([, variant]) => {
+        Object.keys(variant).forEach((k) => columns.add(k));
+      });
+      total += variants.length;
+    }
+  }
+  return { columns: Array.from(columns), total };
+}
+
+/**
+ * The rows of one entry: the product, then a row per variant.
+ * @param {string} sluggedSku
+ * @param {any} product
+ * @returns {Record<string, any>[]}
+ */
+function entryRows(sluggedSku, product) {
+  const sku = product.sku ?? sluggedSku;
+  const records = [{
+    sku,
+    ...product,
+    variants: undefined,
+  }];
+  const variants = variantEntries(product);
+  if (variants.length) {
+    const variantSkus = [];
+    variants.forEach(([vSluggedSku, variant]) => {
+      const variantSku = variant.sku ?? vSluggedSku;
+      variantSkus.push(variantSku);
+      records.push({
+        parentSku: sku,
+        sku: variantSku,
+        ...variant,
+      });
+    });
+    records[0].variantSkus = variantSkus.join(',');
+  }
+  return records;
+}
+
+/**
+ * Rows `start` (inclusive) to `end` (exclusive). Only entries in that range
+ * get row objects.
+ * @param {SharedTypes.StoredIndex} index
+ * @param {string[]} keys
+ * @param {number} start
+ * @param {number} end
+ * @returns {Generator<Record<string, any>>}
+ */
+function* rowsInRange(index, keys, start, end) {
+  let pos = 0;
+  for (const key of keys) {
+    if (pos >= end) {
+      return;
+    }
+    const product = index[key].data;
+    const count = 1 + variantEntries(product).length;
+    if (pos + count <= start) {
+      pos += count;
+    } else {
+      for (const row of entryRows(key, product)) {
+        if (pos >= start && pos < end) {
+          yield row;
+        }
+        pos += 1;
+      }
+    }
+  }
+}
+
+/**
+ * @param {SharedTypes.StoredIndex} index
+ * @param {Record<string, boolean>} includes
+ * @param {{ hasParams?: boolean, limit?: number, offset?: number }} pagination
+ */
+function sheet(index, includes, pagination) {
+  const {
+    limit = pagination.hasParams ? 1000 : Infinity,
+    offset = 0,
+  } = pagination;
+  const keys = listedKeys(index, includes);
+  const { columns, total } = scan(index, keys);
+  const len = Math.max(0, Math.min(limit, total - offset));
+  return {
+    header: {
+      ':type': /** @type {'sheet'} */ ('sheet'),
+      total,
+      offset,
+      limit: len,
+      columns,
+    },
+    rows: () => rowsInRange(index, keys, offset, offset + len),
+  };
+}
 
 /**
  * Returns index as spreadsheet with pagination support.
@@ -37,74 +175,28 @@ import { applyCatalogPriceRules } from './steps/apply-price-rules.js';
 * }}
 */
 export function toSpreadsheet(index, includes, pagination = {}) {
-  const {
-    limit = pagination.hasParams ? 1000 : Infinity,
-    offset = 0,
-  } = pagination;
+  const { header, rows } = sheet(index, includes, pagination);
+  return { ...header, data: [...rows()] };
+}
 
-  const columns = new Set(['sku']);
-
-  const products = Object.entries(index)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .filter(([_, entry]) => includes.all || !entry.filters?.noindex || includes.noindex)
-    .reduce((acc, [sluggedSku, entry]) => {
-      const product = entry.data;
-      const sku = product.sku ?? sluggedSku;
-      // add each property to columns if not already present
-      Object.keys(product).forEach((key) => {
-        if (key !== 'variants') {
-          columns.add(key);
-        }
-      });
-      // return the row, include sku as property
-      const records = [{
-        sku,
-        ...product,
-        variants: undefined,
-      }];
-
-      // add a row for each variant, if any
-      if (typeof product.variants === 'object' && product.variants !== null) {
-        const variants = Object.entries(product.variants);
-
-        if (variants.length) {
-          columns.add('parentSku');
-          columns.add('variantSkus');
-
-          const variantSkus = [];
-          variants.forEach(([vSluggedSku, variant]) => {
-            const variantSku = variant.sku ?? vSluggedSku;
-            Object.keys(variant).forEach((key) => {
-              columns.add(key);
-            });
-            variantSkus.push(variantSku);
-            records.push({
-              parentSku: sku,
-              sku: variantSku,
-              ...variant,
-            });
-          });
-
-          records[0].variantSkus = variantSkus.join(',');
-        }
-      }
-
-      acc.push(...records);
-      return acc;
-    }, []);
-
-  const total = products.length;
-  const len = Math.min(limit, total - offset);
-  const paginatedData = products.slice(offset, offset + len);
-
-  return {
-    ':type': 'sheet',
-    total,
-    offset,
-    limit: paginatedData.length,
-    columns: Array.from(columns),
-    data: paginatedData,
-  };
+/**
+ * The spreadsheet as JSON text parts, identical to
+ * `JSON.stringify(toSpreadsheet(...), null, 2)`, one row at a time.
+ * @param {SharedTypes.StoredIndex} index
+ * @param {Record<string, boolean>} includes
+ * @param {{ hasParams?: boolean, limit?: number, offset?: number }} [pagination={}]
+ * @returns {Generator<string>}
+ */
+export function* toSpreadsheetJSON(index, includes, pagination = {}) {
+  const { header, rows } = sheet(index, includes, pagination);
+  const head = JSON.stringify(header, null, 2);
+  yield `${head.slice(0, -2)},\n  "data": [`;
+  let first = true;
+  for (const row of rows()) {
+    yield `${first ? '' : ','}\n    ${JSON.stringify(row, null, 2).replace(/\n/g, '\n    ')}`;
+    first = false;
+  }
+  yield first ? ']\n}' : '\n  ]\n}';
 }
 
 export async function productIndexPipe(state, req) {
@@ -156,8 +248,7 @@ export async function productIndexPipe(state, req) {
     setLastModified(state, res);
 
     const pagination = getPaginationParams(req);
-    const spreadsheet = toSpreadsheet(state.content.data, getIncludes(req), pagination);
-    res.body = JSON.stringify(spreadsheet, null, 2);
+    res.body = toStreamBody(toSpreadsheetJSON(state.content.data, getIncludes(req), pagination));
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */

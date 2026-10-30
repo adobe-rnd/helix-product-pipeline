@@ -30,6 +30,8 @@ Helix Product Pipeline is the shared rendering engine that powers both `helix-pr
 - **Sitemap Pipeline**: Generates XML sitemaps for products
 - **Merchant Feed Pipeline**: Creates Google Shopping merchant feeds
 
+The index, sitemap and merchant feed pipelines return their body as a `ReadableStream` of UTF-8 chunks, rendered entry by entry while the response is read. The stored index is still parsed whole, but the output is never one large string (two bytes per character once it contains e.g. `’` or `™`) plus its UTF-8 copy. Index rows are only built for the requested page.
+
 ### HTML Pipeline Capabilities
 
 - Fetches product data from Product Bus storage

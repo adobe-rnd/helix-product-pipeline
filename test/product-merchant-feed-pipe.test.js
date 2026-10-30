@@ -15,6 +15,7 @@ import esmock from 'esmock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { readFile } from 'fs/promises';
 import { FileS3Loader } from './FileS3Loader.js';
+import { bodyText } from './utils.js';
 import { productMerchantFeedPipe } from '../src/index.js';
 import { toFeedXML } from '../src/product-merchant-feed-pipe.js';
 import { getPathInfo } from '../src/utils/path.js';
@@ -61,7 +62,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 200);
 
-    const { body } = resp;
+    const body = await bodyText(resp);
     const merchantXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
 
     assert.deepStrictEqual(body, merchantXMLExpected);
@@ -99,7 +100,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 200);
 
-    const { body } = resp;
+    const body = await bodyText(resp);
     const merchantXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
     assert.deepStrictEqual(body, merchantXMLExpected);
     assert.deepStrictEqual(Object.fromEntries(resp.headers.entries()), {
@@ -231,7 +232,7 @@ describe('Product Merchant Feed Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 200);
 
-    const { body } = resp;
+    const body = await bodyText(resp);
     const merchantFeedXMLExpected = await readFile(new URL('./fixtures/index/merchant-feed.xml', import.meta.url), 'utf-8');
 
     assert.deepStrictEqual(body, merchantFeedXMLExpected);

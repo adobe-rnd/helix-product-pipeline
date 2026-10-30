@@ -15,6 +15,7 @@ import esmock from 'esmock';
 import { PipelineRequest, PipelineState } from '@adobe/helix-html-pipeline';
 import { readFile } from 'fs/promises';
 import { FileS3Loader } from './FileS3Loader.js';
+import { bodyText } from './utils.js';
 import { productSitemapPipe } from '../src/index.js';
 import { toSitemapXML } from '../src/product-sitemap-pipe.js';
 import { getPathInfo } from '../src/utils/path.js';
@@ -61,7 +62,7 @@ describe('Product Sitemap Pipe Test', () => {
     );
     assert.strictEqual(resp.status, 200);
 
-    const { body } = resp;
+    const body = await bodyText(resp);
     const sitemapXMLExpected = await readFile(new URL('./fixtures/index/sitemap.xml', import.meta.url), 'utf-8');
 
     assert.deepStrictEqual(body, sitemapXMLExpected);

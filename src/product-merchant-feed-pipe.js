@@ -13,6 +13,7 @@
 import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
+import { joinParts, toStreamBody } from './utils/body.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
@@ -152,24 +153,38 @@ ${shipping(data)}
  * @param {PipelineState} state
  * @param {PipelineRequest} req
  * @param {SharedTypes.StoredMerchantFeed} merchantFeed
- * @returns {string}
+ * @returns {Generator<string>}
  */
-export function toFeedXML(state, req, merchantFeed) {
+export function* feedXMLParts(state, req, merchantFeed) {
   const { title, description, link } = state.config?.merchantFeedConfig ?? {};
   const includes = getIncludes(req);
-  return `\
+  yield `\
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
 <channel>
   <title>${title ?? ''}</title>
   <link>${link ?? ''}</link>
   <description>
   ${description ?? ''}
-  </description>\
-${Object.entries(merchantFeed)
-    .filter(([_, entry]) => includes.all || !entry.filters?.noindex || includes.noindex)
-    .map(([_, entry]) => feedEntry(state, req, entry.data)).join('')}
+  </description>`;
+  for (const key of Object.keys(merchantFeed)) {
+    const entry = merchantFeed[key];
+    if (includes.all || !entry.filters?.noindex || includes.noindex) {
+      yield feedEntry(state, req, entry.data);
+    }
+  }
+  yield `
 </channel>
 </rss>`;
+}
+
+/**
+ * @param {PipelineState} state
+ * @param {PipelineRequest} req
+ * @param {SharedTypes.StoredMerchantFeed} merchantFeed
+ * @returns {string}
+ */
+export function toFeedXML(state, req, merchantFeed) {
+  return joinParts(feedXMLParts(state, req, merchantFeed));
 }
 
 /**
@@ -229,7 +244,7 @@ export async function productMerchantFeedPipe(state, req) {
     await setMerchantFeedCacheHeaders(state, req, res);
     setLastModified(state, res);
 
-    res.body = toFeedXML(state, req, state.content.data);
+    res.body = toStreamBody(feedXMLParts(state, req, state.content.data));
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */
