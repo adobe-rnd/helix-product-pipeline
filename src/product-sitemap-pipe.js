@@ -15,7 +15,7 @@ import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import { validatePathInfo } from './utils/path.js';
-import { joinParts, toStreamBody } from './utils/body.js';
+import { joinParts, renderOnce, toStreamBody } from './utils/body.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { setLastModified } from './utils/last-modified.js';
@@ -169,7 +169,9 @@ export async function productSitemapPipe(state, req) {
 
     setLastModified(state, res);
 
-    res.body = toStreamBody(sitemapXMLParts(state, state.content.data));
+    // fail here (500), not mid-stream
+    renderOnce(sitemapXMLParts(state, state.content.data));
+    res.body = toStreamBody(sitemapXMLParts(state, state.content.data), { log, name: 'sitemap' });
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */

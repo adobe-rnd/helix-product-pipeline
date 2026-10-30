@@ -11,7 +11,9 @@
  */
 
 import assert from 'assert';
-import { CHUNK_CHARS, joinParts, toStreamBody } from '../../src/utils/body.js';
+import {
+  CHUNK_CHARS, joinParts, renderOnce, toStreamBody,
+} from '../../src/utils/body.js';
 
 /**
  * @param {ReadableStream<Uint8Array>} stream
@@ -63,5 +65,31 @@ describe('Body Utils Test', () => {
     await reader.read();
     await reader.cancel();
     assert.strictEqual(finished, true);
+  });
+  it('errors the stream and logs a rendering error', async () => {
+    const logged = [];
+    const log = { error: (msg) => logged.push(msg) };
+    function* parts() {
+      yield 'ok';
+      throw new Error('boom');
+    }
+    await assert.rejects(readChunks(toStreamBody(parts(), { log, name: 'feed' })), /boom/);
+    assert.deepStrictEqual(logged, ['feed rendering failed mid-response: boom']);
+    // without a logger, the stream still errors
+    await assert.rejects(readChunks(toStreamBody(parts())), /boom/);
+  });
+
+  it('renderOnce renders every part and throws what rendering throws', () => {
+    let rendered = 0;
+    function* parts(fail) {
+      for (let i = 0; i < 3; i += 1) {
+        rendered += 1;
+        if (fail && i === 2) throw new Error('bad entry');
+        yield String(i);
+      }
+    }
+    renderOnce(parts(false));
+    assert.strictEqual(rendered, 3);
+    assert.throws(() => renderOnce(parts(true)), /bad entry/);
   });
 });

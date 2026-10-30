@@ -748,4 +748,37 @@ describe('Product Index Pipe Test', () => {
       }
     });
   });
+  describe('malformed stores', () => {
+    const run = async (data, url) => {
+      const { productIndexPipe: pipe } = await esmock('../src/product-index-pipe.js', {
+        '../src/steps/fetch-productbus.js': {
+          default: async (st, req, res) => {
+            res.status = 200;
+            st.content.data = data;
+          },
+        },
+      });
+      const errors = [];
+      const log = {
+        error: (msg) => errors.push(msg), warn: () => {}, info: () => {}, debug: () => {},
+      };
+      const state = DEFAULT_STATE({ log, timer: { update: () => {} } });
+      state.info = getPathInfo(new URL(url).pathname);
+      const resp = await pipe(state, new PipelineRequest(new URL(url)));
+      return { resp, errors };
+    };
+
+    it('returns 500 for an entry without data (before the response starts)', async () => {
+      const { resp } = await run({ '/products/a': {} }, 'https://acme.com/products/index.json');
+      assert.strictEqual(resp.status, 500);
+      assert.ok(resp.headers.get('x-error'));
+    });
+
+    it('aborts the body and logs when a row fails to render', async () => {
+      const { resp, errors } = await run({ '/products/a': { data: { sku: 'a', n: 1n } } }, 'https://acme.com/products/index.json');
+      assert.strictEqual(resp.status, 200);
+      await assert.rejects(bodyText(resp));
+      assert.ok(errors.some((m) => /index rendering failed mid-response/.test(m)));
+    });
+  });
 });

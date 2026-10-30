@@ -182,21 +182,26 @@ export function toSpreadsheet(index, includes, pagination = {}) {
 /**
  * The spreadsheet as JSON text parts, identical to
  * `JSON.stringify(toSpreadsheet(...), null, 2)`, one row at a time.
+ *
+ * The keys, columns and total are computed right away (so a malformed index
+ * fails here, inside the pipe); only the rows are rendered lazily.
  * @param {SharedTypes.StoredIndex} index
  * @param {Record<string, boolean>} includes
  * @param {{ hasParams?: boolean, limit?: number, offset?: number }} [pagination={}]
  * @returns {Generator<string>}
  */
-export function* toSpreadsheetJSON(index, includes, pagination = {}) {
+export function toSpreadsheetJSON(index, includes, pagination = {}) {
   const { header, rows } = sheet(index, includes, pagination);
   const head = JSON.stringify(header, null, 2);
-  yield `${head.slice(0, -2)},\n  "data": [`;
-  let first = true;
-  for (const row of rows()) {
-    yield `${first ? '' : ','}\n    ${JSON.stringify(row, null, 2).replace(/\n/g, '\n    ')}`;
-    first = false;
-  }
-  yield first ? ']\n}' : '\n  ]\n}';
+  return (function* parts() {
+    yield `${head.slice(0, -2)},\n  "data": [`;
+    let first = true;
+    for (const row of rows()) {
+      yield `${first ? '' : ','}\n    ${JSON.stringify(row, null, 2).replace(/\n/g, '\n    ')}`;
+      first = false;
+    }
+    yield first ? ']\n}' : '\n  ]\n}';
+  }());
 }
 
 export async function productIndexPipe(state, req) {
@@ -248,7 +253,10 @@ export async function productIndexPipe(state, req) {
     setLastModified(state, res);
 
     const pagination = getPaginationParams(req);
-    res.body = toStreamBody(toSpreadsheetJSON(state.content.data, getIncludes(req), pagination));
+    res.body = toStreamBody(
+      toSpreadsheetJSON(state.content.data, getIncludes(req), pagination),
+      { log, name: 'index' },
+    );
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */

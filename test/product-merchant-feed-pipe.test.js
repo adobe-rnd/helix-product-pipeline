@@ -778,4 +778,52 @@ describe('Product Merchant Feed Pipe Test', () => {
       assert.ok(!xml.includes('prod.example.com/productshttps'));
     });
   });
+  describe('malformed stores', () => {
+    const run = async (data, url) => {
+      const { productMerchantFeedPipe: pipe } = await esmock('../src/product-merchant-feed-pipe.js', {
+        '../src/steps/fetch-productbus.js': {
+          default: async (st, req, res) => {
+            res.status = 200;
+            st.content.data = data;
+          },
+        },
+      });
+      const errors = [];
+      const log = {
+        error: (msg) => errors.push(msg), warn: () => {}, info: () => {}, debug: () => {},
+      };
+      const state = DEFAULT_STATE({ log, timer: { update: () => {} } });
+      state.info = getPathInfo(new URL(url).pathname);
+      const resp = await pipe(state, new PipelineRequest(new URL(url)));
+      return { resp, errors };
+    };
+
+    const url = 'https://acme.com/products/merchant-center-feed.xml';
+
+    it('returns 500 for a listed entry without data', async () => {
+      const { resp } = await run({ '/products/a': { filters: {} } }, url);
+      assert.strictEqual(resp.status, 500);
+      assert.ok(resp.headers.get('x-error'));
+    });
+
+    it('returns 500 for an empty variant', async () => {
+      const { resp } = await run({ '/products/a': { data: { id: 'a', variants: { v: null } } } }, url);
+      assert.strictEqual(resp.status, 500);
+      assert.ok(resp.headers.get('x-error'));
+    });
+
+    it('returns 500 when an entry fails to render (before the response starts)', async () => {
+      // a stored value of the wrong type, e.g. a numeric image link
+      const { resp } = await run({ '/products/a': { data: { id: 'a', image_link: 5 } } }, url);
+      assert.strictEqual(resp.status, 500);
+      assert.match(resp.headers.get('x-error'), /startsWith/);
+    });
+
+    it('checks noindex entries only when they are included', async () => {
+      const store = { '/products/a': { filters: { noindex: true } } };
+      assert.strictEqual((await run(store, url)).resp.status, 200);
+      assert.strictEqual((await run(store, `${url}?include=all`)).resp.status, 500);
+      assert.strictEqual((await run(store, `${url}?include=noindex`)).resp.status, 500);
+    });
+  });
 });

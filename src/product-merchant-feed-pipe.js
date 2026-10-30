@@ -13,7 +13,7 @@
 import { PipelineResponse, PipelineStatusError } from '@adobe/helix-html-pipeline';
 import { cleanupHeaderValue } from '@adobe/helix-shared-utils';
 import { validatePathInfo } from './utils/path.js';
-import { joinParts, toStreamBody } from './utils/body.js';
+import { joinParts, renderOnce, toStreamBody } from './utils/body.js';
 import initConfig from './steps/init-config.js';
 import fetchProductBusContent from './steps/fetch-productbus.js';
 import { fetchCatalogPriceRules } from './steps/fetch-price-rules.js';
@@ -244,7 +244,9 @@ export async function productMerchantFeedPipe(state, req) {
     await setMerchantFeedCacheHeaders(state, req, res);
     setLastModified(state, res);
 
-    res.body = toStreamBody(feedXMLParts(state, req, state.content.data));
+    // fail here (500), not mid-stream
+    renderOnce(feedXMLParts(state, req, state.content.data));
+    res.body = toStreamBody(feedXMLParts(state, req, state.content.data), { log, name: 'merchant feed' });
   } catch (e) {
     const errorRes = new PipelineResponse('', {
       /* c8 ignore next 6 */
